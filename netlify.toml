@@ -1,0 +1,4 @@
+[[edge_functions]]
+  path = "/api/chat"
+    function = "gemini-proxy"
+    
