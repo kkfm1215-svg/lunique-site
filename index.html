@@ -54,6 +54,20 @@
   }
   .screen { display: none; flex-direction: column; flex: 1; min-height: 0; }
   .screen.active { display: flex; animation: fadeIn .35s ease; }
+
+  /* 언어 선택 스위처: 모든 화면 위에 항상 떠 있는 작은 버튼 3개 */
+  #lang-switcher {
+    position: absolute; top: 10px; right: 10px; z-index: 50;
+    display: flex; gap: 4px; background: rgba(0,0,0,0.35); border-radius: 14px; padding: 3px;
+    backdrop-filter: blur(4px);
+  }
+  #lang-switcher button {
+    border: none; background: transparent; color: var(--text-faint);
+    font-size: 10.5px; font-weight: 700; padding: 5px 8px; border-radius: 11px; cursor: pointer;
+  }
+  #lang-switcher button.active {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-deep)); color: #2a1908;
+  }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -226,14 +240,12 @@
   .format-hint { font-size: 11px; color: var(--text-faint); padding: 6px 14px 0; background: rgba(0,0,0,0.18); }
   .hint { font-size: 11px; color: var(--text-faint); text-align: center; padding: 6px 10px 10px; background: rgba(0,0,0,0.18); }
 
-  #autoplay-btn {
+  .chat-action-btn {
     padding: 5px 12px; border-radius: 14px; border: 1px solid var(--border-glow);
     background: rgba(255,255,255,0.06); color: var(--text-sub); font-size: 11px; font-weight: 700; cursor: pointer;
-    white-space: nowrap;
+    white-space: nowrap; margin-left: 6px;
   }
-  #autoplay-btn.on {
-    background: linear-gradient(135deg, var(--gold-light), var(--gold-deep)); color: #2a1908; border-color: transparent;
-  }
+  .chat-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   #suggest-row {
     display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px 0; background: rgba(0,0,0,0.18);
   }
@@ -354,6 +366,11 @@
 </head>
 <body>
 <div id="app">
+  <div id="lang-switcher">
+    <button type="button" data-lang="ko">KO</button>
+    <button type="button" data-lang="en">EN</button>
+    <button type="button" data-lang="ja">JA</button>
+  </div>
 
   <!-- 화면 1: 첫 화면 -->
   <div class="screen active" id="screen-landing">
@@ -361,11 +378,11 @@
     <div class="landing-hero" style="position:relative; z-index:1;">
       <div class="center pad">
         <div class="brand-mark" style="margin-bottom:6px;"><span class="moon">🌙</span>LUNIQUE</div>
-        <div class="eyebrow"><span class="diamond">✦</span> 당신만을 위한, 기억하는 AI 로맨스 <span class="diamond">✦</span></div>
-        <div class="hero-title" style="font-size:23px; color:var(--text-main); margin-top:4px;">하루의 끝,<br/>그 사람과의 대화</div>
+        <div class="eyebrow"><span class="diamond">✦</span> <span data-i18n="landingEyebrow">당신만을 위한, 기억하는 AI 로맨스</span> <span class="diamond">✦</span></div>
+        <div class="hero-title" style="font-size:23px; color:var(--text-main); margin-top:4px;" data-i18n-html="landingHeroTitle">하루의 끝,<br/>그 사람과의 대화</div>
         <div class="divider-orn"><span class="diamond">✦</span></div>
-        <div style="font-size:13px; color:var(--text-sub); letter-spacing:0.3px;">AI와 함께하는 연애 시뮬레이션</div>
-        <button class="btn" style="width:100%; margin-top:22px;" onclick="goTo('screen-login')">✦ 지금 시작하기</button>
+        <div style="font-size:13px; color:var(--text-sub); letter-spacing:0.3px;" data-i18n="landingSubtitle">AI와 함께하는 연애 시뮬레이션</div>
+        <button class="btn" style="width:100%; margin-top:22px;" onclick="goTo('screen-login')" data-i18n="landingStartBtn">✦ 지금 시작하기</button>
       </div>
       <div class="landing-visual">🌙</div>
     </div>
@@ -375,56 +392,56 @@
   <div class="screen" id="screen-login">
     <div class="starfield"></div>
     <div class="center pad" style="position:relative; z-index:1;">
-      <div class="hero-title" style="font-size:19px; color:var(--text-main);">환영해요 👋</div>
-      <div style="font-size:12.5px; color:var(--text-sub); line-height:1.6;">구글 계정으로 로그인하면<br/>진행 상황이 서버에 저장돼요.</div>
-      <button class="btn" style="width:100%; margin-top:18px;" id="google-login-btn" onclick="signInWithGoogle()">G 구글 계정으로 로그인</button>
+      <div class="hero-title" style="font-size:19px; color:var(--text-main);" data-i18n="loginWelcome">환영해요 👋</div>
+      <div style="font-size:12.5px; color:var(--text-sub); line-height:1.6;" data-i18n-html="loginDesc">구글 계정으로 로그인하면<br/>진행 상황이 서버에 저장돼요.</div>
+      <button class="btn" style="width:100%; margin-top:18px;" id="google-login-btn" onclick="signInWithGoogle()" data-i18n="loginGoogleBtn">G 구글 계정으로 로그인</button>
       <div class="error-msg" id="login-error"></div>
     </div>
   </div>
 
   <!-- 화면 3: 내 정보 입력 -->
   <div class="screen" id="screen-profile">
-    <header><h1>내 정보 입력</h1></header>
+    <header><h1 data-i18n="profileHeader">내 정보 입력</h1></header>
     <div class="pad">
-      <div style="font-size:12px; color:#8f84a8; margin-bottom:6px;">모든 스토리가 공통으로 참고하는 정보예요. 한 번만 입력하면 돼요.</div>
-      <label>이름 (또는 원하는 호칭)</label>
-      <input id="p-name" type="text" placeholder="예: 형균" />
-      <label>성별</label>
+      <div style="font-size:12px; color:#8f84a8; margin-bottom:6px;" data-i18n="profileDesc">모든 스토리가 공통으로 참고하는 정보예요. 한 번만 입력하면 돼요.</div>
+      <label data-i18n="profileLabelName">이름 (또는 원하는 호칭)</label>
+      <input id="p-name" type="text" placeholder="예: 형균" data-i18n-placeholder="profilePlaceholderName" />
+      <label data-i18n="profileLabelGender">성별</label>
       <div id="p-gender" class="gender-toggle">
-        <button type="button" data-val="남성">남성</button>
-        <button type="button" data-val="여성">여성</button>
-        <button type="button" data-val="논바이너리">논바이너리</button>
+        <button type="button" data-val="남성" data-i18n="genderMale">남성</button>
+        <button type="button" data-val="여성" data-i18n="genderFemale">여성</button>
+        <button type="button" data-val="논바이너리" data-i18n="genderNonbinary">논바이너리</button>
       </div>
-      <label>생년월일 (성인 인증용)</label>
+      <label data-i18n="profileLabelBirth">생년월일 (성인 인증용)</label>
       <input id="p-birth" type="date" />
-      <label>자기소개 (선택)</label>
-      <textarea id="p-bio" rows="3" placeholder="성격, 취향, 요즘 관심사 등을 자유롭게 적어주세요"></textarea>
-      <button class="btn" style="width:100%; margin-top:16px;" id="save-profile-btn">저장하고 계속하기</button>
+      <label data-i18n="profileLabelBio">자기소개 (선택)</label>
+      <textarea id="p-bio" rows="3" placeholder="성격, 취향, 요즘 관심사 등을 자유롭게 적어주세요" data-i18n-placeholder="profilePlaceholderBio"></textarea>
+      <button class="btn" style="width:100%; margin-top:16px;" id="save-profile-btn" data-i18n="profileSaveBtn">저장하고 계속하기</button>
       <div class="error-msg" id="p-error"></div>
     </div>
   </div>
 
   <!-- 화면 4: 스토리 목록 -->
   <div class="screen" id="screen-charlist">
-    <header><h1>스토리를 선택하세요</h1></header>
+    <header><h1 data-i18n="charlistHeader">스토리를 선택하세요</h1></header>
     <div class="pad" style="padding-bottom:0;">
       <div id="story-list"></div>
     </div>
     <div style="flex:1;"></div>
     <div class="pad" style="padding-top:0;">
-      <button class="btn secondary" style="width:100%;" onclick="goTo('screen-mypage')">마이페이지</button>
+      <button class="btn secondary" style="width:100%;" onclick="goTo('screen-mypage')" data-i18n="charlistMypageBtn">마이페이지</button>
     </div>
   </div>
 
-  <!-- 화면 5: 스토리 소개 -->
+  <!-- 화면 5: 스토리 소개 (스토리/캐릭터 내용 자체는 아직 한국어 콘텐츠만 있음 — 별도 콘텐츠 번역 작업 필요) -->
   <div class="screen" id="screen-charintro">
     <header><span class="back" onclick="goTo('screen-charlist')">←</span><h1 id="charintro-title">스토리</h1></header>
     <div class="pad">
-      <div class="intro-portrait"><span style="position:relative; z-index:1;">캐릭터 이미지 (준비 중)</span></div>
+      <div class="intro-portrait"><span style="position:relative; z-index:1;" data-i18n="charintroPortraitPlaceholder">캐릭터 이미지 (준비 중)</span></div>
       <div class="hero-title" style="color:var(--text-main); font-size:16px; margin-bottom:6px;" id="charintro-subtitle"></div>
       <div id="charintro-cast" style="margin-bottom:10px;"></div>
       <div id="intro-box" style="margin:0;"></div>
-      <button class="btn" style="width:100%; margin-top:18px;" onclick="enterChat(pendingStoryId)">대화 시작하기</button>
+      <button class="btn" style="width:100%; margin-top:18px;" onclick="enterChat(pendingStoryId)" data-i18n="charintroStartBtn">대화 시작하기</button>
     </div>
   </div>
 
@@ -436,66 +453,67 @@
       <div style="flex:1;">
         <h1 id="chat-title">스토리</h1>
       </div>
-      <button id="autoplay-btn" onclick="toggleAutoPlay()">자동진행 꺼짐</button>
+      <button id="autoprogress-btn" class="chat-action-btn" onclick="autoProgress()" data-i18n="chatAutoprogressBtn">자동진행</button>
+      <button id="suggest-btn" class="chat-action-btn" onclick="requestSuggestions()" data-i18n="chatSuggestBtn">대사 추천</button>
     </header>
     <div id="stat-bar"></div>
     <div id="chat"></div>
     <div id="suggest-row"></div>
     <div id="inputbar">
-      <input id="msg-input" type="text" placeholder="대사를 입력하세요... (*이렇게 쓰면 행동/속마음*)" />
-      <button id="send-btn">전송</button>
+      <input id="msg-input" type="text" placeholder="대사를 입력하세요... (*이렇게 쓰면 행동/속마음*)" data-i18n-placeholder="chatInputPlaceholder" />
+      <button id="send-btn" data-i18n="chatSendBtn">전송</button>
     </div>
-    <div class="format-hint">*별표로 감싸면* 행동·속마음·상황 묘사로 처리돼요. 그냥 쓰면 실제 대사예요. 위에 뜨는 추천 대사를 눌러도 바로 보낼 수 있어요.</div>
-    <div class="hint">개발/테스트용 화면이에요. 스탯 숫자는 확인용으로 노출해뒀어요 (실제 서비스에서는 숨김). 자동진행은 AI가 추천 대사 중 하나를 대신 골라 보내요.</div>
+    <div class="format-hint" data-i18n="chatFormatHint">*별표로 감싸면* 행동·속마음·상황 묘사로 처리돼요. 그냥 쓰면 실제 대사예요.</div>
+    <div class="hint" data-i18n="chatDevHint">개발/테스트용 화면이에요. 스탯 숫자는 확인용으로 노출해뒀어요 (실제 서비스에서는 숨김). "자동진행"은 누를 때마다 AI가 내 의지와 무관하게 상황을 한 턴 진행시켜요. "대사 추천"은 누르면 지금까지의 대화를 분석해서 보낼 만한 대사 3개를 보여줘요 (클릭하면 바로 전송).</div>
   </div>
 
   <!-- 화면 7: 마이페이지 -->
   <div class="screen" id="screen-mypage">
-    <header><span class="back" onclick="goTo('screen-charlist')">←</span><h1>마이페이지</h1></header>
-    <div class="mypage-row"><span>이름</span><b id="my-name">-</b></div>
-    <div class="mypage-row"><span>코인 잔액</span><b id="my-coins">0개</b></div>
-    <div class="mypage-row"><span>구독 상태</span><b id="my-subscription">-</b></div>
-    <div class="mypage-row"><span>오늘 무료 대화</span><b id="my-free-quota">-</b></div>
+    <header><span class="back" onclick="goTo('screen-charlist')">←</span><h1 data-i18n="mypageHeader">마이페이지</h1></header>
+    <div class="mypage-row"><span data-i18n="mypageLabelName">이름</span><b id="my-name">-</b></div>
+    <div class="mypage-row"><span data-i18n="mypageLabelCoins">코인 잔액</span><b id="my-coins">0개</b></div>
+    <div class="mypage-row"><span data-i18n="mypageLabelSubscription">구독 상태</span><b id="my-subscription">-</b></div>
+    <div class="mypage-row"><span data-i18n="mypageLabelFreeQuota">오늘 무료 대화</span><b id="my-free-quota">-</b></div>
     <div class="pad" style="padding-bottom:8px;">
-      <button class="btn secondary" style="width:100%;" onclick="goTo('screen-profile')">내 정보 수정</button>
+      <button class="btn secondary" style="width:100%;" onclick="goTo('screen-profile')" data-i18n="mypageEditProfileBtn">내 정보 수정</button>
     </div>
-    <div class="pad" style="padding-top:0; padding-bottom:8px; color:#cbb8e8; font-size:13px; font-weight:700;">스토리별 진행 상태</div>
+    <div class="pad" style="padding-top:0; padding-bottom:8px; color:#cbb8e8; font-size:13px; font-weight:700;" data-i18n="mypageStoryProgressLabel">스토리별 진행 상태</div>
     <div id="mypage-stories"></div>
     <div style="flex:1;"></div>
     <div class="pad" style="display:flex; gap:8px;">
-      <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')">코인 충전</button>
-      <button class="btn" style="width:100%;" onclick="openSubscribeScreen()">구독하기</button>
+      <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
+      <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
     </div>
   </div>
 
   <!-- 화면 8: 코인 충전 -->
   <div class="screen" id="screen-coin">
-    <header><span class="back" onclick="goTo('screen-mypage')">←</span><h1>코인 충전</h1></header>
+    <header><span class="back" onclick="goTo('screen-mypage')">←</span><h1 data-i18n="coinHeader">코인 충전</h1></header>
     <div class="pad" style="padding-bottom:0;">
-      <div class="coin-card" onclick="buyCoins(100)"><span><b>100코인</b></span><span>₩1,000</span></div>
-      <div class="coin-card" onclick="buyCoins(550)"><span><b>550코인</b> (+10%)</span><span>₩5,000</span></div>
-      <div class="coin-card" onclick="buyCoins(1200)"><span><b>1200코인</b> (+20%)</span><span>₩10,000</span></div>
-      <div style="font-size:11px; color:var(--text-faint); padding: 8px 4px;">하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 눌러도 코인만 임시로 채워져요.</div>
-      <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="openSubscribeScreen()">매번 코인 사기 귀찮다면? 구독으로 무제한 이용하기 →</button>
+      <div class="coin-card" onclick="buyCoins(100)"><span><b data-i18n="coin100Label">100코인</b></span><span>₩1,000</span></div>
+      <div class="coin-card" onclick="buyCoins(550)"><span><b data-i18n="coin550Label">550코인</b> (+10%)</span><span>₩5,000</span></div>
+      <div class="coin-card" onclick="buyCoins(1200)"><span><b data-i18n="coin1200Label">1200코인</b> (+20%)</span><span>₩10,000</span></div>
+      <div style="font-size:11px; color:var(--text-faint); padding: 8px 4px;" data-i18n="coinDesc">하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 눌러도 코인만 임시로 채워져요.</div>
+      <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="openSubscribeScreen()" data-i18n="coinSubscribeLinkBtn">매번 코인 사기 귀찮다면? 구독으로 무제한 이용하기 →</button>
     </div>
   </div>
 
   <!-- 화면 9: 구독 -->
   <div class="screen" id="screen-subscribe">
-    <header><span class="back" onclick="goTo('screen-mypage')">←</span><h1>구독</h1></header>
+    <header><span class="back" onclick="goTo('screen-mypage')">←</span><h1 data-i18n="subHeader">구독</h1></header>
     <div class="pad">
       <div class="coin-card" style="cursor:default; flex-direction:column; align-items:flex-start; gap:6px;">
         <div style="display:flex; justify-content:space-between; width:100%;">
-          <b>프리미엄 구독</b><span style="color:var(--gold);">월 12,900원</span>
+          <b data-i18n="subTitle">프리미엄 구독</b><span style="color:var(--gold);" data-i18n="subPriceLabel">월 12,900원</span>
         </div>
-        <div style="font-size:12px; color:var(--text-sub); line-height:1.6;">
+        <div style="font-size:12px; color:var(--text-sub); line-height:1.6;" data-i18n-html="subBullets">
           · 하루 무료 대화 한도 없이 무제한 대화<br/>
           · 앞으로 추가될 프리미엄 전용 스토리 우선 이용 (추후 적용)
         </div>
       </div>
       <div id="subscribe-status" style="font-size:12.5px; color:var(--text-sub); margin:12px 4px;"></div>
       <div id="subscribe-action" style="margin-top:8px;"></div>
-      <div style="font-size:11px; color:var(--text-faint); padding: 12px 4px 0;">실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 테스트로 바로 활성화/해지돼요.</div>
+      <div style="font-size:11px; color:var(--text-faint); padding: 12px 4px 0;" data-i18n="subFooterNote">실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 테스트로 바로 활성화/해지돼요.</div>
     </div>
   </div>
 
@@ -505,6 +523,266 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
+
+// =====================================================
+// 다국어(i18n) — 한국어/영어/일본어
+// 화면에 고정으로 적힌 글자(버튼, 안내문 등)만 다룬다. 스토리/캐릭터 내용(대사, 소개글)은
+// 아직 한국어로만 작성돼 있고, 실제 AI 대화는 buildSystemPrompt에서 별도로 언어를 지정해서
+// 캐릭터가 선택된 언어로 말하게 한다 (아래 LANG_NAME 참고).
+// =====================================================
+const SUPPORTED_LANGS = ['ko', 'en', 'ja'];
+const LANG_NAME = { ko: '한국어', en: 'English', ja: '日本語(にほんご)' };
+
+function detectInitialLang() {
+  const saved = localStorage.getItem('lang');
+  if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
+  const nav = (navigator.language || 'ko').toLowerCase();
+  if (nav.startsWith('ja')) return 'ja';
+  if (nav.startsWith('ko')) return 'ko';
+  return 'en'; // 한국어/일본어가 아니면 일단 영어로 (지금 지원하는 언어 중 가장 넓은 시장)
+}
+let currentLang = detectInitialLang();
+
+const I18N = {
+  ko: {
+    landingEyebrow: '당신만을 위한, 기억하는 AI 로맨스',
+    landingHeroTitle: '하루의 끝,<br/>그 사람과의 대화',
+    landingSubtitle: 'AI와 함께하는 연애 시뮬레이션',
+    landingStartBtn: '✦ 지금 시작하기',
+    loginWelcome: '환영해요 👋',
+    loginDesc: '구글 계정으로 로그인하면<br/>진행 상황이 서버에 저장돼요.',
+    loginGoogleBtn: 'G 구글 계정으로 로그인',
+    loginErrorPrefix: '로그인 중 오류가 발생했어요: ',
+    profileHeader: '내 정보 입력',
+    profileDesc: '모든 스토리가 공통으로 참고하는 정보예요. 한 번만 입력하면 돼요.',
+    profileLabelName: '이름 (또는 원하는 호칭)',
+    profilePlaceholderName: '예: 형균',
+    profileLabelGender: '성별',
+    genderMale: '남성', genderFemale: '여성', genderNonbinary: '논바이너리',
+    profileLabelBirth: '생년월일 (성인 인증용)',
+    profileLabelBio: '자기소개 (선택)',
+    profilePlaceholderBio: '성격, 취향, 요즘 관심사 등을 자유롭게 적어주세요',
+    profileSaveBtn: '저장하고 계속하기',
+    profileErrName: '이름을 입력해주세요.',
+    profileErrGender: '성별을 선택해주세요.',
+    profileErrBirth: '생년월일을 입력해주세요.',
+    profileErrAge: '본 서비스는 성인(만 19세 이상)만 이용할 수 있어요.',
+    profileErrSavePrefix: '저장 중 오류가 발생했어요: ',
+    charlistHeader: '스토리를 선택하세요',
+    charlistMypageBtn: '마이페이지',
+    charlistPreparing: '준비 중',
+    charintroPortraitPlaceholder: '캐릭터 이미지 (준비 중)',
+    charintroStartBtn: '대화 시작하기',
+    chatAutoprogressBtn: '자동진행',
+    chatSuggestBtn: '대사 추천',
+    chatInputPlaceholder: '대사를 입력하세요... (*이렇게 쓰면 행동/속마음*)',
+    chatSendBtn: '전송',
+    chatFormatHint: '*별표로 감싸면* 행동·속마음·상황 묘사로 처리돼요. 그냥 쓰면 실제 대사예요.',
+    chatDevHint: '개발/테스트용 화면이에요. 스탯 숫자는 확인용으로 노출해뒀어요 (실제 서비스에서는 숨김). "자동진행"은 누를 때마다 AI가 내 의지와 무관하게 상황을 한 턴 진행시켜요. "대사 추천"은 누르면 지금까지의 대화를 분석해서 보낼 만한 대사 3개를 보여줘요 (클릭하면 바로 전송).',
+    chatQuotaExceededPrefix: '오늘 무료 대화 ', chatQuotaExceededSuffix: '개를 다 쓰셨어요. 코인을 충전하거나 구독하면 계속 대화할 수 있어요.',
+    chatQuotaCoinBtn: '코인 충전하기', chatQuotaSubscribeBtn: '구독하기',
+    chatRetryBtn: '다시 시도',
+    chatErrorPrefix: '오류: ',
+    chatSuggestErrorPrefix: '추천 대사를 불러오지 못했어요: ',
+    chatTimeoutMessage: '응답이 너무 오래 걸려서 중단했어요. 네트워크 상태를 확인하고 다시 시도해주세요.',
+    mypageHeader: '마이페이지',
+    mypageLabelName: '이름', mypageLabelCoins: '코인 잔액', mypageLabelSubscription: '구독 상태', mypageLabelFreeQuota: '오늘 무료 대화',
+    mypageEditProfileBtn: '내 정보 수정',
+    mypageStoryProgressLabel: '스토리별 진행 상태',
+    mypageCoinBtn: '코인 충전', mypageSubscribeBtn: '구독하기',
+    mypageLoading: '불러오는 중...',
+    mypageCoinsSuffix: '개',
+    mypageSubActive: '프리미엄 구독 중 (무제한)', mypageSubInactive: '미구독',
+    mypageQuotaUnlimited: '무제한',
+    mypageQuotaUsedSuffix: '개 사용',
+    mypageStagePrefix: '단계 ', mypageNotChattedYet: '아직 대화 안 함',
+    mypageInProgress: '이야기가 이어지는 중...',
+    mypageResetBtn: '이 스토리 초기화 (테스트용)',
+    mypageResetDoneAlert: '초기화됐어요. 다시 처음부터 대화할 수 있어요.',
+    coinHeader: '코인 충전',
+    coin100Label: '100코인', coin550Label: '550코인', coin1200Label: '1200코인',
+    coinDesc: '하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 눌러도 코인만 임시로 채워져요.',
+    coinSubscribeLinkBtn: '매번 코인 사기 귀찮다면? 구독으로 무제한 이용하기 →',
+    subHeader: '구독', subTitle: '프리미엄 구독', subPriceLabel: '월 12,900원',
+    subBullets: '· 하루 무료 대화 한도 없이 무제한 대화<br/>· 앞으로 추가될 프리미엄 전용 스토리 우선 이용 (추후 적용)',
+    subFooterNote: '실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 테스트로 바로 활성화/해지돼요.',
+    subStatusActiveBadge: '구독 중', subStatusActiveText: '무제한으로 대화할 수 있어요.',
+    subStatusInactiveBadge: '미구독', subStatusInactiveTextPrefix: '하루 ', subStatusInactiveTextSuffix: '개 무료 대화 이후엔 코인이 필요해요.',
+    subCancelBtn: '구독 해지하기',
+    subPriceValue: '12,900원', subStartBtnPrefix: '✦ 월 ', subStartBtnSuffix: '으로 무제한 시작하기',
+    subCancelConfirm: '구독을 해지할까요? (테스트용 — 즉시 해지됨)',
+    subStartedAlertPrefix: '(테스트) ', subStartedAlertSuffix: '이 시작됐어요. 실제 결제는 아직 연결 전이에요.',
+    coinBoughtAlertMid: '코인이 충전됐어요. 실제 결제는 아직 연결 전이에요.',
+  },
+  en: {
+    landingEyebrow: 'Your own AI romance that remembers you',
+    landingHeroTitle: 'At the end of the day,<br/>a conversation with someone',
+    landingSubtitle: 'A romance simulation with AI',
+    landingStartBtn: '✦ Get Started',
+    loginWelcome: 'Welcome 👋',
+    loginDesc: 'Sign in with Google<br/>to save your progress to the cloud.',
+    loginGoogleBtn: 'G Sign in with Google',
+    loginErrorPrefix: 'An error occurred while signing in: ',
+    profileHeader: 'Your Info',
+    profileDesc: 'This info is shared across all stories. You only need to enter it once.',
+    profileLabelName: 'Name (or what you\'d like to be called)',
+    profilePlaceholderName: 'e.g. Alex',
+    profileLabelGender: 'Gender',
+    genderMale: 'Male', genderFemale: 'Female', genderNonbinary: 'Non-binary',
+    profileLabelBirth: 'Date of birth (for age verification)',
+    profileLabelBio: 'About you (optional)',
+    profilePlaceholderBio: 'Feel free to write about your personality, interests, etc.',
+    profileSaveBtn: 'Save and Continue',
+    profileErrName: 'Please enter your name.',
+    profileErrGender: 'Please select a gender.',
+    profileErrBirth: 'Please enter your date of birth.',
+    profileErrAge: 'This service is for adults (19+) only.',
+    profileErrSavePrefix: 'An error occurred while saving: ',
+    charlistHeader: 'Choose a Story',
+    charlistMypageBtn: 'My Page',
+    charlistPreparing: 'Coming soon',
+    charintroPortraitPlaceholder: 'Character image (coming soon)',
+    charintroStartBtn: 'Start Chatting',
+    chatAutoprogressBtn: 'Auto-progress',
+    chatSuggestBtn: 'Suggest lines',
+    chatInputPlaceholder: 'Type a message... (*wrap in asterisks for actions/thoughts*)',
+    chatSendBtn: 'Send',
+    chatFormatHint: '*Wrap text in asterisks* for actions/thoughts/scene description. Plain text is spoken dialogue.',
+    chatDevHint: 'This is a dev/test screen. Stat numbers are shown for testing only (hidden in the real service). "Auto-progress" makes the AI move the scene forward one turn on its own, regardless of your wishes. "Suggest lines" analyzes the conversation so far and shows 3 lines you could send (tap to send instantly).',
+    chatQuotaExceededPrefix: 'You\'ve used all ', chatQuotaExceededSuffix: ' free messages for today. Top up coins or subscribe to keep chatting.',
+    chatQuotaCoinBtn: 'Buy Coins', chatQuotaSubscribeBtn: 'Subscribe',
+    chatRetryBtn: 'Retry',
+    chatErrorPrefix: 'Error: ',
+    chatSuggestErrorPrefix: 'Couldn\'t load suggested lines: ',
+    chatTimeoutMessage: 'The response took too long, so it was stopped. Please check your connection and try again.',
+    mypageHeader: 'My Page',
+    mypageLabelName: 'Name', mypageLabelCoins: 'Coin balance', mypageLabelSubscription: 'Subscription', mypageLabelFreeQuota: 'Free messages today',
+    mypageEditProfileBtn: 'Edit My Info',
+    mypageStoryProgressLabel: 'Progress by story',
+    mypageCoinBtn: 'Buy Coins', mypageSubscribeBtn: 'Subscribe',
+    mypageLoading: 'Loading...',
+    mypageCoinsSuffix: '',
+    mypageSubActive: 'Premium (unlimited)', mypageSubInactive: 'Not subscribed',
+    mypageQuotaUnlimited: 'Unlimited',
+    mypageQuotaUsedSuffix: ' used',
+    mypageStagePrefix: 'Stage ', mypageNotChattedYet: 'Not started yet',
+    mypageInProgress: 'The story continues...',
+    mypageResetBtn: 'Reset this story (test)',
+    mypageResetDoneAlert: 'Reset complete. You can start over from the beginning.',
+    coinHeader: 'Buy Coins',
+    coin100Label: '100 coins', coin550Label: '550 coins', coin1200Label: '1200 coins',
+    coinDesc: 'Once you use up today\'s free messages, each message costs 2 coins. Real payment (Stripe/local PG) isn\'t connected yet, so tapping this just adds test coins for now.',
+    coinSubscribeLinkBtn: 'Tired of buying coins? Subscribe for unlimited →',
+    subHeader: 'Subscription', subTitle: 'Premium subscription', subPriceLabel: '$9.99/mo',
+    subBullets: '· Unlimited chats, no daily free-message limit<br/>· Priority access to upcoming premium-only stories (coming later)',
+    subFooterNote: 'Real payment (Stripe/local PG) isn\'t connected yet, so this activates/cancels instantly for testing.',
+    subStatusActiveBadge: 'Subscribed', subStatusActiveText: 'You can chat without limits.',
+    subStatusInactiveBadge: 'Not subscribed', subStatusInactiveTextPrefix: 'After ', subStatusInactiveTextSuffix: ' free messages a day, you\'ll need coins.',
+    subCancelBtn: 'Cancel Subscription',
+    subPriceValue: '$9.99', subStartBtnPrefix: '✦ Start unlimited — ', subStartBtnSuffix: '/mo',
+    subCancelConfirm: 'Cancel your subscription? (test only — takes effect immediately)',
+    subStartedAlertPrefix: '(Test) ', subStartedAlertSuffix: ' has started. Real payment isn\'t connected yet.',
+    coinBoughtAlertMid: 'coins have been added. Real payment isn\'t connected yet.',
+  },
+  ja: {
+    landingEyebrow: 'あなただけを覚えているAIロマンス',
+    landingHeroTitle: '一日の終わりに、<br/>あの人との会話',
+    landingSubtitle: 'AIと楽しむ恋愛シミュレーション',
+    landingStartBtn: '✦ 今すぐ始める',
+    loginWelcome: 'ようこそ 👋',
+    loginDesc: 'Googleアカウントでログインすると<br/>進行状況がサーバーに保存されます。',
+    loginGoogleBtn: 'G Googleでログイン',
+    loginErrorPrefix: 'ログイン中にエラーが発生しました: ',
+    profileHeader: 'プロフィール入力',
+    profileDesc: 'すべてのストーリー共通の情報です。一度だけ入力すればOKです。',
+    profileLabelName: '名前(呼んでほしい名前)',
+    profilePlaceholderName: '例: ヒョンギュン',
+    profileLabelGender: '性別',
+    genderMale: '男性', genderFemale: '女性', genderNonbinary: 'ノンバイナリー',
+    profileLabelBirth: '生年月日(成人認証用)',
+    profileLabelBio: '自己紹介(任意)',
+    profilePlaceholderBio: '性格、好み、最近の関心事などを自由に書いてください',
+    profileSaveBtn: '保存して続ける',
+    profileErrName: '名前を入力してください。',
+    profileErrGender: '性別を選択してください。',
+    profileErrBirth: '生年月日を入力してください。',
+    profileErrAge: '本サービスは成人(満19歳以上)のみご利用いただけます。',
+    profileErrSavePrefix: '保存中にエラーが発生しました: ',
+    charlistHeader: 'ストーリーを選んでください',
+    charlistMypageBtn: 'マイページ',
+    charlistPreparing: '準備中',
+    charintroPortraitPlaceholder: 'キャラクター画像(準備中)',
+    charintroStartBtn: '会話を始める',
+    chatAutoprogressBtn: '自動進行',
+    chatSuggestBtn: 'セリフ提案',
+    chatInputPlaceholder: 'メッセージを入力...(*で囲むと行動/心の声*)',
+    chatSendBtn: '送信',
+    chatFormatHint: '*で囲むと*行動・心の声・状況描写になります。そのまま書くとセリフになります。',
+    chatDevHint: '開発/テスト用の画面です。ステータス数値は確認用に表示しています(実際のサービスでは非表示)。「自動進行」を押すたびに、AIがあなたの意思と関係なく状況を1ターン進めます。「セリフ提案」を押すと、これまでの会話を分析して送れそうなセリフを3つ表示します(タップですぐ送信)。',
+    chatQuotaExceededPrefix: '本日の無料メッセージ', chatQuotaExceededSuffix: '件をすべて使い切りました。コインをチャージするか購読すると続けて会話できます。',
+    chatQuotaCoinBtn: 'コインチャージ', chatQuotaSubscribeBtn: '購読する',
+    chatRetryBtn: '再試行',
+    chatErrorPrefix: 'エラー: ',
+    chatSuggestErrorPrefix: 'セリフ提案を読み込めませんでした: ',
+    chatTimeoutMessage: '応答に時間がかかりすぎたため中断しました。ネットワーク状態を確認してもう一度お試しください。',
+    mypageHeader: 'マイページ',
+    mypageLabelName: '名前', mypageLabelCoins: 'コイン残高', mypageLabelSubscription: '購読状況', mypageLabelFreeQuota: '本日の無料会話',
+    mypageEditProfileBtn: 'プロフィール編集',
+    mypageStoryProgressLabel: 'ストーリー別の進行状況',
+    mypageCoinBtn: 'コインチャージ', mypageSubscribeBtn: '購読する',
+    mypageLoading: '読み込み中...',
+    mypageCoinsSuffix: '枚',
+    mypageSubActive: 'プレミアム購読中(無制限)', mypageSubInactive: '未購読',
+    mypageQuotaUnlimited: '無制限',
+    mypageQuotaUsedSuffix: '回使用',
+    mypageStagePrefix: 'ステージ', mypageNotChattedYet: 'まだ会話していません',
+    mypageInProgress: '物語が続いています...',
+    mypageResetBtn: 'このストーリーをリセット(テスト用)',
+    mypageResetDoneAlert: 'リセットしました。最初からもう一度お楽しみいただけます。',
+    coinHeader: 'コインチャージ',
+    coin100Label: '100コイン', coin550Label: '550コイン', coin1200Label: '1200コイン',
+    coinDesc: '本日の無料メッセージを使い切ると、メッセージごとに2コイン消費します。実際の決済(Stripe/現地PG)はまだ接続されていないため、今はタップするとテスト用にコインが追加されるだけです。',
+    coinSubscribeLinkBtn: '毎回コインを買うのが面倒なら?購読で無制限に →',
+    subHeader: '購読', subTitle: 'プレミアム購読', subPriceLabel: '月額1,500円',
+    subBullets: '· 1日の無料会話制限なしで無制限に会話<br/>· 今後追加されるプレミアム専用ストーリーへの優先アクセス(今後対応)',
+    subFooterNote: '実際の決済(Stripe/現地PG)はまだ接続されていないため、今はテストですぐに有効化/解約されます。',
+    subStatusActiveBadge: '購読中', subStatusActiveText: '無制限に会話できます。',
+    subStatusInactiveBadge: '未購読', subStatusInactiveTextPrefix: '1日', subStatusInactiveTextSuffix: '件の無料会話の後はコインが必要です。',
+    subCancelBtn: '購読を解約する',
+    subPriceValue: '1,500円', subStartBtnPrefix: '✦ 月額', subStartBtnSuffix: 'で無制限に始める',
+    subCancelConfirm: '購読を解約しますか?(テスト用 — 即時解約されます)',
+    subStartedAlertPrefix: '(テスト) ', subStartedAlertSuffix: 'が開始されました。実際の決済はまだ接続されていません。',
+    coinBoughtAlertMid: 'コインがチャージされました。実際の決済はまだ接続されていません。',
+  },
+};
+
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key] !== undefined) ? I18N[currentLang][key] : (I18N.ko[key] || key);
+}
+
+// 화면에 고정으로 박혀있는 글자들을 전부 다시 그린다 + 언어 스위처 버튼 활성 표시 갱신.
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+  document.documentElement.lang = currentLang;
+  document.querySelectorAll('#lang-switcher button').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+  // 지금 보이는 화면 중에 JS로 동적으로 채워지는 부분이 있으면 다시 그려준다.
+  if (typeof STORIES !== 'undefined' && $('screen-charlist').classList.contains('active')) renderStoryList();
+  if (typeof STORIES !== 'undefined' && $('screen-mypage').classList.contains('active')) renderMypage();
+  if ($('screen-subscribe').classList.contains('active')) openSubscribeScreen();
+}
+
+function setLang(lang) {
+  if (!SUPPORTED_LANGS.includes(lang) || lang === currentLang) return;
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  applyTranslations();
+}
+
+document.querySelectorAll('#lang-switcher button').forEach(btn => {
+  btn.addEventListener('click', () => setLang(btn.dataset.lang));
+});
 
 // --- Firebase 초기화 (구글 로그인 + Firestore 데이터 저장) ---
 const firebaseConfig = {
@@ -534,7 +812,7 @@ function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider).catch(err => {
     const el = $('login-error');
-    el.textContent = '로그인 중 오류가 발생했어요: ' + err.message;
+    el.textContent = t('loginErrorPrefix') + err.message;
     el.style.display = 'block';
   });
 }
@@ -603,12 +881,12 @@ $('save-profile-btn').addEventListener('click', async () => {
   const bio = $('p-bio').value.trim();
   $('p-error').style.display = 'none';
 
-  if (!name) { showProfileError('이름을 입력해주세요.'); return; }
-  if (!selectedGender) { showProfileError('성별을 선택해주세요.'); return; }
-  if (!birth) { showProfileError('생년월일을 입력해주세요.'); return; }
+  if (!name) { showProfileError(t('profileErrName')); return; }
+  if (!selectedGender) { showProfileError(t('profileErrGender')); return; }
+  if (!birth) { showProfileError(t('profileErrBirth')); return; }
 
   const age = calcAge(birth);
-  if (age < 19) { showProfileError('본 서비스는 성인(만 19세 이상)만 이용할 수 있어요.'); return; }
+  if (age < 19) { showProfileError(t('profileErrAge')); return; }
 
   playerProfile = { name, gender: selectedGender, birthdate: birth, bio };
 
@@ -618,7 +896,7 @@ $('save-profile-btn').addEventListener('click', async () => {
     await playerDocRef().set({ name, gender: selectedGender, birthdate: birth, bio, coins: existingCoins }, { merge: true });
     goTo('screen-charlist');
   } catch (err) {
-    showProfileError('저장 중 오류가 발생했어요: ' + err.message);
+    showProfileError(t('profileErrSavePrefix') + err.message);
   }
 });
 
@@ -646,7 +924,7 @@ async function getCoins() {
 async function buyCoins(amount) {
   const cur = await getCoins();
   await playerDocRef().set({ coins: cur + amount }, { merge: true });
-  alert(`(테스트) ${amount}코인이 충전됐어요. 실제 결제는 아직 연결 전이에요.`);
+  alert(`${t('subStartedAlertPrefix')}${amount} ${t('coinBoughtAlertMid')}`);
   goTo('screen-mypage');
 }
 
@@ -710,12 +988,12 @@ async function subscribeNow() {
   await playerDocRef().set({
     subscription: { active: true, plan: SUBSCRIPTION_PLAN.key, startedAt: todayStr() }
   }, { merge: true });
-  alert(`(테스트) ${SUBSCRIPTION_PLAN.label}이 시작됐어요. 실제 결제는 아직 연결 전이에요.`);
+  alert(`${t('subStartedAlertPrefix')}${t('subTitle')}${t('subStartedAlertSuffix')}`);
   goTo('screen-mypage');
 }
 
 async function cancelSubscription() {
-  if (!confirm('구독을 해지할까요? (테스트용 — 즉시 해지됨)')) return;
+  if (!confirm(t('subCancelConfirm'))) return;
   await playerDocRef().set({ subscription: { active: false } }, { merge: true });
   goTo('screen-mypage');
 }
@@ -723,18 +1001,18 @@ async function cancelSubscription() {
 function renderSubscribeScreen(meta) {
   const active = meta.subscription && meta.subscription.active;
   $('subscribe-status').innerHTML = active
-    ? `<span class="diff-badge diff-easy">구독 중</span> 무제한으로 대화할 수 있어요.`
-    : `<span class="diff-badge diff-normal">미구독</span> 하루 ${FREE_DAILY_LIMIT}개 무료 대화 이후엔 코인이 필요해요.`;
+    ? `<span class="diff-badge diff-easy">${t('subStatusActiveBadge')}</span> ${t('subStatusActiveText')}`
+    : `<span class="diff-badge diff-normal">${t('subStatusInactiveBadge')}</span> ${t('subStatusInactiveTextPrefix')}${FREE_DAILY_LIMIT}${t('subStatusInactiveTextSuffix')}`;
   $('subscribe-action').innerHTML = '';
   const btn = document.createElement('button');
   btn.className = 'btn';
   btn.style.width = '100%';
   if (active) {
-    btn.textContent = '구독 해지하기';
+    btn.textContent = t('subCancelBtn');
     btn.classList.add('secondary');
     btn.onclick = cancelSubscription;
   } else {
-    btn.textContent = `✦ 월 ${SUBSCRIPTION_PLAN.price.toLocaleString()}원으로 무제한 시작하기`;
+    btn.textContent = `${t('subStartBtnPrefix')}${t('subPriceValue')}${t('subStartBtnSuffix')}`;
     btn.onclick = subscribeNow;
   }
   $('subscribe-action').appendChild(btn);
@@ -831,7 +1109,7 @@ function renderStoryList() {
     card.className = 'char-card' + (story.playable ? '' : ' disabled');
     const avatars = story.cast.map(c => `<div class="char-avatar" style="width:32px;height:32px;font-size:9px;">${c.name}</div>`).join('');
     const badges = story.cast.map(c => `<span class="diff-badge diff-${tierClass(c.tier)}">${c.name} ${c.tier}</span>`).join('');
-    const desc = story.playable ? (story.subtitle || '') : '준비 중';
+    const desc = story.playable ? (story.subtitle || '') : t('charlistPreparing');
     card.innerHTML = `
       <div class="cast-row">${avatars}</div>
       <div class="char-info">
@@ -1104,10 +1382,14 @@ ${secretArcBlock}
 [기억 유지]
 대화 히스토리와 현재 상태(장소, 최근 화제, 인물별 스탯)를 참고해서 일관성을 유지한다. 이전 대화 내용과 모순되게 절대 되돌아가지 않는다.
 
-[추천 대사 - suggested_replies]
-매 턴 끝에, 지금 상황에서 유저(플레이어)가 다음으로 할 법한 말을 1인칭 대사로 3개 만들어서 suggested_replies에 넣는다.
-- 서로 톤이 겹치지 않게 다양하게 만든다 (예: 다정한 반응 하나, 장난스럽거나 유쾌한 반응 하나, 조금 더 진지하거나 호기심 있는 반응 하나).
-- 각 항목은 실제로 유저가 그대로 보낼 수 있는 짧은 대사 한 문장이어야 한다 (따옴표 없이, 지문 없이).
+[특수 입력 - 매우 중요]
+유저 입력은 보통 실제 대사/행동이지만, 아래 두 가지 특수한 값이 정확히 들어올 수 있다. 이 경우는 실제 유저의 말이 아니라 화면의 버튼을 눌러서 보낸 신호이므로 다르게 처리한다.
+
+- 유저 입력이 정확히 "${AUTO_PROGRESS_MARKER}"이면: 유저가 "자동진행" 버튼을 눌렀다는 뜻이다. 유저는 이번에 아무 말도 하지 않았고, 유저의 의사를 전혀 반영하지 않은 채로, 지금 상황·인물의 성격과 관계 단계에 맞게 너(AI)가 완전히 자유롭게 다음 장면을 진행시킨다 (인물이 먼저 말을 걸거나, 새로운 화제를 꺼내거나, 상황이 전개되는 등). 다른 방향으로 이야기가 흘러가도 괜찮다.
+- 유저 입력이 정확히 "${SUGGEST_ONLY_MARKER}"이면: 유저가 "대사 추천" 버튼을 눌렀다는 뜻이다. 이번에는 실제 장면을 진행시키지 않는다. beats와 char_deltas는 반드시 둘 다 빈 배열([])로 두고, 오직 지금까지의 대화 흐름을 분석해서 유저가 다음으로 할 법한 말을 1인칭 대사로 3개만 만들어 suggested_replies에 채워서 응답한다.
+  - 서로 톤이 겹치지 않게 다양하게 만든다 (예: 다정한 반응 하나, 장난스럽거나 유쾌한 반응 하나, 조금 더 진지하거나 호기심 있는 반응 하나).
+  - 각 항목은 실제로 유저가 그대로 보낼 수 있는 짧은 대사 한 문장이어야 한다 (따옴표 없이, 지문 없이).
+- 위 두 경우가 아닌 모든 일반적인 유저 입력에서는 suggested_replies를 항상 빈 배열([])로 둔다.
 
 [출력 형식]
 반드시 아래 JSON 형식으로만 응답한다. JSON 외의 다른 텍스트는 절대 포함하지 않는다.
@@ -1118,7 +1400,22 @@ ${secretArcBlock}
   "suggested_replies": [ "추천 대사 1", "추천 대사 2", "추천 대사 3" ]
 }
 이번 턴에 등장하거나 스탯이 변하는 인물마다 char_deltas에 항목을 하나씩 넣는다. 아무 변화도 없으면 해당 인물은 생략해도 된다.
+
+[응답 언어 - 매우 중요]
+${buildLanguageDirective()}
 `;
+}
+
+// 현재 선택된 UI 언어에 맞춰 beats/dialogue/suggested_replies를 어떤 언어로 써야 하는지 지시하는 문구.
+// 캐릭터 설정(castBlock)이나 스토리 원문은 한국어로 고정돼 있어도, 실제 출력 문장은 이 지시를 따라 언어가 바뀐다.
+function buildLanguageDirective() {
+  if (currentLang === 'en') {
+    return 'Write every "text" value inside beats, and every string inside suggested_replies, in natural, fluent English — even though the character settings above are written in Korean. Character names may stay as given. Do not mix Korean into the output text.';
+  }
+  if (currentLang === 'ja') {
+    return '上記のキャラクター設定は韓国語で書かれているが、beats内のすべての"text"、およびsuggested_replies内のすべての文字列は、自然で流暢な日本語で書くこと。キャラクター名はそのままでよい。出力文に韓国語を混ぜないこと。';
+  }
+  return '지금까지의 지시대로 자연스러운 한국어로 작성한다.';
 }
 
 // beats 배열을, 히스토리를 다시 모델에 보낼 때 쓰는 *별표* 마크업 텍스트로 합쳐준다.
@@ -1207,7 +1504,7 @@ function buildGeminiRequestBody(userMessage) {
 // 완료되면 { beats, char_deltas, safety_flag } 를 반환한다.
 // 청크가 일정 시간(ms) 이상 안 오면 통신이 멈춘 것으로 보고 중단시키는 안전장치.
 const STREAM_STALL_TIMEOUT_MS = 40000;
-const TIMEOUT_MESSAGE = '응답이 너무 오래 걸려서 중단했어요. 네트워크 상태를 확인하고 다시 시도해주세요.';
+function timeoutMessage() { return t('chatTimeoutMessage'); }
 
 async function callGeminiStream(userMessage, onBeat) {
   // 실제 구글 AI 서버를 브라우저에서 직접 부르지 않는다. 그렇게 하면 진짜 API 키를 페이지 소스에
@@ -1234,14 +1531,14 @@ async function callGeminiStream(userMessage, onBeat) {
   const initialTimeout = new Promise((_, reject) => {
     initialTimer = setTimeout(() => {
       abortDueToTimeout();
-      reject(new Error(TIMEOUT_MESSAGE));
+      reject(new Error(timeoutMessage()));
     }, STREAM_STALL_TIMEOUT_MS);
   });
   let res;
   try {
     res = await Promise.race([fetchPromise, initialTimeout]);
   } catch (e) {
-    throw timedOut ? new Error(TIMEOUT_MESSAGE) : e;
+    throw timedOut ? new Error(timeoutMessage()) : e;
   } finally {
     clearTimeout(initialTimer);
   }
@@ -1280,13 +1577,13 @@ async function callGeminiStream(userMessage, onBeat) {
     const timeout = new Promise((_, reject) => {
       timer = setTimeout(() => {
         abortDueToTimeout();
-        reject(new Error(TIMEOUT_MESSAGE));
+        reject(new Error(timeoutMessage()));
       }, STREAM_STALL_TIMEOUT_MS);
     });
     try {
       return await Promise.race([reader.read(), timeout]);
     } catch (e) {
-      throw timedOut ? new Error(TIMEOUT_MESSAGE) : e;
+      throw timedOut ? new Error(timeoutMessage()) : e;
     } finally {
       clearTimeout(timer);
     }
@@ -1338,10 +1635,21 @@ async function callGeminiStream(userMessage, onBeat) {
 }
 
 let isSending = false; // 이미 요청이 진행 중이면 새로 전송하지 않기 위한 잠금장치
-let autoPlayOn = false; // 자동진행: 켜져 있으면 AI가 추천 대사 중 하나를 대신 골라서 보낸다.
-const AUTO_PLAY_DELAY_MS = 1400; // 자동진행일 때, 다음 대사를 보내기 전에 잠깐 쉬는 시간 (너무 빠르면 부담스러워서)
 
-// 추천 대사 3개를 입력창 위에 칩 형태로 보여준다. 클릭하면 그 대사를 바로 보낸다.
+// "자동진행"/"대사 추천" 버튼이 눌렸을 때, 실제 유저 입력 대신 보내는 특수 신호값.
+// buildSystemPrompt에 이 값들을 어떻게 처리할지 지시해뒀다.
+const AUTO_PROGRESS_MARKER = '[[AUTO_PROGRESS]]';
+const SUGGEST_ONLY_MARKER = '[[SUGGEST_ONLY]]';
+
+// 전송/자동진행/대사추천 중 하나가 진행 중일 때 나머지 버튼들도 같이 비활성화한다.
+function setControlsDisabled(disabled) {
+  $('send-btn').disabled = disabled;
+  const autoBtn = $('autoprogress-btn'); if (autoBtn) autoBtn.disabled = disabled;
+  const sugBtn = $('suggest-btn'); if (sugBtn) sugBtn.disabled = disabled;
+}
+
+// 추천 대사를 입력창 위에 칩 형태로 보여준다. 클릭하면 그 대사를 바로 보낸다.
+// "대사 추천" 버튼을 누르기 전에는 항상 비어있는 상태(기본값 안 보임)이다.
 function renderSuggestions(suggestions) {
   const row = $('suggest-row');
   row.innerHTML = '';
@@ -1362,25 +1670,31 @@ function clearSuggestions() {
   $('suggest-row').style.display = 'none';
 }
 
-// 자동진행 on/off 스위치. 켜는 순간 지금 떠 있는 추천 대사가 있으면 바로 이어서 진행한다.
-function toggleAutoPlay() {
-  autoPlayOn = !autoPlayOn;
-  const btn = $('autoplay-btn');
-  btn.textContent = autoPlayOn ? '자동진행 켜짐' : '자동진행 꺼짐';
-  btn.classList.toggle('on', autoPlayOn);
-  if (autoPlayOn) maybeAutoAdvance(lastSuggestedReplies);
+// "대사 추천" 버튼: 지금까지의 대화를 분석해서 유저가 보낼 만한 대사 3개를 요청한다.
+// 실제 장면을 진행시키는 게 아니므로 채팅 기록에 남기지 않고, 무료 횟수/코인도 차감하지 않는다.
+async function requestSuggestions() {
+  if (isSending) return;
+  isSending = true;
+  setControlsDisabled(true);
+  try {
+    const result = await callGeminiStream(SUGGEST_ONLY_MARKER, () => {}); // 이 요청은 beats가 없으니 onBeat은 호출되지 않는다.
+    renderSuggestions(result.suggested_replies);
+  } catch (err) {
+    addSys(t('chatSuggestErrorPrefix') + err.message);
+    console.error(err);
+  } finally {
+    isSending = false;
+    setControlsDisabled(false);
+  }
 }
 
-// 자동진행이 켜져 있고 추천 대사가 있으면, 그중 하나를 무작위로 골라서 잠시 뒤에 대신 보낸다.
-let lastSuggestedReplies = [];
-function maybeAutoAdvance(suggestions) {
-  lastSuggestedReplies = Array.isArray(suggestions) ? suggestions : [];
-  if (!autoPlayOn || isSending || !lastSuggestedReplies.length) return;
-  const picked = lastSuggestedReplies[Math.floor(Math.random() * lastSuggestedReplies.length)];
-  setTimeout(() => {
-    if (!autoPlayOn || isSending) return; // 그 사이에 꺼졌거나 이미 다른 전송이 시작됐으면 취소
-    sendMessage(picked);
-  }, AUTO_PLAY_DELAY_MS);
+// "자동진행" 버튼: 누를 때마다 AI가 유저의 의사와 무관하게 상황을 딱 한 턴만 진행시킨다.
+// (on/off 스위치가 아니라, 누른 횟수만큼 한 턴씩 진행되는 버튼이다.)
+async function autoProgress() {
+  if (isSending) return;
+  const quotaCheck = await checkQuota();
+  if (!quotaCheck.allowed) { showQuotaExceededMessage(); return; }
+  runTurn(AUTO_PROGRESS_MARKER, { quotaCheck, addUserTurn: false });
 }
 
 // 오류 메시지 옆에 "다시 시도" 버튼을 붙여서 보여준다.
@@ -1391,7 +1705,7 @@ function addSysWithRetry(message, onRetry) {
   span.textContent = message + '  ';
   div.appendChild(span);
   const btn = document.createElement('button');
-  btn.textContent = '다시 시도';
+  btn.textContent = t('chatRetryBtn');
   btn.style.cssText = 'padding:2px 10px;border-radius:10px;border:1px solid #6a6280;background:#2a2038;color:#cbb8e8;font-size:11px;cursor:pointer;';
   btn.addEventListener('click', () => {
     div.remove();
@@ -1403,16 +1717,19 @@ function addSysWithRetry(message, onRetry) {
   return div;
 }
 
-async function runTurn(text, isRetry, quotaCheck) {
+async function runTurn(text, opts) {
+  const { isRetry = false, quotaCheck = null, addUserTurn = true } = opts || {};
   if (isSending) return;
   isSending = true;
-  $('send-btn').disabled = true;
+  setControlsDisabled(true);
 
   clearSuggestions(); // 이번 턴이 끝나기 전까지는, 지난 턴의 추천 대사가 더는 유효하지 않으니 지운다.
 
   if (!isRetry) {
-    addTurn(text, 'user');
-    state.history.push({ role: 'user', text });
+    if (addUserTurn) { // "자동진행"으로 진행된 턴은 유저가 실제로 말한 게 아니므로 유저 말풍선을 추가하지 않는다.
+      addTurn(text, 'user');
+      state.history.push({ role: 'user', text });
+    }
     await persist();
     if (quotaCheck) await consumeQuota(quotaCheck); // 무료 횟수 차감 또는 코인 차감 (구독 중이면 아무 일도 안 함)
   }
@@ -1460,21 +1777,39 @@ async function runTurn(text, isRetry, quotaCheck) {
     }
     await persist();
     renderStats();
-    renderSuggestions(result.suggested_replies);
-    maybeAutoAdvance(result.suggested_replies);
   } catch (err) {
     typingBubble.remove();
-    lastSuggestedReplies = [];
-    addSysWithRetry('오류: ' + err.message, () => runTurn(text, true));
+    addSysWithRetry(t('chatErrorPrefix') + err.message, () => runTurn(text, { isRetry: true, addUserTurn }));
     console.error(err);
   } finally {
     isSending = false;
-    $('send-btn').disabled = false;
+    setControlsDisabled(false);
     $('msg-input').focus();
   }
 }
 
-// forcedText가 주어지면(추천 대사 클릭 또는 자동진행) 입력창 대신 그 텍스트를 보낸다.
+// 한도(무료 횟수/코인)가 다 찼을 때 보여주는 안내 + 충전/구독 버튼.
+function showQuotaExceededMessage() {
+  addSys(`${t('chatQuotaExceededPrefix')}${FREE_DAILY_LIMIT}${t('chatQuotaExceededSuffix')}`);
+  const el = document.createElement('div');
+  el.style.cssText = 'align-self:center; display:flex; gap:8px; margin:4px 0 10px;';
+  const coinBtn = document.createElement('button');
+  coinBtn.className = 'btn secondary';
+  coinBtn.style.cssText = 'padding:8px 14px; font-size:12px;';
+  coinBtn.textContent = t('chatQuotaCoinBtn');
+  coinBtn.onclick = () => goTo('screen-coin');
+  const subBtn = document.createElement('button');
+  subBtn.className = 'btn';
+  subBtn.style.cssText = 'padding:8px 14px; font-size:12px;';
+  subBtn.textContent = t('chatQuotaSubscribeBtn');
+  subBtn.onclick = openSubscribeScreen;
+  el.appendChild(coinBtn);
+  el.appendChild(subBtn);
+  $('chat').appendChild(el);
+  $('chat').scrollTop = $('chat').scrollHeight;
+}
+
+// forcedText가 주어지면(추천 대사 클릭) 입력창 대신 그 텍스트를 보낸다.
 async function sendMessage(forcedText) {
   if (isSending) return; // 응답을 기다리는 중에 엔터를 다시 누르거나 버튼을 눌러도 무시한다.
   const input = $('msg-input');
@@ -1482,30 +1817,10 @@ async function sendMessage(forcedText) {
   if (!text) return;
 
   const quotaCheck = await checkQuota();
-  if (!quotaCheck.allowed) {
-    if (autoPlayOn) toggleAutoPlay(); // 한도가 다 찼으면 자동진행도 같이 꺼준다.
-    addSys(`오늘 무료 대화 ${FREE_DAILY_LIMIT}개를 다 쓰셨어요. 코인을 충전하거나 구독하면 계속 대화할 수 있어요.`);
-    const el = document.createElement('div');
-    el.style.cssText = 'align-self:center; display:flex; gap:8px; margin:4px 0 10px;';
-    const coinBtn = document.createElement('button');
-    coinBtn.className = 'btn secondary';
-    coinBtn.style.cssText = 'padding:8px 14px; font-size:12px;';
-    coinBtn.textContent = '코인 충전하기';
-    coinBtn.onclick = () => goTo('screen-coin');
-    const subBtn = document.createElement('button');
-    subBtn.className = 'btn';
-    subBtn.style.cssText = 'padding:8px 14px; font-size:12px;';
-    subBtn.textContent = '구독하기';
-    subBtn.onclick = openSubscribeScreen;
-    el.appendChild(coinBtn);
-    el.appendChild(subBtn);
-    $('chat').appendChild(el);
-    $('chat').scrollTop = $('chat').scrollHeight;
-    return;
-  }
+  if (!quotaCheck.allowed) { showQuotaExceededMessage(); return; }
 
   if (typeof forcedText !== 'string') input.value = '';
-  runTurn(text, false, quotaCheck);
+  runTurn(text, { quotaCheck });
 }
 
 $('send-btn').addEventListener('click', sendMessage);
@@ -1517,8 +1832,6 @@ async function enterChat(storyId) {
   $('chat-title').textContent = currentStory.title;
   renderStats();
   clearSuggestions();
-  lastSuggestedReplies = [];
-  if (autoPlayOn) toggleAutoPlay(); // 스토리에 새로 들어올 때는 매번 자동진행을 꺼둔 상태로 시작한다.
   if (state.history.length === 0) {
     const nameTag = playerProfile ? playerProfile.name : '플레이어';
     const beats = currentStory.openingBeats(nameTag);
@@ -1534,18 +1847,18 @@ async function enterChat(storyId) {
 async function renderMypage() {
   if (!playerProfile) await loadProfile();
   $('my-name').textContent = playerProfile ? playerProfile.name : '-';
-  $('my-coins').textContent = '불러오는 중...';
+  $('my-coins').textContent = t('mypageLoading');
   prefillProfileForm();
 
   const meta = await getBillingMeta();
-  $('my-coins').textContent = meta.coins + '개';
-  $('my-subscription').textContent = (meta.subscription && meta.subscription.active) ? '프리미엄 구독 중 (무제한)' : '미구독';
+  $('my-coins').textContent = meta.coins + t('mypageCoinsSuffix');
+  $('my-subscription').textContent = (meta.subscription && meta.subscription.active) ? t('mypageSubActive') : t('mypageSubInactive');
   $('my-free-quota').textContent = (meta.subscription && meta.subscription.active)
-    ? '무제한'
-    : `${meta.freeMsgCount} / ${FREE_DAILY_LIMIT}개 사용`;
+    ? t('mypageQuotaUnlimited')
+    : `${meta.freeMsgCount} / ${FREE_DAILY_LIMIT}${t('mypageQuotaUsedSuffix')}`;
 
   const container = $('mypage-stories');
-  container.innerHTML = '불러오는 중...';
+  container.innerHTML = t('mypageLoading');
   const playableIds = Object.keys(STORIES).filter(id => STORIES[id].playable);
   const blocks = [];
   for (const id of playableIds) {
@@ -1557,12 +1870,12 @@ async function renderMypage() {
     let rows = '';
     story.cast.forEach(c => {
       const cs = saved && saved.chars && saved.chars[c.key];
-      rows += `<div class="mypage-char-row"><span>${c.name}</span><b>${cs ? '단계 ' + cs.stage : '아직 대화 안 함'}</b></div>`;
+      rows += `<div class="mypage-char-row"><span>${c.name}</span><b>${cs ? t('mypageInProgress') : t('mypageNotChattedYet')}</b></div>`;
     });
     block.innerHTML = `<div class="story-title">${story.title}</div>${rows}`;
     const resetBtn = document.createElement('button');
     resetBtn.className = 'reset-btn-small';
-    resetBtn.textContent = '이 스토리 초기화 (테스트용)';
+    resetBtn.textContent = t('mypageResetBtn');
     resetBtn.addEventListener('click', () => resetStory(id));
     block.appendChild(resetBtn);
     blocks.push(block);
@@ -1574,15 +1887,23 @@ async function renderMypage() {
 // 테스트 중 대화 기록이 꼬였을 때 깨끗하게 처음부터 다시 시작하기 위한 초기화 버튼.
 async function resetStory(storyId) {
   const story = STORIES[storyId];
-  if (!confirm(`"${story.title}" 스토리의 대화 기록과 스탯이 전부 삭제돼요. 정말 초기화할까요?`)) return;
+  const confirmMsg = currentLang === 'en'
+    ? `This will delete all chat history and stats for "${story.title}". Reset anyway?`
+    : currentLang === 'ja'
+      ? `"${story.title}"の会話履歴とステータスがすべて削除されます。本当にリセットしますか?`
+      : `"${story.title}" 스토리의 대화 기록과 스탯이 전부 삭제돼요. 정말 초기화할까요?`;
+  if (!confirm(confirmMsg)) return;
   await storyDocRef(storyId).delete();
   if (currentStoryId === storyId) await loadStoryState(storyId);
-  alert('초기화됐어요. 다시 처음부터 대화할 수 있어요.');
+  alert(t('mypageResetDoneAlert'));
   renderMypage();
 }
 
 // 화면 전환/로그인 흐름은 위쪽의 auth.onAuthStateChanged가 전부 담당한다
 // (로그인 안 됨 → 랜딩, 로그인 됐지만 정보 없음 → 내정보입력, 정보 있음 → 스토리목록).
+
+// 첫 로드 시 감지/저장된 언어를 화면 전체에 반영한다.
+applyTranslations();
 </script>
 </div>
 </body>
