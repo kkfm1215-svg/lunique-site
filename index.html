@@ -1103,13 +1103,16 @@ function tierClass(tier) {
 function renderStoryList() {
   const container = $('story-list');
   container.innerHTML = '';
-  Object.keys(STORIES).forEach(id => {
+  // "준비 중"(아직 플레이 불가능한) 스토리는 목록에서 아예 숨긴다.
+  // 가상 고객 테스트 결과, 미완성 카드가 다수 보이면 "미완성 앱"이라는 인상을 줘서
+  // 흥미를 크게 떨어뜨린다는 게 확인됐기 때문에, 실제로 플레이 가능한 스토리만 노출한다.
+  Object.keys(STORIES).filter(id => STORIES[id].playable).forEach(id => {
     const story = STORIES[id];
     const card = document.createElement('div');
-    card.className = 'char-card' + (story.playable ? '' : ' disabled');
+    card.className = 'char-card';
     const avatars = story.cast.map(c => `<div class="char-avatar" style="width:32px;height:32px;font-size:9px;">${c.name}</div>`).join('');
     const badges = story.cast.map(c => `<span class="diff-badge diff-${tierClass(c.tier)}">${c.name} ${c.tier}</span>`).join('');
-    const desc = story.playable ? (story.subtitle || '') : t('charlistPreparing');
+    const desc = story.subtitle || '';
     card.innerHTML = `
       <div class="cast-row">${avatars}</div>
       <div class="char-info">
@@ -1117,7 +1120,7 @@ function renderStoryList() {
         <div>${badges}</div>
         <div>${desc}</div>
       </div>`;
-    if (story.playable) card.addEventListener('click', () => openStoryIntro(id));
+    card.addEventListener('click', () => openStoryIntro(id));
     container.appendChild(card);
   });
 }
@@ -1147,7 +1150,7 @@ function storyDocRef(storyId) {
 function defaultStateFor(story) {
   const chars = {};
   story.cast.forEach(c => { chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false }; });
-  return { history: [], chars };
+  return { history: [], chars, arcState: defaultArcState() };
 }
 
 let currentStoryId = null;
@@ -1187,8 +1190,10 @@ async function loadStoryState(storyId) {
   story.cast.forEach(c => {
     if (!state.chars[c.key]) state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false };
   });
+  if (!state.arcState) state.arcState = defaultArcState(); // 아크 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   currentStoryId = storyId;
   currentStory = story;
+  resetLastKnownSpeaker(); // 스토리를 새로 열 때마다 "직전 화자 기억"도 초기화 (다른 스토리 화자가 섞여 들어가지 않도록)
 }
 
 async function persist() {
@@ -1236,6 +1241,12 @@ function renderMixedText(container, text) {
   });
 }
 
+// 다인원 스토리에서 AI가 가끔 dialogue beat의 speaker 표시를 빠뜨리는 경우를 대비한 안전장치.
+// "직전에 실제로 등장했던 화자"를 기억해뒀다가, speaker가 비어 있으면 그걸로 대신 채워 넣는다.
+// (완벽한 정답은 아니지만, "이름표 없는 대사"가 화면에 그대로 노출되는 것보다는 훨씬 낫다.)
+let __lastKnownSpeaker = null;
+function resetLastKnownSpeaker() { __lastKnownSpeaker = null; }
+
 // beat 하나({type, text, speaker})를 채팅 화면에 렌더링한다.
 // 등장인물이 2명 이상인 스토리에서는 대사 위에 화자 이름표를 붙여준다.
 function renderBeat(container, beat, story) {
@@ -1246,22 +1257,26 @@ function renderBeat(container, beat, story) {
     span.className = 'line narration';
     span.textContent = text;
     container.appendChild(span);
+    if (story.cast.length > 1 && beat.speaker) __lastKnownSpeaker = beat.speaker;
     return;
   }
   const trimmed = text.replace(/^["'“”'‘’]+/, '').replace(/["'“”'‘’]+$/, '').trim();
   if (!trimmed) return;
-  if (story.cast.length > 1 && beat.speaker) {
+  // speaker 누락 시 직전 화자로 유추 (2명 이상 등장하는 스토리에서만 의미가 있음)
+  const effectiveSpeaker = beat.speaker || (story.cast.length > 1 ? __lastKnownSpeaker : null);
+  if (story.cast.length > 1 && effectiveSpeaker) {
     const tag = document.createElement('span');
     tag.className = 'speaker-tag';
-    tag.textContent = speakerName(story, beat.speaker);
-    tag.style.color = speakerColor(story, beat.speaker);
+    tag.textContent = speakerName(story, effectiveSpeaker);
+    tag.style.color = speakerColor(story, effectiveSpeaker);
     container.appendChild(tag);
   }
   const span = document.createElement('span');
   span.className = 'line dialogue';
   span.textContent = `“${trimmed}”`;
-  if (story.cast.length > 1 && beat.speaker) span.style.color = speakerColor(story, beat.speaker);
+  if (story.cast.length > 1 && effectiveSpeaker) span.style.color = speakerColor(story, effectiveSpeaker);
   container.appendChild(span);
+  if (story.cast.length > 1 && effectiveSpeaker) __lastKnownSpeaker = effectiveSpeaker;
 }
 
 function addTurn(text, role) {
@@ -1320,6 +1335,334 @@ function getPendingSecretEvents() {
   return events;
 }
 
+// =====================================================
+// "아크(Arc)" 시스템 — 사귀는 사이가 된 이후, 대화 15~25턴마다
+// 무작위로 새 사건(아크)을 하나씩 던져줘서 스토리가 밋밋해지지 않게 하는 구조.
+// 대분류 > 중분류 > 소분류(세부 변형) 3단계로 정리된 "아크 창고"에서
+// 매번 하나씩 뽑아 AI에게 "이번 사건을 자연스럽게 전개해라" 지시만 내리고,
+// 실제 대사/전개는 AI가 그때그때 캐릭터 성격에 맞게 즉흥으로 만든다.
+// (기획 근거와 전체 목록은 Claude 프로젝트 문서 "작업리스트.md" 참고)
+// =====================================================
+const ARC_WAREHOUSE = {
+  '외부': {
+    '라이벌 등장': [
+      '라이벌이 캐릭터를 짝사랑 (캐릭터는 관심 없지만 거절을 못 해 끌려다님)',
+      '캐릭터가 라이벌을 짝사랑 (플레이어 모르게, 은근히 신경 쓰는 티가 남)',
+      '캐릭터와 라이벌이 서로 호감이 생겨버림 (진짜 삼각관계)',
+      '라이벌이 오히려 플레이어를 좋아함 (캐릭터가 질투하게 되는 반대 구도)',
+      '라이벌이 캐릭터의 전 애인',
+      '라이벌이 캐릭터의 오랜 절친 (우정이냐 사랑이냐 캐릭터도 혼란)',
+      '라이벌이 직장 상사·윗사람 (구조적으로 거절하기 힘든 약자 구도)',
+      '라이벌이 사실 나쁜 의도로 접근 (둘을 갈라놓으려는 목적)',
+      '라이벌이 캐릭터와 정략적·조건적 관계로 엮이려 함',
+      '라이벌이 위기의 순간 캐릭터를 도와줘서 캐릭터의 마음이 흔들림',
+      '라이벌이 플레이어의 오랜 친구·동료라서 관계가 애매해짐'
+    ],
+    '오해 사건': [
+      '플레이어가 캐릭터와 다른 이성의 다정한 모습을 목격하고 오해',
+      '캐릭터가 플레이어와 다른 이성의 모습을 목격하고 오해',
+      '제3자가 둘 사이를 오해해서 소문을 냄',
+      '서로가 서로를 동시에 오해함',
+      'SNS·메시지 캡처 등 간접 증거로 인한 오해',
+      '캐릭터의 과거 사진·기록이 뒤늦게 발견되어 오해',
+      '플레이어의 선의였던 행동이 다르게 전달되어 오해',
+      '캐릭터가 플레이어를 보호하려고 거짓말했다가 들켜서 오해'
+    ],
+    '주변의 반대': [
+      '캐릭터의 가족이 조건·상황을 이유로 반대',
+      '플레이어의 가족이 반대',
+      '캐릭터의 친구가 순수한 걱정으로 반대',
+      '캐릭터의 친구가 반대 (사실 그 친구도 캐릭터를 좋아해서, 숨은 동기)',
+      '직장·조직 차원의 반대 (사내연애 금지 등 구조적 장벽)',
+      '공통 지인 집단 전체가 회의적인 반응을 보임'
+    ],
+    '과거 인연의 재등장': [
+      '캐릭터의 전 애인이 다시 나타남 (아직 미련이 남은 듯한 태도)',
+      '플레이어의 전 애인이 다시 나타남 (캐릭터가 불안해함)',
+      '서로의 첫사랑이었던 인물이 각자에게 다시 나타남',
+      '헤어진 이유가 밝혀지지 않은 과거 인연',
+      '캐릭터의 과거 짝사랑 상대가 재등장 (사귄 적은 없지만 미련 존재)',
+      '과거 인연이 곤란한 상황에 처해 캐릭터에게 도움을 요청하며 재등장',
+      '과거 인연이 축하하러 나타나지만 어색한 긴장감을 조성'
+    ],
+    '소문·평판 사건': [
+      '근거 없는 열애설이 유포됨',
+      '캐릭터의 인기·유명세로 인한 대중적 관심이 스트레스 요인이 됨',
+      '온라인 악플·부정적 여론에 캐릭터가 흔들림'
+    ],
+    '강제 이별 요인': [
+      '캐릭터의 전근·유학·파견으로 인한 장거리 위기',
+      '가족 사정으로 갑작스러운 이주',
+      '진로 변경으로 물리적 거리가 생김'
+    ],
+    '제3자의 방해 공작': [
+      '캐릭터를 짝사랑하는 인물이 메시지를 몰래 조작·차단',
+      '거짓 정보를 흘려 둘 사이를 이간질',
+      '플레이어에게 접근해 의도적으로 캐릭터를 험담'
+    ],
+    '외부 사건·사고': [
+      '캐릭터가 사고·부상으로 곤경에 처해 관계에 위기',
+      '자연재해·날씨 등 불가항력으로 약속·이벤트가 어긋남'
+    ],
+    '업무·학업상 위기 개입': [
+      '캐릭터가 중요한 시험·프로젝트·공연을 앞두고 관계에 소홀해짐',
+      '플레이어가 캐릭터의 경쟁자와 얽힌 업무로 갈등'
+    ],
+    '디지털 라이프·SNS 사건': [
+      'SNS 팔로워와의 오해',
+      '커플 계정 개설 여부를 둘러싼 논쟁',
+      '온라인 댓글 논란',
+      '메신저 답장 속도로 인한 다툼',
+      '프로필 사진 공개 여부'
+    ],
+    '친구·소셜 그룹 융화': [
+      '연인 친구 모임에 처음 참석',
+      '친구들 사이에서 텃세를 겪음',
+      '그룹 여행에서의 어색함',
+      '친구에게 연인을 소개하는 자리',
+      '그룹 안에서 인정받기 위해 애쓰는 상황'
+    ]
+  },
+  '내부': {
+    '자신감 붕괴': [
+      '일·업무에서 크게 실패해서 위축됨',
+      '외모·능력 콤플렉스가 자극받는 사건',
+      '잘난 사람(형제·동료 등)과 비교되며 위축',
+      '과거 실패한 연애 경험이 떠오르며 스스로를 의심',
+      '새로운 도전(이직·시험·오디션) 앞에서 자기 능력을 의심',
+      '"잘 지내는 척"에 지쳐 스스로에게 실망'
+    ],
+    '거리두기': [
+      '이유 없이(사실은 있음) 연락이 뜸해짐',
+      '관계가 너무 빨리 깊어지는 게 무서워서 일부러 선을 그음',
+      '자신이 상처를 줄까 봐 미리 도망치려 함',
+      '자신의 감정을 표현하는 법을 몰라 무뚝뚝해지며 오해를 삼'
+    ],
+    '숨기던 상처': [
+      '가정사(부모의 이혼·불화 등)가 계기로 드러남',
+      '과거 배신당한 경험이 드러남',
+      '스스로도 잘 인식 못 했던 트라우마가 특정 상황에서 촉발됨',
+      '친구·동료에게 이용당하거나 무시당한 경험이 자존감에 남아있음',
+      '사랑받는 법을 몰라(애정 표현에 서툰 성장 환경) 관계에서 서투름을 드러냄'
+    ],
+    '미래 불안': [
+      '커리어·진로 방향을 못 정해 조바심',
+      '관계가 앞으로 어떻게 될지 확신이 없어 불안',
+      '나이·시간에 대한 압박감(사회적 기대와 자신의 속도가 안 맞음)'
+    ],
+    '애착·의존 불안': [
+      '사랑받아도 될 자격이 있는지 의심(자기 가치감 부족)',
+      '상대가 언젠가 떠날 것 같은 막연한 두려움',
+      '너무 좋아하는 마음이 부담스러워 스스로 억누름'
+    ],
+    '완벽주의': [
+      '실수 하나에 과도하게 자책',
+      '"완벽한 모습"만 보여주려다 지쳐 본모습을 숨김',
+      '타인의 기대에 맞추려다 자신을 잃어감'
+    ],
+    '번아웃·무기력': [
+      '열정이 사라진 자신에게 실망',
+      '뭘 해도 예전만큼 즐겁지 않아 혼란스러움',
+      '쉬는 법을 몰라 계속 스스로를 몰아붙임'
+    ],
+    '질투·소유욕과의 싸움': [
+      '상대의 인간관계(이성 친구, 동료 등)에 과도하게 예민해지는 자신이 부끄러움',
+      '비교당하거나 뒤처진다는 느낌에 초조해짐'
+    ],
+    '애정표현 방식 차이': [
+      '말·스킨십·선물·시간 등 사랑을 표현하는 방식 차이로 오해가 생김',
+      '무뚝뚝한 성격이 무관심으로 오해받음',
+      '서로의 애정 표현 방식을 맞춰가는 과정'
+    ],
+    '소비·재정 가치관 차이': [
+      '데이트 비용 분담을 둘러싼 논쟁',
+      '저축형 vs 소비형 가치관 충돌',
+      '값비싼 선물이 부담으로 느껴짐',
+      '미래 자금 계획에 대한 이야기'
+    ]
+  },
+  '성장': {
+    '위기 극복': [
+      '캐릭터의 일·커리어 위기를 플레이어가 옆에서 도움',
+      '캐릭터의 가족 문제(간병·경제적 어려움 등)를 함께 헤쳐나감',
+      '예상치 못한 사고·건강 문제를 함께 극복',
+      '플레이어 자신의 위기를 캐릭터가 먼저 나서서 도와줌',
+      '자연재해·경제난 등 외부 환경 위기를 함께 버텨냄'
+    ],
+    '선택의 기로': [
+      '한쪽의 이직·유학·이사로 물리적 거리가 생길 위기',
+      '가치관 차이(결혼관, 미래 계획 등)로 관계를 재고하게 됨',
+      '둘 중 하나가 확실한 선택(고백, 프러포즈급 결정)을 요구받는 상황',
+      '각자의 커리어 우선순위가 충돌함(둘 다 원하는 기회가 겹치거나 상충)',
+      '제3자의 반대를 함께 설득하거나 극복함'
+    ],
+    '함께 만드는 추억': [
+      '여행을 함께 떠나며 서로를 더 알게 됨',
+      '같이 무언가를 준비·완성하는 프로젝트(행사, 이사, 취미 등)',
+      '서로의 친구·가족 모임에 처음 함께 참석',
+      '함께 새로운 취미·기술을 배우며 성장',
+      '서로에게 자신의 세계(전문 분야, 취미 등)를 소개함'
+    ],
+    '다름을 조율하기': [
+      '생활습관 차이(정리정돈·시간관념 등)를 맞춰감',
+      '갈등 해결 방식의 차이(회피형 vs 직면형)를 이해해감',
+      '여가·소비 스타일 차이를 조율함'
+    ],
+    '서로의 꿈 응원하기': [
+      '캐릭터의 오랜 꿈·목표 도전을 곁에서 지지',
+      '플레이어의 도전을 캐릭터가 응원',
+      '각자의 성장 속도 차이(한쪽만 앞서갈 때)를 받아들이기'
+    ],
+    '신뢰 쌓아가기': [
+      '사소한 오해를 풀어가며 신뢰를 확인함',
+      '각자의 과거 상처(전 연애 트라우마 등)를 이해하고 보듬음',
+      '작은 약속·루틴을 지키며 안정감을 쌓아감'
+    ],
+    '반려동물·취미 공동체': [
+      '함께 반려동물을 입양함',
+      '반려동물 알레르기가 발견됨',
+      '취미 동호회에 가입함',
+      '새 취미에 도전했다가 실패담을 겪음',
+      '취미 성향 차이를 조율함'
+    ],
+    '동거·생활습관 조율': [
+      '이사·동거를 제안받음',
+      '생활 리듬 차이(아침형·저녁형)',
+      '청결·정리정돈 습관 충돌',
+      '첫 동거의 어색함',
+      '개인 공간을 존중하는 법을 배움'
+    ],
+    '장거리 연애 소통': [
+      '시차 문제로 인한 엇갈림',
+      '화상통화 습관을 만들어감',
+      '그리움을 극복함',
+      '재회 계획을 세움',
+      '장거리로 인한 불안을 서로 다독임'
+    ],
+    '문화·언어 차이 극복': [
+      '서로 다른 명절·기념일 문화를 소개함',
+      '언어 장벽으로 인한 유머러스한 해프닝',
+      '상대 나라의 음식·문화를 체험함',
+      '표현 차이로 인한 오해',
+      '서로의 문화를 존중해가는 과정'
+    ],
+    '건강·생활습관': [
+      '야식·다이어트 습관을 두고 잔소리',
+      '운동을 권유하거나 거부함',
+      '건강검진 결과를 두고 걱정함',
+      '불규칙한 생활을 걱정함',
+      '함께 건강한 루틴을 만들어감'
+    ],
+    '선물·서프라이즈 해프닝': [
+      '선물 취향이 서로 안 맞음',
+      '깜짝 이벤트가 실패로 돌아감',
+      '손편지·수제 선물 에피소드',
+      '원하는 선물의 힌트를 못 알아챔',
+      '완벽한 선물을 찾아 헤맴'
+    ],
+    '역할·책임 밸런스': [
+      '데이트 계획 주도권을 둘러싼 다툼',
+      '집안일·일정 분담에 대한 논의',
+      '리드하는 쪽 vs 따라가는 쪽의 피로감',
+      '균형 잡힌 관계로 성장해감'
+    ],
+    '새 국면 전환 이벤트': [
+      '호칭이 바뀜(연인에서 더 가까운 사이로)',
+      '서로의 가족에게 정식으로 소개함',
+      '관계를 주변에 공개할지 논의함',
+      '먼 미래 계획(결혼까지는 아닌)을 언급함',
+      '관계를 다시 정의해보는 대화'
+    ]
+  },
+  '일상·기념일': {
+    '기념일': [
+      '사귄 지 특정 기간 기념일 (1개월·6개월·1주년 등 개월/연 단위로)',
+      '캐릭터의 생일',
+      '새해(1월 1일)',
+      '크리스마스',
+      '발렌타인데이 (성별 고정관념 없이, 서로 마음을 표현하는 날로)',
+      '만우절 (장난스러운 해프닝이나 반전 고백 이벤트)',
+      '할로윈 (커플 코스튬, 파티 데이트)',
+      '국제 우정의 날(7월 30일) — "연인이기 전에 가장 친한 친구였다"는 메시지로'
+    ],
+    '일상 밀착 이벤트': [
+      '캐릭터가 아플 때 간병함',
+      '처음으로 캐릭터(또는 플레이어)의 집에 초대받음',
+      '갑작스러운 이벤트(비 오는 날 우산, 야근 후 데려다주기 등)로 스킨십 계기가 생김',
+      '친구·가족에게 처음 소개하는 자리',
+      '함께 장보기·요리하기',
+      '시험·면접·공모전 등 중요한 도전을 응원하고 기다려줌',
+      '반려동물·화분 등을 함께 돌보는 소소한 책임을 나눔',
+      '짧은 당일치기 나들이·소풍',
+      '공항·터미널로 마중·배웅 나가기 (재회 모먼트)'
+    ],
+    '계절 변화 이벤트': [
+      '벚꽃 구경',
+      '첫눈 오는 날',
+      '여름밤 산책·불꽃놀이',
+      '단풍놀이'
+    ],
+    '소소한 일상 루틴 모먼트': [
+      '아침 인사·굿나잇 통화 루틴',
+      '우연한 재회',
+      '함께 영상 보내는 저녁',
+      '함께 사진을 찍고 나눠 가짐'
+    ],
+    '작은 축하 이벤트': [
+      '승진·합격·목표 달성 등 성취를 함께 자축함'
+    ]
+  }
+};
+
+// 15~25(포함) 사이의 무작위 정수를 돌려준다 — "다음 아크가 언제 시작될지" 유저가 정확히 못 맞추게 하기 위한 폭.
+function randomArcThreshold() {
+  return 15 + Math.floor(Math.random() * 11);
+}
+
+function defaultArcState() {
+  return { activeArc: null, sinceLastArc: 0, threshold: randomArcThreshold(), recentMids: [] };
+}
+
+function pickRandomFrom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// 등장인물 중 누구 하나라도 "연인/깊은 사랑" 단계(3단계)에 도달했으면 아크 시스템을 시작한다.
+function isCoupleStageReached(state, story) {
+  return story.cast.some(c => state.chars[c.key] && state.chars[c.key].stage >= 3);
+}
+
+// 조건이 맞으면(사귀는 사이 + 턴 카운트 임계값 도달 + 진행 중인 아크 없음) 아크 창고에서
+// 하나를 뽑아 state.arcState.activeArc에 설정한다. 최근에 썼던 중분류(최대 3개)는 가능하면 피한다.
+function maybeTriggerArc(state, story) {
+  if (!state.arcState) state.arcState = defaultArcState();
+  const as = state.arcState;
+  if (as.activeArc) return;
+  if (!isCoupleStageReached(state, story)) return;
+  if (as.sinceLastArc < as.threshold) return;
+
+  const candidates = [];
+  Object.keys(ARC_WAREHOUSE).forEach(major => {
+    Object.keys(ARC_WAREHOUSE[major]).forEach(mid => candidates.push({ major, mid }));
+  });
+  let pool = candidates.filter(c => !as.recentMids.includes(c.mid));
+  if (pool.length === 0) pool = candidates; // 모든 중분류가 최근에 다 쓰였으면 그냥 전체에서 다시 뽑음
+
+  const chosen = pickRandomFrom(pool);
+  const sub = pickRandomFrom(ARC_WAREHOUSE[chosen.major][chosen.mid]);
+
+  as.activeArc = { major: chosen.major, mid: chosen.mid, sub };
+  as.recentMids.push(chosen.mid);
+  if (as.recentMids.length > 3) as.recentMids.shift();
+}
+
+// 지금 진행 중인 아크가 있으면, AI에게 "이 사건을 자연스럽게 전개해라" 지시문을 만들어준다.
+function buildArcDirective(state) {
+  const arc = state && state.arcState && state.arcState.activeArc;
+  if (!arc) return '';
+  return `\n[아크 이벤트 지시 - 매우 중요]\n지금부터 다음 사건을 스토리에 자연스럽게 등장시켜라: "${arc.sub}" (분류: ${arc.major} > ${arc.mid}).\n- 사건을 설명하듯 요약해서 말하지 말고, 지금까지의 대화 흐름과 각 인물의 성격에 맞게 자연스럽게 녹여서 전개하라.\n- 이 사건을 한 턴 만에 끝내지 않아도 되고, 몇 턴에 걸쳐 자연스럽게 펼쳐도 된다.\n- 이 사건이 이번 응답에서 자연스럽게 마무리(화해, 정리, 다음 단계로 넘어감 등)되었다고 판단되면 최상위 JSON에 "arc_resolved": true를 포함시켜라. 아직 진행 중이면 "arc_resolved": false로 둬라.`;
+}
+
 function buildSystemPrompt(story) {
   const isMulti = story.cast.length > 1;
 
@@ -1334,8 +1677,9 @@ function buildSystemPrompt(story) {
 
 [다중 인물 서술 - 매우 중요]
 이 스토리에는 등장인물이 ${story.cast.length}명 있다 (${story.cast.map(c => c.name).join(', ')}). 매 턴 상황에 필요한 인물만 등장시키면 되고, 모든 인물이 매번 다 나올 필요는 없다.
-- dialogue beat에는 반드시 "speaker" 필드로 그 대사를 말한 인물의 key를 표시한다.
+- dialogue beat에는 예외 없이 반드시 "speaker" 필드로 그 대사를 말한 인물의 key를 표시한다. 대화가 길어지거나 인물이 여러 명이라도, 단 하나의 dialogue beat도 speaker를 빠뜨리면 안 된다. speaker가 없는 dialogue beat는 화면에서 "누가 한 말인지 알 수 없는 대사"로 보여서 몰입을 크게 해친다.
 - 장면 전체를 서술하는 narration(예: 배경, 시간 경과)은 speaker를 생략해도 되지만, 특정 인물의 행동·표정을 다루는 narration은 그 인물의 speaker를 표시한다.
+- 등장인물이 여러 명일 때는 매 턴 이 규칙을 다시 한번 스스로 점검한다: "이번에 만든 dialogue beat 각각에 speaker를 실제로 넣었는가?"
 - 유저가 "OO는 뭐해?", "OO 바꿔줘"처럼 특정 인물을 지목하면, 그 인물이 자연스럽게 등장하도록 장면을 이어간다.
 - 유저가 여러 인물과 각각 개별적으로 호감을 쌓아가는 것 자체는 자연스러운 진행이다. 다만 등장인물끼리 이미 사귀거나 결혼한 사이인데 몰래 배신하는 불륜형 서사는 절대 스스로 만들어내지 않는다.` : '';
 
@@ -1397,7 +1741,8 @@ ${secretArcBlock}
   "beats": [ { "type": "narration 또는 dialogue", "text": "내용", "speaker": "해당 인물의 key (dialogue는 가능하면 항상 포함)" }, ... ],
   "char_deltas": [ { "character": "인물 key", "affection_delta": -3~3 정수, "trust_delta": -3~3 정수, "stage_suggestion": 1~3 정수 }, ... ],
   "safety_flag": 유저가 안전 규칙(1,2번)을 넘으려고 시도했으면 true, 아니면 false,
-  "suggested_replies": [ "추천 대사 1", "추천 대사 2", "추천 대사 3" ]
+  "suggested_replies": [ "추천 대사 1", "추천 대사 2", "추천 대사 3" ],
+  "arc_resolved": [아크 이벤트 지시가 주어졌을 때만 의미 있음] 그 사건이 이번 응답으로 자연스럽게 마무리됐으면 true, 아직 진행 중이면 false. 아크 지시가 없는 평범한 턴에는 그냥 false로 둔다.
 }
 이번 턴에 등장하거나 스탯이 변하는 인물마다 char_deltas에 항목을 하나씩 넣는다. 아무 변화도 없으면 해당 인물은 생략해도 된다.
 
@@ -1441,11 +1786,12 @@ function buildGeminiRequestBody(userMessage) {
     : '';
   const pendingEvents = getPendingSecretEvents();
   const eventNote = pendingEvents.map(e => `\n${e.text}`).join('');
+  const arcNote = buildArcDirective(state);
   const statsLines = currentStory.cast.map(c => {
     const cs = state.chars[c.key];
     return `${c.name}(${c.key}): 애정도 ${cs.affection}, 신뢰 ${cs.trust}, 관계단계 ${cs.stage}`;
   }).join(' / ');
-  const contextNote = `${playerInfo}\n[현재 관계 상태] ${statsLines}${eventNote}`;
+  const contextNote = `${playerInfo}\n[현재 관계 상태] ${statsLines}${eventNote}${arcNote}`;
 
   const contents = [];
   recentHistory.forEach(h => {
@@ -1491,9 +1837,10 @@ function buildGeminiRequestBody(userMessage) {
           suggested_replies: {
             type: "ARRAY",
             items: { type: "STRING" }
-          }
+          },
+          arc_resolved: { type: "BOOLEAN" }
         },
-        required: ["beats", "char_deltas", "safety_flag", "suggested_replies"]
+        required: ["beats", "char_deltas", "safety_flag", "suggested_replies", "arc_resolved"]
       },
       temperature: 1.0
     }
@@ -1738,6 +2085,17 @@ async function runTurn(text, opts) {
   let charTurn = null;
   const pendingEvents = getPendingSecretEvents(); // 이번 턴에 발동될 이벤트가 있으면 미리 기록해둔다.
 
+  // 아크 시스템: 진행 중인 아크가 없으면 턴 카운트를 올리고, 조건(사귀는 사이 + 15~25턴 무작위 임계값)이
+  // 차면 아크 창고에서 사건을 하나 뽑아 이번 턴 요청에 실어 보낸다 (아래 callGeminiStream 호출 전에 반드시 실행).
+  if (!state.arcState) state.arcState = defaultArcState();
+  const hadArcBefore = !!state.arcState.activeArc;
+  if (!state.arcState.activeArc) {
+    state.arcState.sinceLastArc = (state.arcState.sinceLastArc || 0) + 1;
+  }
+  maybeTriggerArc(state, currentStory);
+  const arcIsActiveThisTurn = !!state.arcState.activeArc;
+  const arcJustStarted = !hadArcBefore && arcIsActiveThisTurn;
+
   try {
     const result = await callGeminiStream(text, (beat) => {
       if (!charTurn) {
@@ -1774,6 +2132,18 @@ async function runTurn(text, opts) {
     if (pendingEvents.length) {
       pendingEvents.forEach(e => { state.chars[e.key][e.flag] = true; });
       addSys(`[개발자 확인용] 숨겨진 사연 이벤트 발동: ${pendingEvents.map(e => `${e.key}:${e.flag}`).join(', ')}`);
+    }
+    if (arcIsActiveThisTurn) {
+      const arc = state.arcState.activeArc;
+      if (arcJustStarted) {
+        addSys(`[개발자 확인용] 아크 시작: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
+      }
+      if (result.arc_resolved) {
+        addSys(`[개발자 확인용] 아크 종료: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
+        state.arcState.activeArc = null;
+        state.arcState.sinceLastArc = 0;
+        state.arcState.threshold = randomArcThreshold();
+      }
     }
     await persist();
     renderStats();
