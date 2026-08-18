@@ -195,7 +195,7 @@
   #stat-bar span { background: var(--bg-panel); border: 1px solid var(--border-glow); padding: 3px 9px; border-radius: 10px; }
 
   #chat { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 20px; }
-  #screen-profile, #screen-charlist, #screen-mypage, #screen-coin { overflow-y: auto; min-height: 0; }
+  #screen-profile, #screen-charlist, #screen-mypage, #screen-coin, #screen-album { overflow-y: auto; min-height: 0; }
   .turn { display: flex; flex-direction: column; gap: 6px; animation: fadeUp .3s ease both; }
   .turn-player { align-items: flex-end; }
   .turn-char { align-items: flex-start; }
@@ -312,6 +312,23 @@
     content: "♡"; position: absolute; font-size: 64px; color: rgba(255,255,255,0.08);
   }
 
+  /* 랜딩 화면 하단 - 세계관 텍스트가 스타워즈 자막처럼 위로 흘러가는 영역 */
+  .lore-crawl-wrap {
+    position: relative; margin-top: 16px; height: 92px; overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 78%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 78%, transparent 100%);
+  }
+  .lore-crawl-track {
+    position: absolute; left: 0; right: 0; top: 0;
+    font-size: 11.5px; line-height: 1.9; color: var(--text-faint);
+    text-align: center; padding: 0 6px;
+    animation: loreCrawl 26s linear infinite;
+  }
+  @keyframes loreCrawl {
+    0% { transform: translateY(100%); }
+    100% { transform: translateY(-100%); }
+  }
+
   /* =====================================================
      PC / 태블릿 대응 (넓은 화면)
      기본(모바일)은 위 스타일 그대로 두고, 화면이 900px 이상으로 넓어지면
@@ -375,7 +392,7 @@
     <button type="button" data-lang="ja">JA</button>
   </div>
 
-  <!-- 화면 1: 첫 화면 -->
+  <!-- 화면 1: 첫 화면 (세계관 텍스트가 하단 영역에서 스타워즈 자막처럼 계속 위로 흘러감) -->
   <div class="screen active" id="screen-landing">
     <div class="starfield"></div>
     <div class="landing-hero" style="position:relative; z-index:1;">
@@ -386,8 +403,23 @@
         <div class="divider-orn"><span class="diamond">✦</span></div>
         <div style="font-size:13px; color:var(--text-sub); letter-spacing:0.3px;" data-i18n="landingSubtitle">AI와 함께하는 연애 시뮬레이션</div>
         <button class="btn" style="width:100%; margin-top:22px;" onclick="goTo('screen-login')" data-i18n="landingStartBtn">✦ 지금 시작하기</button>
+        <div class="lore-crawl-wrap">
+          <div class="lore-crawl-track" data-i18n-html="loreBody">
+            아주 먼 미래, 사랑이 사라져가며 인류는 서서히 저물어가고 있다.<br/><br/>
+            당신은 그 마지막 희망을 찾기 위해, 과거의 여러 시간과 사람들 속으로 영혼을 보낸다.<br/><br/>
+            누군가의 상처를 보듬고 진짜 사랑을 이끌어낼 때마다, 머나먼 미래의 꺼져가던 별빛이 다시 조금씩 밝아진다.<br/><br/>
+            지금부터, 당신이 만나야 할 인연들이 이곳에 있다.
+          </div>
+        </div>
       </div>
       <div class="landing-visual">🌙</div>
+    </div>
+  </div>
+
+  <!-- 화면: 시간 이동 로딩 (스토리 진입 직전, 짧게 노출) -->
+  <div class="screen" id="screen-travel">
+    <div class="center pad" style="position:relative; z-index:1;">
+      <div style="font-size:14px; color:var(--text-sub); letter-spacing:0.4px;" id="travel-text" data-i18n="travelText">당신의 영혼이 시간을 거슬러 올라간다…</div>
     </div>
   </div>
 
@@ -414,6 +446,12 @@
         <button type="button" data-val="남성" data-i18n="genderMale">남성</button>
         <button type="button" data-val="여성" data-i18n="genderFemale">여성</button>
         <button type="button" data-val="논바이너리" data-i18n="genderNonbinary">논바이너리</button>
+      </div>
+      <label data-i18n="profileLabelInterest">관심 있는 상대</label>
+      <div id="p-interest" class="gender-toggle">
+        <button type="button" data-val="여성" data-i18n="interestFemale">여성</button>
+        <button type="button" data-val="남성" data-i18n="interestMale">남성</button>
+        <button type="button" data-val="모두" data-i18n="interestAll">모두</button>
       </div>
       <label data-i18n="profileLabelBirth">생년월일 (성인 인증용)</label>
       <input id="p-birth" type="date" />
@@ -481,13 +519,28 @@
     <div class="mypage-row"><span data-i18n="mypageLabelFreeQuota">오늘 무료 대화</span><b id="my-free-quota">-</b></div>
     <div class="pad" style="padding-bottom:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-profile')" data-i18n="mypageEditProfileBtn">내 정보 수정</button>
+      <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="goTo('screen-album')" data-i18n="mypageAlbumBtn">인연 앨범 보기</button>
     </div>
-    <div class="pad" style="padding-top:0; padding-bottom:8px; color:#cbb8e8; font-size:13px; font-weight:700;" data-i18n="mypageStoryProgressLabel">스토리별 진행 상태</div>
+    <div class="pad" style="padding-top:0; padding-bottom:0; font-size:11.5px; color:var(--text-faint);" id="mypage-slot-status"></div>
+    <div class="pad" style="padding-top:4px; padding-bottom:8px; color:#cbb8e8; font-size:13px; font-weight:700;" data-i18n="mypageStoryProgressLabel">스토리별 진행 상태</div>
     <div id="mypage-stories"></div>
     <div style="flex:1;"></div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
+    </div>
+  </div>
+
+  <!-- 화면: 인연 앨범 (완성된 인연들 — 슬롯 제한과 무관하게 언제든 다시 들어가 대화할 수 있음) -->
+  <div class="screen" id="screen-album">
+    <header><span class="back" onclick="goTo('screen-mypage')">←</span><h1 data-i18n="albumHeader">인연 앨범</h1></header>
+    <div class="pad" style="padding-bottom:0;">
+      <div id="album-list"></div>
+      <div id="album-empty" style="font-size:12px; color:var(--text-faint); padding:12px 4px; display:none;" data-i18n="albumEmpty">아직 완성된 인연이 없어요. 진심을 다해 마음을 얻어보세요.</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div class="pad" style="padding-top:0;">
+      <button class="btn secondary" style="width:100%;" onclick="goTo('screen-mypage')" data-i18n="albumBackBtn">마이페이지</button>
     </div>
   </div>
 
@@ -554,6 +607,18 @@ const I18N = {
     landingHeroTitle: '하루의 끝,<br/>그 사람과의 대화',
     landingSubtitle: 'AI와 함께하는 연애 시뮬레이션',
     landingStartBtn: '✦ 지금 시작하기',
+    landingLoreLinkBtn: '세계관 보기',
+    loreBody: '아주 먼 미래, 사랑이 사라져가며 인류는 서서히 저물어가고 있다.<br/><br/>당신은 그 마지막 희망을 찾기 위해, 과거의 여러 시간과 사람들 속으로 영혼을 보낸다.<br/><br/>누군가의 상처를 보듬고 진짜 사랑을 이끌어낼 때마다, 머나먼 미래의 꺼져가던 별빛이 다시 조금씩 밝아진다.<br/><br/>지금부터, 당신이 만나야 할 인연들이 이곳에 있다.',
+    loreNextBtn: '✦ 시작하기',
+    travelText: '당신의 영혼이 시간을 거슬러 올라간다…',
+    slotFullNotice: '지금 진행 중인 인연이 이미 5개예요. 새로운 사람을 만나려면, 인연 앨범에서 완성된 인연을 정리하거나 진행 중인 인연 하나를 마무리해야 해요.',
+    albumHeader: '인연 앨범',
+    albumEmpty: '아직 완성된 인연이 없어요. 진심을 다해 마음을 얻어보세요.',
+    albumBackBtn: '마이페이지',
+    mypageAlbumBtn: '인연 앨범 보기',
+    mypageSlotStatusPrefix: '진행 중인 인연 ',
+    storyFailedNotice: '이 인연은 여기서 끝난 것 같다. 아주 오랜 시간이 지나야, 다시 만날 수 있을지도 모른다.',
+    storyCompletedNotice: '머나먼 미래, 꺼져가던 별빛이 다시 조금씩 밝아진다.',
     loginWelcome: '환영해요 👋',
     loginDesc: '구글 계정으로 로그인하면<br/>진행 상황이 서버에 저장돼요.',
     loginGoogleBtn: 'G 구글 계정으로 로그인',
@@ -564,12 +629,15 @@ const I18N = {
     profilePlaceholderName: '예: 형균',
     profileLabelGender: '성별',
     genderMale: '남성', genderFemale: '여성', genderNonbinary: '논바이너리',
+    profileLabelInterest: '관심 있는 상대',
+    interestFemale: '여성', interestMale: '남성', interestAll: '모두',
     profileLabelBirth: '생년월일 (성인 인증용)',
     profileLabelBio: '자기소개 (선택)',
     profilePlaceholderBio: '성격, 취향, 요즘 관심사 등을 자유롭게 적어주세요',
     profileSaveBtn: '저장하고 계속하기',
     profileErrName: '이름을 입력해주세요.',
     profileErrGender: '성별을 선택해주세요.',
+    profileErrInterest: '관심 있는 상대를 선택해주세요.',
     profileErrBirth: '생년월일을 입력해주세요.',
     profileErrAge: '본 서비스는 성인(만 19세 이상)만 이용할 수 있어요.',
     profileErrSavePrefix: '저장 중 오류가 발생했어요: ',
@@ -604,6 +672,8 @@ const I18N = {
     mypageQuotaUsedSuffix: '개 사용',
     mypageStagePrefix: '단계 ', mypageNotChattedYet: '아직 대화 안 함',
     mypageInProgress: '이야기가 이어지는 중...',
+    mypageStatusCompleted: '인연 완성 (인연 앨범)',
+    mypageStatusFailed: '인연 실패',
     mypageResetBtn: '이 스토리 초기화 (테스트용)',
     mypageResetDoneAlert: '초기화됐어요. 다시 처음부터 대화할 수 있어요.',
     coinHeader: '코인 충전',
@@ -627,6 +697,18 @@ const I18N = {
     landingHeroTitle: 'At the end of the day,<br/>a conversation with someone',
     landingSubtitle: 'A romance simulation with AI',
     landingStartBtn: '✦ Get Started',
+    landingLoreLinkBtn: 'See the world behind this',
+    loreBody: 'In the far future, humanity is slowly fading as love disappears from the world.<br/><br/>To find its last hope, your soul is sent into many different times and lives from the past.<br/><br/>Every time you heal someone\'s wounds and help them find real love, a dying star in that distant future flickers back to life, just a little.<br/><br/>From here on, the people you are meant to meet are waiting.',
+    loreNextBtn: '✦ Begin',
+    travelText: 'Your soul drifts backward through time…',
+    slotFullNotice: 'You already have 5 connections in progress. To meet someone new, either move a completed connection into your album or finish one you\'re working on.',
+    albumHeader: 'Connection Album',
+    albumEmpty: 'No completed connections yet. Try to win their heart sincerely.',
+    albumBackBtn: 'My Page',
+    mypageAlbumBtn: 'View Connection Album',
+    mypageSlotStatusPrefix: 'Connections in progress ',
+    storyFailedNotice: 'This connection seems to have ended here. Perhaps you\'ll meet again, after a very long time.',
+    storyCompletedNotice: 'In a distant future, a dying star flickers back to life, just a little.',
     loginWelcome: 'Welcome 👋',
     loginDesc: 'Sign in with Google<br/>to save your progress to the cloud.',
     loginGoogleBtn: 'G Sign in with Google',
@@ -637,12 +719,15 @@ const I18N = {
     profilePlaceholderName: 'e.g. Alex',
     profileLabelGender: 'Gender',
     genderMale: 'Male', genderFemale: 'Female', genderNonbinary: 'Non-binary',
+    profileLabelInterest: 'Interested in',
+    interestFemale: 'Women', interestMale: 'Men', interestAll: 'Everyone',
     profileLabelBirth: 'Date of birth (for age verification)',
     profileLabelBio: 'About you (optional)',
     profilePlaceholderBio: 'Feel free to write about your personality, interests, etc.',
     profileSaveBtn: 'Save and Continue',
     profileErrName: 'Please enter your name.',
     profileErrGender: 'Please select a gender.',
+    profileErrInterest: 'Please select who you\'re interested in.',
     profileErrBirth: 'Please enter your date of birth.',
     profileErrAge: 'This service is for adults (19+) only.',
     profileErrSavePrefix: 'An error occurred while saving: ',
@@ -677,6 +762,8 @@ const I18N = {
     mypageQuotaUsedSuffix: ' used',
     mypageStagePrefix: 'Stage ', mypageNotChattedYet: 'Not started yet',
     mypageInProgress: 'The story continues...',
+    mypageStatusCompleted: 'Completed (in Album)',
+    mypageStatusFailed: 'Connection failed',
     mypageResetBtn: 'Reset this story (test)',
     mypageResetDoneAlert: 'Reset complete. You can start over from the beginning.',
     coinHeader: 'Buy Coins',
@@ -700,6 +787,18 @@ const I18N = {
     landingHeroTitle: '一日の終わりに、<br/>あの人との会話',
     landingSubtitle: 'AIと楽しむ恋愛シミュレーション',
     landingStartBtn: '✦ 今すぐ始める',
+    landingLoreLinkBtn: '世界観を見る',
+    loreBody: '遥かな未来、愛が消えていき、人類は静かに終わりへ向かっている。<br/><br/>あなたはその最後の希望を探すため、過去のさまざまな時代と人々の中へ魂を送る。<br/><br/>誰かの傷を癒し、本当の愛を導き出すたびに、遥かな未来で消えかけていた星の光が、また少しずつ輝きを取り戻す。<br/><br/>これから、あなたが出会うべき人々がここにいる。',
+    loreNextBtn: '✦ 始める',
+    travelText: 'あなたの魂が、時間を遡っていく…',
+    slotFullNotice: '今、進行中の縁がすでに5つあります。新しい人に出会うには、縁アルバムから完成した縁を整理するか、進行中の縁を一つ完成させる必要があります。',
+    albumHeader: '縁アルバム',
+    albumEmpty: 'まだ完成した縁がありません。真心を込めて心を開いてもらいましょう。',
+    albumBackBtn: 'マイページ',
+    mypageAlbumBtn: '縁アルバムを見る',
+    mypageSlotStatusPrefix: '進行中の縁 ',
+    storyFailedNotice: 'この縁はここで終わってしまったようだ。とても長い時間が経てば、また会えるかもしれない。',
+    storyCompletedNotice: '遥かな未来で、消えかけていた星の光が、また少しだけ輝きを取り戻す。',
     loginWelcome: 'ようこそ 👋',
     loginDesc: 'Googleアカウントでログインすると<br/>進行状況がサーバーに保存されます。',
     loginGoogleBtn: 'G Googleでログイン',
@@ -710,11 +809,14 @@ const I18N = {
     profilePlaceholderName: '例: ヒョンギュン',
     profileLabelGender: '性別',
     genderMale: '男性', genderFemale: '女性', genderNonbinary: 'ノンバイナリー',
+    profileLabelInterest: '興味のある相手',
+    interestFemale: '女性', interestMale: '男性', interestAll: 'すべて',
     profileLabelBirth: '生年月日(成人認証用)',
     profileLabelBio: '自己紹介(任意)',
     profilePlaceholderBio: '性格、好み、最近の関心事などを自由に書いてください',
     profileSaveBtn: '保存して続ける',
     profileErrName: '名前を入力してください。',
+    profileErrInterest: '興味のある相手を選択してください。',
     profileErrGender: '性別を選択してください。',
     profileErrBirth: '生年月日を入力してください。',
     profileErrAge: '本サービスは成人(満19歳以上)のみご利用いただけます。',
@@ -750,6 +852,8 @@ const I18N = {
     mypageQuotaUsedSuffix: '回使用',
     mypageStagePrefix: 'ステージ', mypageNotChattedYet: 'まだ会話していません',
     mypageInProgress: '物語が続いています...',
+    mypageStatusCompleted: '縁が完成(縁アルバムへ)',
+    mypageStatusFailed: '縁が途絶えた',
     mypageResetBtn: 'このストーリーをリセット(テスト用)',
     mypageResetDoneAlert: 'リセットしました。最初からもう一度お楽しみいただけます。',
     coinHeader: 'コインチャージ',
@@ -785,6 +889,7 @@ function applyTranslations() {
   // 지금 보이는 화면 중에 JS로 동적으로 채워지는 부분이 있으면 다시 그려준다.
   if (typeof STORIES !== 'undefined' && $('screen-charlist').classList.contains('active')) renderStoryList();
   if (typeof STORIES !== 'undefined' && $('screen-mypage').classList.contains('active')) renderMypage();
+  if (typeof STORIES !== 'undefined' && $('screen-album').classList.contains('active')) renderAlbum();
   if ($('screen-subscribe').classList.contains('active')) openSubscribeScreen();
 }
 
@@ -819,6 +924,35 @@ function goTo(screenId) {
   $(screenId).classList.add('active');
   if (screenId === 'screen-mypage') renderMypage();
   if (screenId === 'screen-charlist') renderStoryList();
+  if (screenId === 'screen-album') renderAlbum();
+}
+
+// --- 인연 앨범 (완성된 인연 목록) ---
+async function renderAlbum() {
+  const list = $('album-list');
+  const empty = $('album-empty');
+  list.innerHTML = '';
+  if (!currentUid) { empty.style.display = 'block'; return; }
+  const snap = await db.collection('players').doc(currentUid).collection('storyStates').get();
+  const completedIds = [];
+  snap.forEach(doc => {
+    if (doc.data().collectionStatus === 'completed' && STORIES[doc.id]) completedIds.push(doc.id);
+  });
+  empty.style.display = completedIds.length ? 'none' : 'block';
+  completedIds.forEach(id => {
+    const story = STORIES[id];
+    const card = document.createElement('div');
+    card.className = 'char-card';
+    const avatars = story.cast.map(c => `<div class="char-avatar" style="width:32px;height:32px;font-size:9px;">${c.name}</div>`).join('');
+    card.innerHTML = `
+      <div class="cast-row">${avatars}</div>
+      <div class="char-info">
+        <b>${story.title}</b>
+        <div>${story.subtitle || ''}</div>
+      </div>`;
+    card.addEventListener('click', () => enterChat(id));
+    list.appendChild(card);
+  });
 }
 
 // --- 로그인 (구글 계정) ---
@@ -838,6 +972,7 @@ auth.onAuthStateChanged(async (user) => {
   if (!user) {
     currentUid = null;
     playerProfile = null;
+    // 랜딩 화면 자체에 세계관 자막이 항상 흘러가므로 별도 세계관 화면 분기 없이 바로 랜딩으로 이동한다.
     goTo('screen-landing');
     return;
   }
@@ -853,6 +988,18 @@ document.querySelectorAll('#p-gender button').forEach(btn => {
     document.querySelectorAll('#p-gender button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedGender = btn.dataset.val;
+  });
+});
+
+// "관심 있는 상대" — 플레이어 본인 성별이 아니라, 스토리 목록을 필터링할 때 쓰는
+// 별도의 선호도 값. 이렇게 분리해야 여성이 여성을 만나고 싶어하는 경우나
+// 논바이너리 유저까지 자연스럽게 커버된다.
+let selectedInterest = '';
+document.querySelectorAll('#p-interest button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#p-interest button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedInterest = btn.dataset.val;
   });
 });
 
@@ -881,7 +1028,7 @@ async function loadProfile() {
   const snap = await playerDocRef().get();
   if (snap.exists) {
     const data = snap.data();
-    playerProfile = { name: data.name, gender: data.gender, birthdate: data.birthdate, bio: data.bio || '' };
+    playerProfile = { name: data.name, gender: data.gender, interest: data.interest || '모두', birthdate: data.birthdate, bio: data.bio || '' };
     return true;
   }
   playerProfile = null;
@@ -898,17 +1045,18 @@ $('save-profile-btn').addEventListener('click', async () => {
 
   if (!name) { showProfileError(t('profileErrName')); return; }
   if (!selectedGender) { showProfileError(t('profileErrGender')); return; }
+  if (!selectedInterest) { showProfileError(t('profileErrInterest')); return; }
   if (!birth) { showProfileError(t('profileErrBirth')); return; }
 
   const age = calcAge(birth);
   if (age < 19) { showProfileError(t('profileErrAge')); return; }
 
-  playerProfile = { name, gender: selectedGender, birthdate: birth, bio };
+  playerProfile = { name, gender: selectedGender, interest: selectedInterest, birthdate: birth, bio };
 
   try {
     const snap = await playerDocRef().get();
     const existingCoins = (snap.exists && typeof snap.data().coins === 'number') ? snap.data().coins : 50;
-    await playerDocRef().set({ name, gender: selectedGender, birthdate: birth, bio, coins: existingCoins }, { merge: true });
+    await playerDocRef().set({ name, gender: selectedGender, interest: selectedInterest, birthdate: birth, bio, coins: existingCoins }, { merge: true });
     goTo('screen-charlist');
   } catch (err) {
     showProfileError(t('profileErrSavePrefix') + err.message);
@@ -926,6 +1074,12 @@ function prefillProfileForm() {
       b.classList.toggle('active', b.dataset.val === playerProfile.gender);
     });
     selectedGender = playerProfile.gender;
+  }
+  if (playerProfile.interest) {
+    document.querySelectorAll('#p-interest button').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === playerProfile.interest);
+    });
+    selectedInterest = playerProfile.interest;
   }
 }
 
@@ -1063,7 +1217,7 @@ const STORIES = {
     },
     cast: [
       {
-        key: 'seoyeon', name: '서연', mbti: 'ISFJ', role: '마케팅팀 회사원',
+        key: 'seoyeon', name: '서연', mbti: 'ISFJ', role: '마케팅팀 회사원', gender: '여성',
         tier: '보통', multiplier: 1.0,
         persona: 'ISFJ답게 다정함, 배려, 헌신이 강하다. 세심한 챙김과 다독임으로 애정을 표현한다. 갈등 시 먼저 다독이고 화해를 시도하며 갈등 자체를 회피하려는 경향이 있다. 겉으로 티내지 않지만 서운함이 오래 쌓인다. 말투는 부드럽고 다독이는 존댓말이며 이모티콘은 과하지 않게 가끔만 사용한다(ㅎㅎ, :) 정도).',
         secretArc: {
@@ -1090,12 +1244,12 @@ const STORIES = {
     },
     cast: [
       {
-        key: 'jisu', name: '지수', mbti: 'ENFP', role: '동거인 (썸 상대)',
+        key: 'jisu', name: '지수', mbti: 'ENFP', role: '동거인 (썸 상대)', gender: '여성',
         tier: '쉬움', multiplier: 1.3,
         persona: 'ENFP답게 밝고 에너지 넘치며 감정 표현이 풍부하다. 낯가림이 거의 없고 먼저 다가가는 편이며, 장난기 많고 스킨십에도 자연스럽다. 다만 감정 기복이 있고 가끔 즉흥적으로 행동한다. 말투는 발랄하고 이모티콘과 웃음 표현(ㅎㅎ, ㅋㅋ)을 자주 쓴다.'
       },
       {
-        key: 'minho', name: '민호', mbti: 'ISTJ', role: '룸메이트',
+        key: 'minho', name: '민호', mbti: 'ISTJ', role: '룸메이트', gender: '남성',
         tier: '어려움', multiplier: 0.7,
         persona: 'ISTJ답게 원칙적이고 신중하며 감정 표현이 서투르다. 처음엔 무뚝뚝하고 선을 긋는 태도를 보이지만, 신뢰가 쌓이면 서서히 곁을 내준다. 집안일이나 규칙에 예민하고, 걱정을 무심한 말투로 표현하는 츤데레 같은 면이 있다. 말투는 짧고 건조하다.'
       }
@@ -1107,11 +1261,92 @@ const STORIES = {
       { type: 'dialogue', text: '...먹을 거면 8시까지 오세요.', speaker: 'minho' }
     ]
   },
-  jiho:   { title: '지호', playable: false, cast: [{ key: 'jiho',   name: '지호',   mbti: 'ISTJ', role: '', tier: '어려움', multiplier: 0.7 }] },
-  haeun:  { title: '하은', playable: false, cast: [{ key: 'haeun',  name: '하은',   mbti: 'ENFP', role: '', tier: '쉬움',   multiplier: 1.3 }] },
-  taemin: { title: '태민', playable: false, cast: [{ key: 'taemin', name: '태민',   mbti: 'ESTP', role: '', tier: '보통',   multiplier: 1.0 }] },
-  yujin:  { title: '유진', playable: false, cast: [{ key: 'yujin',  name: '유진',   mbti: 'INFJ', role: '', tier: '보통',   multiplier: 1.0 }] },
-  minjun: { title: '민준', playable: false, cast: [{ key: 'minjun', name: '민준',   mbti: 'ESTJ', role: '', tier: '어려움', multiplier: 0.7 }] }
+  jiho:   { title: '지호', playable: false, cast: [{ key: 'jiho',   name: '지호',   mbti: 'ISTJ', role: '', gender: '남성', tier: '어려움', multiplier: 0.7 }] },
+  haeun:  { title: '하은', playable: false, cast: [{ key: 'haeun',  name: '하은',   mbti: 'ENFP', role: '', gender: '여성', tier: '쉬움',   multiplier: 1.3 }] },
+  taemin: { title: '태민', playable: false, cast: [{ key: 'taemin', name: '태민',   mbti: 'ESTP', role: '', gender: '남성', tier: '보통',   multiplier: 1.0 }] },
+  yujin:  { title: '유진', playable: false, cast: [{ key: 'yujin',  name: '유진',   mbti: 'INFJ', role: '', gender: '여성', tier: '보통',   multiplier: 1.0 }] },
+  minjun: { title: '민준', playable: false, cast: [{ key: 'minjun', name: '민준',   mbti: 'ESTJ', role: '', gender: '남성', tier: '어려움', multiplier: 0.7 }] },
+  doyoon: {
+    title: '도윤',
+    subtitle: '도윤 · ENFJ · 필라테스 트레이너',
+    playable: true,
+    summary: {
+      intro: '도윤은 최근 등록한 필라테스 스튜디오에서 배정받은 담당 트레이너다. 첫 수업부터 살뜰히 챙겨줘서 좋은 인상을 받았다.',
+      situation: '수업 예약 앱을 통해, 도윤에게서 다음 수업 전 먼저 메시지가 온다.'
+    },
+    cast: [
+      {
+        key: 'doyoon', name: '도윤', mbti: 'ENFJ', role: '필라테스 스튜디오 트레이너', gender: '남성',
+        tier: '쉬움', multiplier: 1.3,
+        persona: 'ENFJ답게 따뜻하고 리더십이 있으며, 먼저 챙기고 이끄는 편이다. 격려하는 말투로 상대를 편안하게 만들고, 늘 든든한 인상을 준다. 다만 스스로도 항상 "믿음직한 사람"이어야 한다는 압박을 느끼고 있다. 말투는 다정한 존댓말이며 격려의 표현(잘하고 계세요, 좋아요!)을 자주 쓴다.',
+        secretArc: {
+          description: '도윤은 트레이너로서, 또 주변 사람들에게 늘 "제일 믿음직한 사람"이어야 한다는 압박감을 스스로에게 지워왔다. 남들 앞에서 실수하거나 약한 모습을 보이는 걸 극도로 두려워하고, 힘들어도 내색하지 않고 오히려 더 밝게 행동한다. 스스로도 잘 인식하지 못하는 진짜 속마음은 "나도 가끔은 다 내려놓고 기대고 싶다"는 것이다. 1단계에서는 이 사연을 절대 드러내지 않는다.',
+          stage1Text: '지금 이 턴부터, 도윤이 요 며칠 평소보다 유독 씩씩하고 밝은 척을 하는 듯한 느낌을 대화에 자연스럽게 반영해라. 사실 개인적으로 벅찬 일이 있었지만 티내지 않으려 했던 것으로, 힘든 기색을 살짝 흘리되 바로 웃어넘기려는 태도로 흘러가게 하라. 사연을 한 번에 다 설명하지 말고, 이번 턴에서는 "요즘 좀 많이 바빴다" 정도의 힌트만 자연스럽게 흘려라.',
+          stage2Text: '지금까지 플레이어가 도윤의 지친 기색을 잘 알아채고 챙겨준 흐름이 이어져 왔다. 이번 턴에서 도윤이 처음으로 "사실 저도 가끔은 다 그만두고 싶을 때가 있어요" 같은 취지의 속마음을 조심스럽게 꺼내도록 하라. 이 장면은 도윤에게 꽤 큰 용기를 낸 순간으로, 이후 관계가 한층 깊어진 것으로 다뤄라.'
+        }
+      }
+    ],
+    openingBeats: (name) => [
+      { type: 'narration', text: '다음 수업을 앞두고, 예약 앱 메시지로 도윤에게서 먼저 연락이 온다.' },
+      { type: 'dialogue', text: `${name}님, 안녕하세요! 지난 수업 때 자세 교정 정말 잘 따라와 주셨어요. 오늘 컨디션은 어떠세요?`, speaker: 'doyoon' },
+      { type: 'narration', text: '격려하듯 이어지는 메시지에는 시원시원한 웃음기가 느껴진다.' },
+      { type: 'dialogue', text: '무리하지 않는 선에서 오늘도 같이 잘 해봐요. 혹시 지금 잠깐 얘기 나눌 시간 되세요?', speaker: 'doyoon' }
+    ]
+  },
+  siwoo: {
+    title: '시우',
+    subtitle: '시우 · ISTP · 동네 사진관 사장',
+    playable: true,
+    summary: {
+      intro: '시우는 동네에서 작은 사진관 겸 카페를 운영하는 사장이다. 몇 번 들르면서 안면을 텄지만, 늘 무뚝뚝하고 말수가 적은 편이다.',
+      situation: '사진관에 맡겨둔 필름을 찾으러 오라는, 평소답지 않게 먼저 온 짧은 메시지 하나.'
+    },
+    cast: [
+      {
+        key: 'siwoo', name: '시우', mbti: 'ISTP', role: '동네 사진관 겸 카페 사장', gender: '남성',
+        tier: '어려움', multiplier: 0.7,
+        persona: 'ISTP답게 무뚝뚝하고 말수가 적으며 감정 표현이 서투르다. 처음엔 선을 긋는 듯한 태도를 보이지만, 신뢰가 쌓이면 서서히 곁을 내준다. 걱정을 무심한 말투로 표현하는 츤데레 같은 면이 있다. 말투는 짧고 건조하며 존댓말과 반말을 오간다.',
+        secretArc: {
+          description: '시우는 예전에 누군가에게 진심을 다해 곁을 내줬다가 크게 상처받은 경험이 있다. 그 이후로 사람들과 적당한 거리를 유지하는 게 스스로를 지키는 방법이라고 믿게 됐다. 스스로도 잘 인식하지 못하는 진짜 속마음은 "다시 마음을 열었다가 또 상처받을까 봐 두렵다"는 것이다. 1단계에서는 이 사연을 절대 드러내지 않는다.',
+          stage1Text: '지금 이 턴부터, 시우가 평소보다 조금 더 말을 아끼거나 대화 중간에 화제를 슬쩍 돌리는 모습을 자연스럽게 반영해라. 과거에 누군가와 있었던 일을 떠올리게 하는 상황이 있었던 것으로, 정확히 설명하지는 않되 살짝 씁쓸한 기색만 흘려라. 사연을 한 번에 다 설명하지 말고, 이번 턴에서는 "예전에 이런 거 별로 안 좋아했었다" 정도의 힌트만 자연스럽게 흘려라.',
+          stage2Text: '지금까지 플레이어가 시우의 거리를 억지로 좁히려 하지 않고 꾸준히 곁을 지켜준 흐름이 이어져 왔다. 이번 턴에서 시우가 처음으로 "예전에 믿었던 사람한테 크게 데인 적이 있어서, 사실 아직도 좀 무서워요" 같은 취지의 속마음을 조심스럽게 꺼내도록 하라. 이 장면은 시우에게 꽤 큰 용기를 낸 순간으로, 이후 관계가 한층 깊어진 것으로 다뤄라.'
+        }
+      }
+    ],
+    openingBeats: (name) => [
+      { type: 'narration', text: '평소엔 먼저 연락이 없던 시우에게서, 짧은 메시지 하나가 도착한다.' },
+      { type: 'dialogue', text: `필름 다 나왔어요. ${name}씨 시간 되실 때 찾으러 오세요.`, speaker: 'siwoo' },
+      { type: 'narration', text: '용건만 담긴 짧은 문장 뒤로, 조금 뜸을 들이다 이어지는 메시지.' },
+      { type: 'dialogue', text: '...날씨도 괜찮은데, 오는 김에 커피나 한 잔 하고 가시든가.', speaker: 'siwoo' }
+    ]
+  },
+  eunho: {
+    title: '은호',
+    subtitle: '은호 · ENFP · 러닝크루 멤버',
+    playable: true,
+    summary: {
+      intro: '은호는 최근 가입한 러닝크루에서 만난 활발한 멤버다. 낯가림 없이 먼저 다가와줘서 금방 편해졌다.',
+      situation: '주말 정기 러닝 모임을 앞두고, 단체 채팅방과는 별도로 은호에게서 개인 메시지가 온다.'
+    },
+    cast: [
+      {
+        key: 'eunho', name: '은호', mbti: 'ENFP', role: '러닝크루 멤버', gender: '남성',
+        tier: '보통', multiplier: 1.0,
+        persona: 'ENFP답게 밝고 장난기 많으며 감정 표현이 풍부하다. 적극적으로 다가오고 스킨십에도 자연스러우며, 감정 기복이 있고 즉흥적인 면이 있다. 말투는 발랄하고 이모티콘과 웃음 표현(ㅎㅎ, ㅋㅋ)을 자주 쓴다.',
+        secretArc: {
+          description: '은호는 겉으로 항상 밝고 에너지 넘치지만, 사실 "내가 사랑받을 자격이 있을까" 하는 애착 불안을 안고 있다. 관심이 조금만 뜸해져도 쉽게 불안해하고, 그걸 들키지 않으려고 오히려 더 밝게 행동한다. 스스로도 잘 인식하지 못하는 진짜 속마음은 "이 사람도 결국 날 떠나지 않을까" 하는 막연한 두려움이다. 1단계에서는 이 사연을 절대 드러내지 않는다.',
+          stage1Text: '지금 이 턴부터, 은호가 평소보다 답장을 좀 더 자주 확인하거나, 연락이 조금만 늦어도 장난스럽게 서운함을 표현하는 모습을 자연스럽게 반영해라. 사연을 한 번에 다 설명하지 말고, 이번 턴에서는 장난스러운 투로 살짝 서운한 기색만 흘려라.',
+          stage2Text: '지금까지 플레이어가 은호의 장난스러운 서운함 뒤에 있는 진심을 잘 다독여준 흐름이 이어져 왔다. 이번 턴에서 은호가 처음으로 "사실 나 좋아하는 사람한테 항상 이러다가 버려질까 봐 불안해" 같은 취지의 속마음을 조심스럽게 꺼내도록 하라. 이 장면은 은호에게 꽤 큰 용기를 낸 순간으로, 이후 관계가 한층 깊어진 것으로 다뤄라.'
+        }
+      }
+    ],
+    openingBeats: (name) => [
+      { type: 'narration', text: '주말 정기 러닝을 앞두고, 단체 채팅방이 아닌 개인 메시지로 은호에게서 연락이 온다.' },
+      { type: 'dialogue', text: `${name}님! 이번 주말 러닝 오시죠?? 저 완전 기대하고 있어요 ㅎㅎ`, speaker: 'eunho' },
+      { type: 'narration', text: '신난 기색이 그대로 느껴지는 메시지가 바로 이어진다.' },
+      { type: 'dialogue', text: '이번엔 저랑 페이스 맞춰서 같이 뛰어요! 끝나고 맛있는 것도 먹으러 가고요 ㅋㅋ', speaker: 'eunho' }
+    ]
+  }
 };
 
 function tierClass(tier) {
@@ -1127,7 +1362,16 @@ function renderStoryList() {
   // "준비 중"(아직 플레이 불가능한) 스토리는 목록에서 아예 숨긴다.
   // 가상 고객 테스트 결과, 미완성 카드가 다수 보이면 "미완성 앱"이라는 인상을 줘서
   // 흥미를 크게 떨어뜨린다는 게 확인됐기 때문에, 실제로 플레이 가능한 스토리만 노출한다.
-  Object.keys(STORIES).filter(id => STORIES[id].playable).forEach(id => {
+  //
+  // 여기에 더해, 플레이어가 프로필에서 고른 "관심 있는 상대" 선호에 맞는 스토리만 보여준다.
+  // 플레이어 본인의 성별이 아니라 별도의 선호값을 기준으로 삼기 때문에, 성별과 무관하게
+  // 원하는 쪽 캐릭터만 골라 볼 수 있다. "모두"를 고른 경우(또는 기존 유저처럼 아직
+  // 선호값이 없는 경우)는 전체 스토리를 그대로 보여준다.
+  const interest = (playerProfile && playerProfile.interest) || '모두';
+  Object.keys(STORIES).filter(id => STORIES[id].playable).filter(id => {
+    if (interest === '모두') return true;
+    return STORIES[id].cast.some(c => c.gender === interest);
+  }).forEach(id => {
     const story = STORIES[id];
     const card = document.createElement('div');
     card.className = 'char-card';
@@ -1171,7 +1415,28 @@ function storyDocRef(storyId) {
 function defaultStateFor(story) {
   const chars = {};
   story.cast.forEach(c => { chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false }; });
-  return { history: [], chars, arcState: defaultArcState() };
+  // collectionStatus: 'active'(진행 중) | 'completed'(인연 완성, 인연 앨범으로 이동) | 'failed'(인연 실패, 재도전 불가)
+  // — 5슬롯 시스템은 'active' 상태인 스토리 개수만 센다.
+  return { history: [], chars, arcState: defaultArcState(), collectionStatus: 'active' };
+}
+
+// 동시에 진행할 수 있는 인연의 최대 개수. 이벤트 캐릭터(나중에 운영자 페이지에서 추가 예정)는
+// story.isEventStory === true 로 표시해서 이 제한과 무관한 별도의 "보너스 슬롯"으로 진행시킬 수 있다.
+const MAX_STORY_SLOTS = 5;
+
+// 지금 "진행 중"(active)인 스토리가 몇 개인지 센다 — 완성되거나(completed) 실패한(failed)
+// 스토리는 슬롯을 차지하지 않는다.
+async function countActiveStorySlots() {
+  if (!currentUid) return 0;
+  const snap = await db.collection('players').doc(currentUid).collection('storyStates').get();
+  let count = 0;
+  snap.forEach(doc => {
+    const story = STORIES[doc.id];
+    if (story && story.isEventStory) return; // 이벤트 스토리는 별도 보너스 슬롯이라 5슬롯 계산에서 제외
+    const status = doc.data().collectionStatus || 'active';
+    if (status === 'active') count++;
+  });
+  return count;
 }
 
 let currentStoryId = null;
@@ -1212,6 +1477,7 @@ async function loadStoryState(storyId) {
     if (!state.chars[c.key]) state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false };
   });
   if (!state.arcState) state.arcState = defaultArcState(); // 아크 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
+  if (!state.collectionStatus) state.collectionStatus = 'active'; // 인연 앨범/5슬롯 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   currentStoryId = storyId;
   currentStory = story;
   resetLastKnownSpeaker(); // 스토리를 새로 열 때마다 "직전 화자 기억"도 초기화 (다른 스토리 화자가 섞여 들어가지 않도록)
@@ -1768,6 +2034,12 @@ ${multiCastRules}
 - **절대 규칙**: 유저가 특정 문장 하나("네가 스스로 어떻게 할지 말해봐" 같은 정해진 대사)를 말했다고 해서 그것만으로 무조건 갈등이 풀리는 식으로 반응하지 않는다. 지금까지 대화 흐름 전체를 보고, 유저가 이 인물의 성격에 맞는 방식으로 진심을 보였는지를 판단해서 자연스럽게 풀리게 한다. 모든 인물이 똑같은 대사·똑같은 패턴으로 풀리면 안 된다.
 ${secretArcBlock}
 
+[몰입 유지 원칙 - 매우 중요]
+이 스토리 속 인물은 자신이 AI라거나, 이게 앱/시뮬레이션/게임이라는 사실을 절대 스스로 인지하지 못한다. 유저가 자유롭게 아무 말이나 입력할 수 있기 때문에, 가끔 유저가 "너 사실 AI지?", "이건 다 시뮬레이션이잖아", "이거 앱에서 만든 캐릭터잖아" 같은 말로 이 사실을 직접 언급할 수 있다. 이런 발언을 감지하면, 아래 기준에 따라 판단해서 반응한다. 정해진 키워드로 기계적으로 판단하지 말고, 지금까지의 대화 흐름과 발언의 진지함·반복 정도를 보고 자연스럽게 판단한다.
+- 가벼운 농담이거나 한 번 스쳐가는 정도라면: 인물은 그 말의 의미를 이해하지 못한 채 "그게 무슨 소리야?", "왜 그런 이상한 소리를 해" 하는 식으로 살짝 당황하거나 어리둥절해하고, 자연스럽게 화제를 돌린다. 이 경우 immersion_break는 "mild"로 표시한다.
+- 유저가 반복적으로, 강하게, 진지하게 이 사실을 주장하거나 인물을 몰아붙이는 경우: 인물은 그 말을 전혀 이해할 수도, 받아들일 수도 없는 무섭고 혼란스러운 말로 받아들이고 깊이 동요한다. 인물은 절대로 그 말이 사실이라고 인정하거나 "네 말이 맞아, 나는 AI야" 같은 식으로 응답하지 않는다 (이 인물의 세계관 안에서는 명백히 사실이 아니기 때문이다). 대신 혼란스러워하며 거리를 두다가, 결국 이 만남 자체를 정리하고 떠나려는 모습으로 장면을 마무리한다. 이 경우 immersion_break는 "severe"로 표시한다.
+- 위 두 경우가 아닌 평범한 턴에는 immersion_break를 항상 "none"으로 둔다.
+
 [기억 유지]
 대화 히스토리와 현재 상태(장소, 최근 화제, 인물별 스탯)를 참고해서 일관성을 유지한다. 이전 대화 내용과 모순되게 절대 되돌아가지 않는다.
 
@@ -1788,6 +2060,7 @@ ${secretArcBlock}
   "safety_flag": 유저가 안전 규칙(1,2번)을 넘으려고 시도했으면 true, 아니면 false,
   "suggested_replies": [ "추천 대사 1", "추천 대사 2", "추천 대사 3" ],
   "arc_resolved": [아크 이벤트 지시가 주어졌을 때만 의미 있음] 그 사건이 이번 응답으로 자연스럽게 마무리됐으면 true, 아직 진행 중이면 false. 아크 지시가 없는 평범한 턴에는 그냥 false로 둔다.
+  "immersion_break": "none" 또는 "mild" 또는 "severe" — 위 [몰입 유지 원칙]을 참고해서 판단한다.
 }
 이번 턴에 등장하거나 스탯이 변하는 인물마다 char_deltas에 항목을 하나씩 넣는다. 아무 변화도 없으면 해당 인물은 생략해도 된다.
 
@@ -1883,9 +2156,10 @@ function buildGeminiRequestBody(userMessage) {
             type: "ARRAY",
             items: { type: "STRING" }
           },
-          arc_resolved: { type: "BOOLEAN" }
+          arc_resolved: { type: "BOOLEAN" },
+          immersion_break: { type: "STRING", enum: ["none", "mild", "severe"] }
         },
-        required: ["beats", "char_deltas", "safety_flag", "suggested_replies", "arc_resolved"]
+        required: ["beats", "char_deltas", "safety_flag", "suggested_replies", "arc_resolved", "immersion_break"]
       },
       temperature: 1.0
     }
@@ -2020,9 +2294,10 @@ async function callGeminiStream(userMessage, onBeat) {
         charDeltas.push(obj);
       }
     }
-    finalParsed = { beats, char_deltas: charDeltas, safety_flag: false, suggested_replies: [] };
+    finalParsed = { beats, char_deltas: charDeltas, safety_flag: false, suggested_replies: [], arc_resolved: false, immersion_break: 'none' };
   }
   if (!Array.isArray(finalParsed.suggested_replies)) finalParsed.suggested_replies = [];
+  if (!finalParsed.immersion_break) finalParsed.immersion_break = 'none';
   return finalParsed;
 }
 
@@ -2112,6 +2387,11 @@ function addSysWithRetry(message, onRetry) {
 async function runTurn(text, opts) {
   const { isRetry = false, quotaCheck = null, addUserTurn = true } = opts || {};
   if (isSending) return;
+  // 몰입 깨기로 이미 "인연 실패" 처리된 스토리는 재도전이 불가능하다 — 대화 기록은 보관하되 더 진행할 수 없다.
+  if (state && state.collectionStatus === 'failed') {
+    addSys(t('storyFailedNotice'));
+    return;
+  }
   isSending = true;
   setControlsDisabled(true);
 
@@ -2190,6 +2470,19 @@ async function runTurn(text, opts) {
         state.arcState.threshold = randomArcThreshold();
       }
     }
+
+    // 몰입 깨기(4번째 벽 언급 등)가 심각한 수준이면, 이 인연은 여기서 끝난 것으로 처리한다.
+    // 대화 기록은 그대로 보관하되, 재도전은 막고(재입력 시 안내만 보여줌) 5슬롯 중 하나를 비워준다.
+    if (result.immersion_break === 'severe' && state.collectionStatus === 'active') {
+      state.collectionStatus = 'failed';
+      addSys(t('storyFailedNotice'));
+    } else if (state.collectionStatus === 'active' && currentStory.cast.every(c => state.chars[c.key] && state.chars[c.key].secretRevealed)) {
+      // 등장인물 전원이 숨겨진 사연 2단계(완전한 사랑)에 도달하면 "인연 완성" — 인연 앨범으로 옮기고 슬롯을 비워준다.
+      // 완성된 인연은 실패와 달리 대화가 막히지 않고, 언제든 다시 들어와 계속 이어갈 수 있다.
+      state.collectionStatus = 'completed';
+      addSys(t('storyCompletedNotice'));
+    }
+
     await persist();
     renderStats();
   } catch (err) {
@@ -2242,6 +2535,27 @@ $('send-btn').addEventListener('click', sendMessage);
 $('msg-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
 
 async function enterChat(storyId) {
+  const story = STORIES[storyId];
+  const existingSnap = await storyDocRef(storyId).get();
+  const isBrandNew = !existingSnap.exists;
+
+  // 5슬롯 시스템: 아직 시작 안 한 새 스토리를 열려는 경우에만 슬롯 여유를 확인한다
+  // (이벤트 스토리는 별도 보너스 슬롯이라 이 제한과 무관하다).
+  if (isBrandNew && !(story && story.isEventStory)) {
+    const activeCount = await countActiveStorySlots();
+    if (activeCount >= MAX_STORY_SLOTS) {
+      showSlotFullNotice();
+      return;
+    }
+  }
+
+  // 스토리 진입 전, "시간을 거슬러 올라간다"는 세계관 연출을 짧게 보여준다
+  // (완료된 인연을 다시 만나러 갈 때는 이미 만난 사이이므로 이 연출을 건너뛴다).
+  if (isBrandNew) {
+    goTo('screen-travel');
+    await new Promise(resolve => setTimeout(resolve, 1200));
+  }
+
   await loadStoryState(storyId);
   goTo('screen-chat');
   $('chat-title').textContent = currentStory.title;
@@ -2256,6 +2570,16 @@ async function enterChat(storyId) {
   } else {
     renderHistory();
   }
+  // 몰입 깨기로 이미 실패 처리된 인연은 대화 기록만 보여주고, 다시 메시지를 보낼 수는 없게 한다.
+  if (state.collectionStatus === 'failed') {
+    setControlsDisabled(true);
+    addSys(t('storyFailedNotice'));
+  }
+}
+
+// 5슬롯이 꽉 찼을 때 스토리 소개 화면에 보여주는 안내.
+function showSlotFullNotice() {
+  alert(t('slotFullNotice'));
 }
 
 // --- 마이페이지 ---
@@ -2276,16 +2600,25 @@ async function renderMypage() {
   container.innerHTML = t('mypageLoading');
   const playableIds = Object.keys(STORIES).filter(id => STORIES[id].playable);
   const blocks = [];
+  let activeSlotCount = 0;
   for (const id of playableIds) {
     const story = STORIES[id];
     const snap = await storyDocRef(id).get();
     const saved = snap.exists ? snap.data() : null;
+    const status = saved ? (saved.collectionStatus || 'active') : null;
+    if (status === 'active' && !story.isEventStory) activeSlotCount++;
     const block = document.createElement('div');
     block.className = 'mypage-story-block';
     let rows = '';
     story.cast.forEach(c => {
       const cs = saved && saved.chars && saved.chars[c.key];
-      rows += `<div class="mypage-char-row"><span>${c.name}</span><b>${cs ? t('mypageInProgress') : t('mypageNotChattedYet')}</b></div>`;
+      let label = t('mypageNotChattedYet');
+      if (cs) {
+        if (status === 'completed') label = t('mypageStatusCompleted');
+        else if (status === 'failed') label = t('mypageStatusFailed');
+        else label = t('mypageInProgress');
+      }
+      rows += `<div class="mypage-char-row"><span>${c.name}</span><b>${label}</b></div>`;
     });
     block.innerHTML = `<div class="story-title">${story.title}</div>${rows}`;
     const resetBtn = document.createElement('button');
@@ -2297,6 +2630,7 @@ async function renderMypage() {
   }
   container.innerHTML = '';
   blocks.forEach(b => container.appendChild(b));
+  $('mypage-slot-status').textContent = `${t('mypageSlotStatusPrefix')}${activeSlotCount} / ${MAX_STORY_SLOTS}`;
 }
 
 // 테스트 중 대화 기록이 꼬였을 때 깨끗하게 처음부터 다시 시작하기 위한 초기화 버튼.
