@@ -2685,6 +2685,7 @@ async function enterChat(storyId) {
   renderStats();
   clearSuggestions();
   if (state.history.length === 0) {
+    $('chat').innerHTML = ''; // 화면에 이전 방문(또는 초기화 전) 대화가 남아있을 수 있으므로, 새로 시작하기 전 반드시 비운다.
     const nameTag = playerProfile ? playerProfile.name : '플레이어';
     const beats = currentStory.openingBeats(nameTag);
     addCharTurn(beats, currentStory);
