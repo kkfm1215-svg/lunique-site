@@ -978,7 +978,11 @@ auth.onAuthStateChanged(async (user) => {
   }
   currentUid = user.uid;
   const hasProfile = await loadProfile();
-  goTo(hasProfile ? 'screen-charlist' : 'screen-profile');
+  const nextScreen = hasProfile ? 'screen-charlist' : 'screen-profile';
+  // 이미 로그인된 사람(재방문자)도 곧바로 다음 화면으로 넘어가지 않고,
+  // 랜딩 화면(세계관 자막이 흐르는 화면)을 잠깐 먼저 보여준 뒤에 이동시킨다.
+  goTo('screen-landing');
+  setTimeout(() => { goTo(nextScreen); }, 2500);
 });
 
 // --- 내 정보 입력 ---
