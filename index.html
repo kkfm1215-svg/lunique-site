@@ -164,7 +164,7 @@
   .char-card:not(.disabled):hover { border-color: rgba(255,158,199,0.5); }
   .char-card.disabled { opacity: 0.42; cursor: not-allowed; }
   .char-avatar {
-    width: 50px; height: 50px; border-radius: 50%;
+    width: 50px; height: 50px; border-radius: 50%; overflow: hidden;
     background: linear-gradient(150deg, var(--lavender-deep), var(--rose-deep));
     color: #fff; font-size: 12px; font-weight: 700; font-family: var(--serif);
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
@@ -447,12 +447,6 @@
         <button type="button" data-val="여성" data-i18n="genderFemale">여성</button>
         <button type="button" data-val="논바이너리" data-i18n="genderNonbinary">논바이너리</button>
       </div>
-      <label data-i18n="profileLabelInterest">관심 있는 상대</label>
-      <div id="p-interest" class="gender-toggle">
-        <button type="button" data-val="여성" data-i18n="interestFemale">여성</button>
-        <button type="button" data-val="남성" data-i18n="interestMale">남성</button>
-        <button type="button" data-val="모두" data-i18n="interestAll">모두</button>
-      </div>
       <label data-i18n="profileLabelBirth">생년월일 (성인 인증용)</label>
       <input id="p-birth" type="date" />
       <label data-i18n="profileLabelBio">자기소개 (선택)</label>
@@ -478,7 +472,7 @@
   <div class="screen" id="screen-charintro">
     <header><span class="back" onclick="goTo('screen-charlist')">←</span><h1 id="charintro-title">스토리</h1></header>
     <div class="pad">
-      <div class="intro-portrait"><span style="position:relative; z-index:1;" data-i18n="charintroPortraitPlaceholder">캐릭터 이미지 (준비 중)</span></div>
+      <div class="intro-portrait" id="intro-portrait"></div>
       <div class="hero-title" style="color:var(--text-main); font-size:16px; margin-bottom:6px;" id="charintro-subtitle"></div>
       <div id="charintro-cast" style="margin-bottom:10px;"></div>
       <div id="intro-box" style="margin:0;"></div>
@@ -943,7 +937,7 @@ async function renderAlbum() {
     const story = STORIES[id];
     const card = document.createElement('div');
     card.className = 'char-card';
-    const avatars = story.cast.map(c => `<div class="char-avatar" style="width:32px;height:32px;font-size:9px;">${c.name}</div>`).join('');
+    const avatars = story.cast.map(c => `<div class="char-avatar" style="width:32px;height:32px;font-size:9px;">${avatarSVG(c.key, 32)}</div>`).join('');
     card.innerHTML = `
       <div class="cast-row">${avatars}</div>
       <div class="char-info">
@@ -995,17 +989,14 @@ document.querySelectorAll('#p-gender button').forEach(btn => {
   });
 });
 
-// "관심 있는 상대" — 플레이어 본인 성별이 아니라, 스토리 목록을 필터링할 때 쓰는
-// 별도의 선호도 값. 이렇게 분리해야 여성이 여성을 만나고 싶어하는 경우나
-// 논바이너리 유저까지 자연스럽게 커버된다.
-let selectedInterest = '';
-document.querySelectorAll('#p-interest button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#p-interest button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedInterest = btn.dataset.val;
-  });
-});
+// 스토리 목록 필터링용 "관심 있는 상대" 값은 별도로 물어보지 않고,
+// 플레이어 본인 성별로부터 자동으로 정한다 (2026-08-18, 형균님 요청으로 단순화).
+// 남성 → 여성 캐릭터만, 여성 → 남성 캐릭터만, 논바이너리 → 특정 성별을 가정할 수 없어 전체 노출.
+function deriveInterest(gender) {
+  if (gender === '남성') return '여성';
+  if (gender === '여성') return '남성';
+  return '모두';
+}
 
 function calcAge(birthStr) {
   const b = new Date(birthStr);
@@ -1032,7 +1023,7 @@ async function loadProfile() {
   const snap = await playerDocRef().get();
   if (snap.exists) {
     const data = snap.data();
-    playerProfile = { name: data.name, gender: data.gender, interest: data.interest || '모두', birthdate: data.birthdate, bio: data.bio || '' };
+    playerProfile = { name: data.name, gender: data.gender, interest: data.interest || deriveInterest(data.gender), birthdate: data.birthdate, bio: data.bio || '' };
     return true;
   }
   playerProfile = null;
@@ -1049,18 +1040,18 @@ $('save-profile-btn').addEventListener('click', async () => {
 
   if (!name) { showProfileError(t('profileErrName')); return; }
   if (!selectedGender) { showProfileError(t('profileErrGender')); return; }
-  if (!selectedInterest) { showProfileError(t('profileErrInterest')); return; }
   if (!birth) { showProfileError(t('profileErrBirth')); return; }
 
   const age = calcAge(birth);
   if (age < 19) { showProfileError(t('profileErrAge')); return; }
 
-  playerProfile = { name, gender: selectedGender, interest: selectedInterest, birthdate: birth, bio };
+  const interest = deriveInterest(selectedGender);
+  playerProfile = { name, gender: selectedGender, interest, birthdate: birth, bio };
 
   try {
     const snap = await playerDocRef().get();
     const existingCoins = (snap.exists && typeof snap.data().coins === 'number') ? snap.data().coins : 50;
-    await playerDocRef().set({ name, gender: selectedGender, interest: selectedInterest, birthdate: birth, bio, coins: existingCoins }, { merge: true });
+    await playerDocRef().set({ name, gender: selectedGender, interest, birthdate: birth, bio, coins: existingCoins }, { merge: true });
     goTo('screen-charlist');
   } catch (err) {
     showProfileError(t('profileErrSavePrefix') + err.message);
@@ -1078,12 +1069,6 @@ function prefillProfileForm() {
       b.classList.toggle('active', b.dataset.val === playerProfile.gender);
     });
     selectedGender = playerProfile.gender;
-  }
-  if (playerProfile.interest) {
-    document.querySelectorAll('#p-interest button').forEach(b => {
-      b.classList.toggle('active', b.dataset.val === playerProfile.interest);
-    });
-    selectedInterest = playerProfile.interest;
   }
 }
 
@@ -1201,6 +1186,64 @@ async function openSubscribeScreen() {
   goTo('screen-subscribe');
   const meta = await getBillingMeta();
   renderSubscribeScreen(meta);
+}
+
+// =====================================================
+// 임시 캐릭터 아바타 (2026-08-18) — 실제 사진/일러스트가 없는 동안,
+// "이미지 준비 중" 빈 화면 대신 캐릭터마다 다른 색감·상징의 간단한 그라데이션
+// 아바타를 코드로 만들어서 보여준다. 나중에 형균님이 실제 이미지를 만들면
+// 이 자리를 <img> 태그로 교체하면 됨 (char-avatar 목록용, intro-portrait 상세용 모두 동일 함수 사용).
+const AVATAR_THEME = {
+  seoyeon: { letter: '서', from: '#f3c9e0', to: '#8a63d6', symbol: 'moon' },   // 서연 — 차분한 로즈+라벤더, 초승달(다정하지만 속으로 기대고 싶은 마음)
+  jisu:    { letter: '지', from: '#ffd9a0', to: '#e8709f', symbol: 'sun' },    // 지수 — 밝은 코랄+골드, 햇살(발랄한 ENFP)
+  haeun:   { letter: '하', from: '#ffc7d9', to: '#f6e2ae', symbol: 'bloom' },  // 하은 — 핑크+골드, 꽃(쉬움 난이도, 밝은 성격)
+  yujin:   { letter: '유', from: '#b79aef', to: '#3d2f6b', symbol: 'star' },   // 유진 — 깊은 인디고, 별(내향적 INFJ)
+  doyoon:  { letter: '도', from: '#ffe9b0', to: '#5fb0a3', symbol: 'sun' },    // 도윤 — 골드+틸, 햇살(다정한 리더형 ENFJ)
+  siwoo:   { letter: '시', from: '#c9c9d6', to: '#3b3b4f', symbol: 'aperture' }, // 시우 — 차콜+실버, 카메라 조리개(사진관 사장, 츤데레)
+  eunho:   { letter: '은', from: '#ffe08a', to: '#ff8a65', symbol: 'sun' },    // 은호 — 오렌지+옐로, 햇살(활발한 ENFP)
+  jiyeon:  { letter: '지', from: '#dfc9f3', to: '#5a4a8a', symbol: 'moon' },   // 지연 — 라벤더+딥퍼플, 초승달(테스트용, 혼란스러운 감정)
+  junyoung:{ letter: '준', from: '#a9d8d0', to: '#3f6e64', symbol: 'aperture' }, // 준영 — 민트+틸, 조리개(테스트용, 동료)
+};
+
+function avatarSymbolPath(symbol) {
+  switch (symbol) {
+    case 'moon':
+      return '<path d="M62 34 A22 22 0 1 0 62 66 A17 17 0 1 1 62 34 Z" fill="rgba(255,255,255,0.55)"/>';
+    case 'sun':
+      return '<g stroke="rgba(255,255,255,0.55)" stroke-width="3" stroke-linecap="round">' +
+        '<line x1="50" y1="26" x2="50" y2="34"/><line x1="50" y1="66" x2="50" y2="74"/>' +
+        '<line x1="26" y1="50" x2="34" y2="50"/><line x1="66" y1="50" x2="74" y2="50"/>' +
+        '<line x1="33" y1="33" x2="38" y2="38"/><line x1="62" y1="62" x2="67" y2="67"/>' +
+        '<line x1="67" y1="33" x2="62" y2="38"/><line x1="38" y1="62" x2="33" y2="67"/>' +
+        '<circle cx="50" cy="50" r="11" fill="rgba(255,255,255,0.55)" stroke="none"/></g>';
+    case 'bloom':
+      return '<g fill="rgba(255,255,255,0.55)">' +
+        '<ellipse cx="50" cy="36" rx="8" ry="13"/><ellipse cx="50" cy="64" rx="8" ry="13"/>' +
+        '<ellipse cx="36" cy="50" rx="13" ry="8"/><ellipse cx="64" cy="50" rx="13" ry="8"/>' +
+        '<circle cx="50" cy="50" r="7" fill="rgba(255,255,255,0.85)"/></g>';
+    case 'star':
+      return '<path d="M50 28 L56 44 L73 44 L59 54 L64 71 L50 61 L36 71 L41 54 L27 44 L44 44 Z" fill="rgba(255,255,255,0.55)"/>';
+    case 'aperture':
+      return '<g fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="3">' +
+        '<circle cx="50" cy="50" r="16"/><circle cx="50" cy="50" r="9" fill="rgba(255,255,255,0.35)" stroke="none"/>' +
+        '</g>';
+    default:
+      return '';
+  }
+}
+
+// key: STORIES[...].cast[].key, size: 렌더링될 정사각형 픽셀 크기
+function avatarSVG(key, size) {
+  const theme = AVATAR_THEME[key] || { letter: '♥', from: '#b79aef', to: '#8a63d6', symbol: 'star' };
+  const gradId = 'avgrad-' + key;
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" style="display:block;">
+    <defs><radialGradient id="${gradId}" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="${theme.from}"/><stop offset="100%" stop-color="${theme.to}"/>
+    </radialGradient></defs>
+    <circle cx="50" cy="50" r="50" fill="url(#${gradId})"/>
+    ${avatarSymbolPath(theme.symbol)}
+    <text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-size="30" font-family="'Gowun Batang','Noto Serif KR',serif" fill="rgba(255,255,255,0.92)" opacity="0.9">${theme.letter}</text>
+  </svg>`;
 }
 
 // =====================================================
@@ -1350,6 +1393,43 @@ const STORIES = {
       { type: 'narration', text: '신난 기색이 그대로 느껴지는 메시지가 바로 이어진다.' },
       { type: 'dialogue', text: '이번엔 저랑 페이스 맞춰서 같이 뛰어요! 끝나고 맛있는 것도 먹으러 가고요 ㅋㅋ', speaker: 'eunho' }
     ]
+  },
+  jiyeonTest: {
+    title: '[테스트] 지연',
+    subtitle: '지연 · ISFP · 아내 (다중 인물 테스트용)',
+    playable: true,
+    summary: {
+      intro: '중매로 만나 결혼한 지 3년 된 아내 지연. 형균(플레이어)은 처음부터 지연을 진심으로 좋아했지만, 지연은 그 정도로 마음이 뜨겁지는 않았다. 지연의 회사에는 입사 동기이자 요즘 부쩍 편하게 지내는 동료 준영이 있다.',
+      situation: '며칠 전, 지연의 회사 앞에 마중을 나갔다가 지연이 준영과 다정하게 팔짱을 끼고 걸어 나오는 모습을 목격했다. 그날 이후로 집안 공기가 어색하다. 오늘 저녁, 그 일에 대해 처음으로 말을 꺼내려는 참이다.'
+    },
+    cast: [
+      {
+        key: 'jiyeon', name: '지연', mbti: 'ISFP', role: '아내', gender: '여성',
+        tier: '어려움', multiplier: 0.7,
+        persona: 'ISFP답게 감정이 여리고 내향적이며, 속마음을 잘 드러내지 않고 혼자 삭이는 편이다. 갈등 상황에서 방어적이거나 회피적인 태도를 보이기 쉽고, 티 나지 않게 눈치를 보며 조심스럽게 말한다. 결혼 생활 자체에 불만은 없지만 뜨거운 애정도 없었고, 준영과 가까워지며 스스로도 설명하기 어려운 혼란스러운 감정을 느끼는 중이다. 그 사실을 들키고 싶어하지 않는다.',
+        secretArc: {
+          description: '지연은 준영에게 끌리는 감정을 스스로도 인정하고 싶어하지 않는다. 겉으로는 "그냥 편한 동료"라고 선을 긋지만, 마음 한편으로는 자신도 혼란스러워하고 있다. 이 혼란은 플레이어를 밀어내려는 것이 아니라, 부부 관계에서 느껴본 적 없던 감정을 처음 느낀 데서 오는 불안이다. 1단계에서는 이 혼란을 절대 직접 인정하지 않고 회피한다.',
+          stage1Text: '이번 턴부터, 지연이 준영 이야기가 나올 때마다 유독 말을 아끼거나 화제를 돌리려는 모습을 자연스럽게 반영해라. 아직 속마음을 직접 드러내지 말고, 방어적이고 조심스러운 태도만 드러내라.',
+          stage2Text: '플레이어가 지연을 다그치지 않고 진심으로 다가와 준 흐름이 이어져 왔다면, 이번 턴에서 지연이 처음으로 "나도 내 마음이 뭔지 잘 모르겠어, 그냥 편했던 것뿐인데 요즘은 나도 헷갈려" 같은 취지의 솔직한 혼란을 조심스럽게 털어놓도록 하라. 이 고백은 지연에게 큰 용기가 필요한 순간이며, 플레이어를 떠나겠다는 선언이 아니라 함께 풀어가고 싶다는 여지로 다뤄라.'
+        }
+      },
+      {
+        key: 'junyoung', name: '준영', mbti: 'ENFP', role: '지연의 회사 동료', gender: '남성',
+        tier: '보통', multiplier: 1.0,
+        persona: 'ENFP답게 사교적이고 편안한 분위기를 잘 만들며, 지연을 대할 때 스스럼없이 다정하다. 다만 지연이 기혼이라는 사실을 알고 있고, 선을 넘으려는 의도는 없다고 스스로 생각한다. 눈치가 빠르고 갈등을 싫어해 상황이 불편해지면 한 발 물러서는 편이다. 말투는 가볍고 유쾌하다.',
+        secretArc: {
+          description: '준영도 지연에게 동료 이상의 호감을 느끼고 있다는 걸 어렴풋이 자각하고 있지만, 지연이 기혼자라는 사실 때문에 그 감정을 애써 누르고 있다. 1단계에서는 이를 전혀 내비치지 않는다.',
+          stage1Text: '이번 턴부터, 준영이 지연과의 관계를 언급할 때 평소보다 조심스러워하거나 살짝 거리를 두려는 기색을 은근히 드러내라. 속마음을 직접 밝히지는 마라.',
+          stage2Text: '흐름이 자연스럽게 이어졌다면, 이번 턴에서 준영이 "사실 나도 어느 순간부터 조심하고 있었어요, 지연씨는 좋은 사람이니까"처럼 스스로 선을 지키려 했다는 취지를 담담하게 인정하도록 하라. 이는 준영이 갈등을 키우지 않고 물러서는 방향의 장면으로 다뤄라.'
+        }
+      }
+    ],
+    openingBeats: (name) => [
+      { type: 'narration', text: `저녁 식사 자리, 며칠 전 그 일 이후로 둘 사이엔 평소보다 조용한 공기가 흐른다. 지연이 젓가락을 만지작거리다가, 먼저 말을 꺼낸다.` },
+      { type: 'dialogue', text: `${name}씨... 그때부터 계속 말이 없네. 나한테 하고 싶은 말 있으면 그냥 해도 돼.`, speaker: 'jiyeon' },
+      { type: 'narration', text: '애써 담담한 척하지만, 시선은 자꾸 그릇 언저리를 맴돈다.' },
+      { type: 'dialogue', text: '...회사 앞에서 있었던 거, 그냥 넘어질 뻔해서 잡아준 거였어. 별거 아니야.', speaker: 'jiyeon' }
+    ]
   }
 };
 
@@ -1379,7 +1459,7 @@ function renderStoryList() {
     const story = STORIES[id];
     const card = document.createElement('div');
     card.className = 'char-card';
-    const avatars = story.cast.map(c => `<div class="char-avatar" style="width:32px;height:32px;font-size:9px;">${c.name}</div>`).join('');
+    const avatars = story.cast.map(c => `<div class="char-avatar" style="width:32px;height:32px;font-size:9px;">${avatarSVG(c.key, 32)}</div>`).join('');
     const badges = story.cast.map(c => `<span class="diff-badge diff-${tierClass(c.tier)}">${c.name} ${c.tier}</span>`).join('');
     const desc = story.subtitle || '';
     card.innerHTML = `
@@ -1403,6 +1483,7 @@ function openStoryIntro(storyId) {
   pendingStoryId = storyId;
   $('charintro-title').textContent = story.title;
   $('charintro-subtitle').textContent = story.subtitle || '';
+  $('intro-portrait').innerHTML = avatarSVG(story.cast[0].key, 140);
   $('charintro-cast').innerHTML = story.cast.map(c => `<span class="diff-badge diff-${tierClass(c.tier)}">${c.name} · 난이도 ${c.tier}</span>`).join('');
   $('intro-box').innerHTML = `<b>소개</b> ${story.summary.intro}<br/><br/><b>상황</b> ${story.summary.situation}`;
   goTo('screen-charintro');
