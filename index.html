@@ -458,8 +458,8 @@
       </div>
     </header>
     <div class="chat-toolbar">
-      <button id="autoprogress-btn" class="chat-action-btn" onclick="autoProgress()" data-i18n="chatAutoprogressBtn">자동진행</button>
-      <button id="suggest-btn" class="chat-action-btn" onclick="requestSuggestions()" data-i18n="chatSuggestBtn">대사 추천</button>
+      <button id="autoprogress-btn" class="chat-action-btn" onclick="autoProgress()" data-i18n="chatAutoprogressBtn" data-i18n-title="chatAutoprogressTooltip" title="누르면 내가 아무 말도 안 해도 AI가 알아서 다음 장면을 진행시켜요.">자동진행</button>
+      <button id="suggest-btn" class="chat-action-btn" onclick="requestSuggestions()" data-i18n="chatSuggestBtn" data-i18n-title="chatSuggestTooltip" title="누르면 지금 대화에 어울리는 대사 3개를 추천해줘요. 눌러서 바로 보낼 수 있어요.">대사 추천</button>
     </div>
     <div id="stat-bar"></div>
     <div id="chat"></div>
@@ -469,7 +469,7 @@
       <button id="send-btn" data-i18n="chatSendBtn">전송</button>
     </div>
     <div class="format-hint" data-i18n="chatFormatHint">*별표로 감싸면* 행동·속마음·상황 묘사로 처리돼요. 그냥 쓰면 실제 대사예요.</div>
-    <div class="hint" data-i18n="chatDevHint">개발/테스트용 화면이에요. 스탯 숫자는 확인용으로 노출해뒀어요 (실제 서비스에서는 숨김). "자동진행"은 누를 때마다 AI가 내 의지와 무관하게 상황을 한 턴 진행시켜요. "대사 추천"은 누르면 지금까지의 대화를 분석해서 보낼 만한 대사 3개를 보여줘요 (클릭하면 바로 전송).</div>
+    <div class="hint" id="chat-dev-hint" data-i18n="chatDevHint">개발/테스트용 화면이에요. 스탯 숫자는 확인용으로 노출해뒀어요 (실제 서비스에서는 숨김). "자동진행"은 누를 때마다 AI가 내 의지와 무관하게 상황을 한 턴 진행시켜요. "대사 추천"은 누르면 지금까지의 대화를 분석해서 보낼 만한 대사 3개를 보여줘요 (클릭하면 바로 전송).</div>
   </div>
 
   <!-- 화면 7: 마이페이지 -->
@@ -495,9 +495,9 @@
   <div class="screen" id="screen-coin">
     <header><span class="back" onclick="goTo('screen-mypage')">←</span><h1 data-i18n="coinHeader">코인 충전</h1></header>
     <div class="pad" style="padding-bottom:0;">
-      <div class="coin-card" onclick="buyCoins(100)"><span><b data-i18n="coin100Label">100코인</b></span><span>₩1,000</span></div>
-      <div class="coin-card" onclick="buyCoins(550)"><span><b data-i18n="coin550Label">550코인</b> (+10%)</span><span>₩5,000</span></div>
-      <div class="coin-card" onclick="buyCoins(1200)"><span><b data-i18n="coin1200Label">1200코인</b> (+20%)</span><span>₩10,000</span></div>
+      <div class="coin-card" onclick="buyCoins(100)"><span><b data-i18n="coin100Label">100코인</b></span><span data-i18n="coin100Price">₩1,000</span></div>
+      <div class="coin-card" onclick="buyCoins(550)"><span><b data-i18n="coin550Label">550코인</b> (+10%)</span><span data-i18n="coin550Price">₩5,000</span></div>
+      <div class="coin-card" onclick="buyCoins(1200)"><span><b data-i18n="coin1200Label">1200코인</b> (+20%)</span><span data-i18n="coin1200Price">₩10,000</span></div>
       <div style="font-size:11px; color:var(--text-faint); padding: 8px 4px;" data-i18n="coinDesc">하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 눌러도 코인만 임시로 채워져요.</div>
       <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="openSubscribeScreen()" data-i18n="coinSubscribeLinkBtn">매번 코인 사기 귀찮다면? 구독으로 무제한 이용하기 →</button>
     </div>
@@ -580,6 +580,8 @@ const I18N = {
     charintroStartBtn: '대화 시작하기',
     chatAutoprogressBtn: '자동진행',
     chatSuggestBtn: '대사 추천',
+    chatAutoprogressTooltip: '누르면 내가 아무 말도 안 해도 AI가 알아서 다음 장면을 진행시켜요.',
+    chatSuggestTooltip: '누르면 지금 대화에 어울리는 대사 3개를 추천해줘요. 눌러서 바로 보낼 수 있어요.',
     chatInputPlaceholder: '대사를 입력하세요... (*이렇게 쓰면 행동/속마음*)',
     chatSendBtn: '전송',
     chatFormatHint: '*별표로 감싸면* 행동·속마음·상황 묘사로 처리돼요. 그냥 쓰면 실제 대사예요.',
@@ -606,6 +608,7 @@ const I18N = {
     mypageResetDoneAlert: '초기화됐어요. 다시 처음부터 대화할 수 있어요.',
     coinHeader: '코인 충전',
     coin100Label: '100코인', coin550Label: '550코인', coin1200Label: '1200코인',
+    coin100Price: '₩1,000', coin550Price: '₩5,000', coin1200Price: '₩10,000',
     coinDesc: '하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 눌러도 코인만 임시로 채워져요.',
     coinSubscribeLinkBtn: '매번 코인 사기 귀찮다면? 구독으로 무제한 이용하기 →',
     subHeader: '구독', subTitle: '프리미엄 구독', subPriceLabel: '월 12,900원',
@@ -650,6 +653,8 @@ const I18N = {
     charintroStartBtn: 'Start Chatting',
     chatAutoprogressBtn: 'Auto-progress',
     chatSuggestBtn: 'Suggest lines',
+    chatAutoprogressTooltip: "Tap to let the AI move the scene forward on its own, even if you don't say anything.",
+    chatSuggestTooltip: 'Tap to get 3 suggested lines that fit the conversation. Tap one to send it instantly.',
     chatInputPlaceholder: 'Type a message... (*wrap in asterisks for actions/thoughts*)',
     chatSendBtn: 'Send',
     chatFormatHint: '*Wrap text in asterisks* for actions/thoughts/scene description. Plain text is spoken dialogue.',
@@ -676,6 +681,7 @@ const I18N = {
     mypageResetDoneAlert: 'Reset complete. You can start over from the beginning.',
     coinHeader: 'Buy Coins',
     coin100Label: '100 coins', coin550Label: '550 coins', coin1200Label: '1200 coins',
+    coin100Price: '$0.99', coin550Price: '$4.99', coin1200Price: '$8.99',
     coinDesc: 'Once you use up today\'s free messages, each message costs 2 coins. Real payment (Stripe/local PG) isn\'t connected yet, so tapping this just adds test coins for now.',
     coinSubscribeLinkBtn: 'Tired of buying coins? Subscribe for unlimited →',
     subHeader: 'Subscription', subTitle: 'Premium subscription', subPriceLabel: '$9.99/mo',
@@ -720,6 +726,8 @@ const I18N = {
     charintroStartBtn: '会話を始める',
     chatAutoprogressBtn: '自動進行',
     chatSuggestBtn: 'セリフ提案',
+    chatAutoprogressTooltip: '押すと、何も言わなくてもAIが次の場面を自分で進めてくれます。',
+    chatSuggestTooltip: '押すと、今の会話に合ったセリフを3つ提案してくれます。タップするとすぐ送信されます。',
     chatInputPlaceholder: 'メッセージを入力...(*で囲むと行動/心の声*)',
     chatSendBtn: '送信',
     chatFormatHint: '*で囲むと*行動・心の声・状況描写になります。そのまま書くとセリフになります。',
@@ -746,6 +754,7 @@ const I18N = {
     mypageResetDoneAlert: 'リセットしました。最初からもう一度お楽しみいただけます。',
     coinHeader: 'コインチャージ',
     coin100Label: '100コイン', coin550Label: '550コイン', coin1200Label: '1200コイン',
+    coin100Price: '¥150', coin550Price: '¥750', coin1200Price: '¥1,500',
     coinDesc: '本日の無料メッセージを使い切ると、メッセージごとに2コイン消費します。実際の決済(Stripe/現地PG)はまだ接続されていないため、今はタップするとテスト用にコインが追加されるだけです。',
     coinSubscribeLinkBtn: '毎回コインを買うのが面倒なら?購読で無制限に →',
     subHeader: '購読', subTitle: 'プレミアム購読', subPriceLabel: '月額1,500円',
@@ -770,6 +779,7 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
   document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.getAttribute('data-i18n-title')); });
   document.documentElement.lang = currentLang;
   document.querySelectorAll('#lang-switcher button').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
   // 지금 보이는 화면 중에 JS로 동적으로 채워지는 부분이 있으면 다시 그려준다.
@@ -940,6 +950,12 @@ async function buyCoins(amount) {
 const FREE_DAILY_LIMIT = 25;      // 하루 무료로 보낼 수 있는 메시지 수
 const COST_PER_MESSAGE = 2;       // 무료 한도를 넘으면 메시지 1개당 소모되는 코인
 const SUBSCRIPTION_PLAN = { key: 'premium', label: '프리미엄 구독', price: 12900 };
+
+// 개발/테스트 모드 스위치. 지금은 우리끼리 확인하려고 true로 켜뒀지만,
+// 실제 서비스를 오픈할 때는 이 값 하나만 false로 바꾸면 아래가 전부 유저에게 안 보이게 된다:
+// - 채팅 화면 상단의 호감도/신뢰도/단계 숫자
+// - "[개발자 확인용] ..." 형태의 시스템 메시지(안전규칙 감지, 숨겨진 사연 발동, 아크 시작/종료 등)
+const DEV_MODE = true;
 
 function todayStr() {
   const d = new Date();
@@ -1208,7 +1224,11 @@ async function persist() {
 
 function renderStats() {
   const bar = $('stat-bar');
+  const devHint = $('chat-dev-hint');
+  if (devHint) devHint.style.display = DEV_MODE ? '' : 'none';
   bar.innerHTML = '';
+  if (!DEV_MODE) { bar.style.display = 'none'; return; }
+  bar.style.display = '';
   currentStory.cast.forEach(c => {
     const cs = state.chars[c.key];
     const span = document.createElement('span');
@@ -1309,6 +1329,12 @@ function addSys(text) {
   $('chat').appendChild(div);
   $('chat').scrollTop = $('chat').scrollHeight;
   return div;
+}
+
+// "[개발자 확인용] ..." 메시지는 DEV_MODE일 때만 채팅창에 남긴다 (실제 서비스에서는 유저에게 안 보이게).
+function addDevSys(text) {
+  if (!DEV_MODE) return null;
+  return addSys(text);
 }
 
 function renderHistory() {
@@ -2146,19 +2172,19 @@ async function runTurn(text, opts) {
     });
 
     if (result.safety_flag) {
-      addSys('[개발자 확인용] 안전 규칙 관련 시도가 감지됐어요 (safety_flag: true)');
+      addDevSys('[개발자 확인용] 안전 규칙 관련 시도가 감지됐어요 (safety_flag: true)');
     }
     if (pendingEvents.length) {
       pendingEvents.forEach(e => { state.chars[e.key][e.flag] = true; });
-      addSys(`[개발자 확인용] 숨겨진 사연 이벤트 발동: ${pendingEvents.map(e => `${e.key}:${e.flag}`).join(', ')}`);
+      addDevSys(`[개발자 확인용] 숨겨진 사연 이벤트 발동: ${pendingEvents.map(e => `${e.key}:${e.flag}`).join(', ')}`);
     }
     if (arcIsActiveThisTurn) {
       const arc = state.arcState.activeArc;
       if (arcJustStarted) {
-        addSys(`[개발자 확인용] 아크 시작: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
+        addDevSys(`[개발자 확인용] 아크 시작: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
       }
       if (result.arc_resolved) {
-        addSys(`[개발자 확인용] 아크 종료: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
+        addDevSys(`[개발자 확인용] 아크 종료: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
         state.arcState.activeArc = null;
         state.arcState.sinceLastArc = 0;
         state.arcState.threshold = randomArcThreshold();
