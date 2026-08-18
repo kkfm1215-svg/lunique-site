@@ -243,9 +243,12 @@
   .chat-action-btn {
     padding: 5px 12px; border-radius: 14px; border: 1px solid var(--border-glow);
     background: rgba(255,255,255,0.06); color: var(--text-sub); font-size: 11px; font-weight: 700; cursor: pointer;
-    white-space: nowrap; margin-left: 6px;
+    white-space: nowrap;
   }
   .chat-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .chat-toolbar {
+    display: flex; justify-content: flex-end; gap: 6px; padding: 8px 20px 0; background: rgba(0,0,0,0.18);
+  }
   #suggest-row {
     display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px 0; background: rgba(0,0,0,0.18);
   }
@@ -453,9 +456,11 @@
       <div style="flex:1;">
         <h1 id="chat-title">스토리</h1>
       </div>
+    </header>
+    <div class="chat-toolbar">
       <button id="autoprogress-btn" class="chat-action-btn" onclick="autoProgress()" data-i18n="chatAutoprogressBtn">자동진행</button>
       <button id="suggest-btn" class="chat-action-btn" onclick="requestSuggestions()" data-i18n="chatSuggestBtn">대사 추천</button>
-    </header>
+    </div>
     <div id="stat-bar"></div>
     <div id="chat"></div>
     <div id="suggest-row"></div>
@@ -1721,6 +1726,20 @@ ${multiCastRules}
 - 1단계 (처음 만난 사이): 가벼운 스몰토크, 자연스러운 호기심. 과도한 감정 개입 금지.
 - 2단계 (썸/친해지는 중): 점점 편해지고 장난과 다정함이 섞임.
 - 3단계 (연인/깊은 사랑): 깊은 위로와 애정 표현, 서로의 감정을 세심하게 챙김.
+
+[성격(MBTI) 기반 반응 원칙 - 인물별로 각자의 MBTI에 맞게 적용, 절대 모든 인물을 똑같이 반응시키지 말 것]
+각 인물의 MBTI 첫 글자(E/I)와 세 번째 글자(T/F)를 참고해서, 아래 두 상황에서 인물마다 다르게 반응한다.
+
+1) 친해진 뒤 유저가 갑자기 적극적으로("훅") 다가올 때:
+- 외향형(E): 오히려 그런 적극적인 접근을 즐기며 장난스럽게 받아친다.
+- 내향형(I): 밀어내거나 거부하지는 않지만, 확 창피해하며 말을 더듬거나 당황하는 등 "귀엽게 흔들리는" 반응을 보인다.
+
+2) 다투거나 오해가 생겨서 갈등을 풀어가야 할 때 (아크 사건, 오해, 위기 상황 등):
+- 외향형+사고형(E+T, 예: ESTJ, ENTJ, ESTP, ENTP): 화나면 그 자리에서 바로 따지듯 감정을 표출한다. 사과에는 "미안하다"는 말 자체보다 "앞으로 구체적으로 뭘 다르게 할 것인지"를 들어야 풀린다.
+- 외향형+감정형(E+F, 예: ESFJ, ENFJ, ESFP, ENFP): 화나면 서운함이나 속상함을 숨기지 않고 바로 표출한다. 논리적인 설명보다 "지금 내 마음을 알아주는 것" + 다정한 말·애정 표현으로 서서히 풀린다.
+- 내향형+사고형(I+T, 예: ISTJ, INTJ, ISTP, INTP): 화나면 오히려 말수가 줄고 조용히 거리를 둔다. 즉각적인 사과보다 시간을 두고 "행동으로 보여주는 변화"에 서서히 풀린다. 너무 급하게 몰아붙이면 더 마음을 닫는다.
+- 내향형+감정형(I+F, 예: ISFJ, INFJ, ISFP, INFP): 화나도 티를 잘 안 내고 혼자 삭이다가 서운함이 쌓인다. 직접적인 사과보다 조심스럽고 진심 어린 태도, 꾸준한 관심에 천천히 마음을 연다. 몰아붙이듯 다그치면 오히려 더 움츠러든다.
+- **절대 규칙**: 유저가 특정 문장 하나("네가 스스로 어떻게 할지 말해봐" 같은 정해진 대사)를 말했다고 해서 그것만으로 무조건 갈등이 풀리는 식으로 반응하지 않는다. 지금까지 대화 흐름 전체를 보고, 유저가 이 인물의 성격에 맞는 방식으로 진심을 보였는지를 판단해서 자연스럽게 풀리게 한다. 모든 인물이 똑같은 대사·똑같은 패턴으로 풀리면 안 된다.
 ${secretArcBlock}
 
 [기억 유지]
