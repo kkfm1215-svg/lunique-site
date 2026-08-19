@@ -1417,6 +1417,11 @@ const STORIES = {
       {
         key: 'jiyeon', name: '지연', mbti: 'ISFP', role: '아내', gender: '여성',
         tier: '어려움', multiplier: 0.7,
+        // 라이벌 사이클 진행 축(host): 이 스토리에서 "새로운 라이벌이 계속 등장할 수 있는" 축이 되는 인물.
+        // 준영(첫 라이벌)이 물러난(rivalDeparted) 뒤, 아크 시스템이 무작위로("한 번은 잔잔한 일상 아크,
+        // 한 번은 새 라이벌 위기" 식으로 랜덤) 완전히 새로운 인물을 라이벌로 등장시킬 수 있다.
+        // 자세한 로직은 maybeTriggerArc()/rivalCycleEligible() 참고.
+        rivalCycleHost: true,
         // 감정 좌표(기존 secretArc를 대체): (1) 기본 감정 - 형균에게 안정적인 애정이 있다(뜨거운 설렘은 아니지만
         // 진심으로 좋아하고 신뢰함). (2) 부차 감정 - 그 안정적 애정이 있는 상태에서 준영에게 끌리기 때문에,
         // 죄책감/미안함이 논리적으로 항상 따라온다(있다/없다를 즉흥으로 정하지 않는다). (3) 표현 방식 - ISFP 특성상
@@ -1534,7 +1539,12 @@ function defaultStateFor(story) {
   // 매번 "전화" 같은 같은 계기만 반복해서 쓰지 않도록, 최근에 쓴 계기는 AI에게 "피하라"고 알려주는 데 쓰인다.
   // failedAt/failedLockoutDays: 인연이 실패한 시각(ms)과, 다시 만날 수 있기까지 걸리는 기간(일). 실패하지
   // 않았거나 이미 재회했다면 둘 다 null.
-  return { history: [], chars, arcState: defaultArcState(), collectionStatus: 'active', factLedger: [], recentRivalTriggers: [], failedAt: null, failedLockoutDays: null };
+  // dynamicCast: 라이벌 사이클 시스템으로 게임 도중 AI가 새로 만들어낸 라이벌 인물들을 저장해두는 목록
+  // (원래 story.cast는 코드에 미리 정의된 고정 목록이라, 게임 중 새로 생긴 인물은 여기 따로 저장했다가
+  // 다음에 이어할 때 story.cast와 합쳐서 복원한다). rivalCycleIndex: 지금까지 몇 번째 라이벌인지(준영=1).
+  // activeRivalKey: 지금 활성화된(아직 안 물러난) 라이벌의 key — 새 라이벌 사이클을 열어도 되는지 판단할 때 쓰인다.
+  const initialRival = story.cast.find(c => c.retreatOnLowGauge);
+  return { history: [], chars, arcState: defaultArcState(), collectionStatus: 'active', factLedger: [], recentRivalTriggers: [], failedAt: null, failedLockoutDays: null, dynamicCast: [], rivalCycleIndex: 1, activeRivalKey: initialRival ? initialRival.key : null };
 }
 
 // 동시에 진행할 수 있는 인연의 최대 개수. 이벤트 캐릭터(나중에 운영자 페이지에서 추가 예정)는
@@ -1603,8 +1613,20 @@ async function loadStoryState(storyId) {
   if (!Array.isArray(state.recentRivalTriggers)) state.recentRivalTriggers = []; // 라이벌 재등장 계기 다양화 장치 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (state.failedAt === undefined) state.failedAt = null; // 실패/재회 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (state.failedLockoutDays === undefined) state.failedLockoutDays = null;
+  // 라이벌 사이클 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
+  if (!Array.isArray(state.dynamicCast)) state.dynamicCast = [];
+  if (!state.rivalCycleIndex) state.rivalCycleIndex = 1;
+  if (state.activeRivalKey === undefined) {
+    const initialRival = story.cast.find(c => c.retreatOnLowGauge);
+    state.activeRivalKey = initialRival ? initialRival.key : null;
+  }
+  state.dynamicCast.forEach(c => {
+    if (!state.chars[c.key]) state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
+  });
   currentStoryId = storyId;
-  currentStory = story;
+  // story.cast는 코드에 미리 정의된 공용 템플릿이라 직접 수정하면 안 되므로, 복사본을 만들고 그 위에
+  // 이 세이브에서 게임 중 새로 생긴 라이벌(dynamicCast)을 합쳐서 이번 세션에서만 쓸 currentStory를 구성한다.
+  currentStory = Object.assign({}, story, { cast: JSON.parse(JSON.stringify(story.cast)).concat(state.dynamicCast) });
   resetLastKnownSpeaker(); // 스토리를 새로 열 때마다 "직전 화자 기억"도 초기화 (다른 스토리 화자가 섞여 들어가지 않도록)
 }
 
@@ -1760,7 +1782,10 @@ function snapshotState() {
     collectionStatus: state.collectionStatus || 'active',
     recentRivalTriggers: JSON.parse(JSON.stringify(state.recentRivalTriggers || [])),
     failedAt: state.failedAt || null,
-    failedLockoutDays: state.failedLockoutDays || null
+    failedLockoutDays: state.failedLockoutDays || null,
+    dynamicCast: JSON.parse(JSON.stringify(state.dynamicCast || [])),
+    rivalCycleIndex: state.rivalCycleIndex || 1,
+    activeRivalKey: state.activeRivalKey || null
   };
 }
 
@@ -1776,6 +1801,13 @@ async function rewindToTurn(historyIndex) {
   state.recentRivalTriggers = JSON.parse(JSON.stringify(entry.beforeState.recentRivalTriggers || []));
   state.failedAt = entry.beforeState.failedAt || null;
   state.failedLockoutDays = entry.beforeState.failedLockoutDays || null;
+  // 되돌리는 시점 이후에 새로 생긴 라이벌(dynamicCast)이 있었다면 함께 되돌리고, currentStory.cast도
+  // 그 시점 기준으로 다시 만들어서(원본 story.cast + 되돌려진 dynamicCast) 화면에 안 맞는 인물이 안 남게 한다.
+  state.dynamicCast = JSON.parse(JSON.stringify(entry.beforeState.dynamicCast || []));
+  state.rivalCycleIndex = entry.beforeState.rivalCycleIndex || 1;
+  state.activeRivalKey = entry.beforeState.activeRivalKey || null;
+  const baseStory = STORIES[currentStoryId];
+  currentStory = Object.assign({}, baseStory, { cast: JSON.parse(JSON.stringify(baseStory.cast)).concat(state.dynamicCast) });
   state.history = state.history.slice(0, historyIndex);
   resetLastKnownSpeaker();
   await persist();
@@ -2098,14 +2130,50 @@ function isCoupleStageReached(state, story) {
   return story.cast.some(c => state.chars[c.key] && state.chars[c.key].stage >= 3);
 }
 
+// ===== 라이벌 사이클 시스템 =====
+// 준영처럼 "라이벌 감정 게이지 + 낮은 상태 지속 시 퇴장"이 설정된 인물이 실제로 물러나고 나면,
+// 이야기가 거기서 완전히 끝나는 게 아니라 아크 시스템이 돌아가는 동안 무작위로 완전히 새로운 인물이
+// 다시 위협으로 등장할 수 있다. 매번 등장하는 건 아니고(잔잔한 일상 아크가 나올 수도 있음), 등장할
+// 때마다 이전보다 좀 더 집요해진다(cycleIndex가 커질수록 강도/streakNeeded 상승).
+const RIVAL_CRISIS_CHANCE = 0.4; // 아크가 발동하는 시점마다, 라이벌 사이클이 열려있으면 이 확률로 "새 라이벌 위기"가 대신 뽑힌다.
+
+// 지금 새 라이벌 사이클을 시작할 수 있는 상태인지: host 인물이 있고, 지금 활성화된 라이벌(activeRivalKey)이
+// 이미 물러난(rivalDeparted) 상태여야 한다 — 라이벌이 아직 남아있는데 또 새 라이벌이 겹쳐 등장하진 않는다.
+function rivalCycleEligible(state, story) {
+  const host = story.cast.find(c => c.rivalCycleHost);
+  if (!host) return false;
+  const activeKey = state.activeRivalKey;
+  if (!activeKey) return false;
+  const cs = state.chars[activeKey];
+  return !!cs && cs.rivalDeparted === true;
+}
+
+// 사이클이 몇 번째인지(cycleIndex, 준영=1)에 따라 새 라이벌의 "집요함" 정도를 문장으로 표현.
+function rivalCycleIntensityText(cycleIndex) {
+  if (cycleIndex <= 2) return '이전 라이벌보다 조금 더 적극적으로 다가온다.';
+  if (cycleIndex === 3) return '이전 라이벌들보다 훨씬 집요하고, 한두 번 거절당한 정도로는 쉽게 물러나지 않는다.';
+  return '지금까지 등장했던 그 누구보다 대담하고 집요하며, 거절당해도 계속 다른 방식으로 접근을 시도한다(단, [절대 규칙] 1·2번의 한도는 항상 그대로 지킨다).';
+}
+// 사이클이 진행될수록, 게이지가 낮게 유지돼도 더 오래 버티다가 물러난다(퇴장까지 더 걸린다).
+function rivalCycleStreakNeeded(cycleIndex) {
+  return 6 + (cycleIndex - 1) * 2;
+}
+
 // 조건이 맞으면(사귀는 사이 + 턴 카운트 임계값 도달 + 진행 중인 아크 없음) 아크 창고에서
 // 하나를 뽑아 state.arcState.activeArc에 설정한다. 최근에 썼던 중분류(최대 3개)는 가능하면 피한다.
+// 라이벌 사이클이 열려있으면(rivalCycleEligible), 일정 확률로 일상 아크 대신 "새 라이벌 위기" 아크가 뽑힌다.
 function maybeTriggerArc(state, story) {
   if (!state.arcState) state.arcState = defaultArcState();
   const as = state.arcState;
   if (as.activeArc) return;
   if (!isCoupleStageReached(state, story)) return;
   if (as.sinceLastArc < as.threshold) return;
+
+  if (rivalCycleEligible(state, story) && Math.random() < RIVAL_CRISIS_CHANCE) {
+    const cycleIndex = (state.rivalCycleIndex || 1) + 1;
+    as.activeArc = { type: 'rivalCrisis', cycleIndex };
+    return;
+  }
 
   const candidates = [];
   Object.keys(ARC_WAREHOUSE).forEach(major => {
@@ -2117,7 +2185,7 @@ function maybeTriggerArc(state, story) {
   const chosen = pickRandomFrom(pool);
   const sub = pickRandomFrom(ARC_WAREHOUSE[chosen.major][chosen.mid]);
 
-  as.activeArc = { major: chosen.major, mid: chosen.mid, sub };
+  as.activeArc = { type: 'normal', major: chosen.major, mid: chosen.mid, sub };
   as.recentMids.push(chosen.mid);
   if (as.recentMids.length > 3) as.recentMids.shift();
 }
@@ -2126,6 +2194,9 @@ function maybeTriggerArc(state, story) {
 function buildArcDirective(state) {
   const arc = state && state.arcState && state.arcState.activeArc;
   if (!arc) return '';
+  if (arc.type === 'rivalCrisis') {
+    return `\n[아크 이벤트 지시 - 매우 중요, 새로운 라이벌 등장]\n지금까지 있었던 라이벌은 이미 정리됐다. 하지만 이 관계는 여기서 완전히 안전해지지 않는다 — 이번 턴에 완전히 새로운 인물을 하나 만들어서, 자연스러운 계기로 이야기에 등장시켜라. 이 인물은 형균-지연 관계를 다시 흔드는 새로운 위협이 된다.\n- 이름과 관계(직업/접점)는 네가 자유롭게 정한다. 이전 라이벌과는 다른 종류의 관계로 만들어라(예: 헬스장 트레이너, 동호회 사람, 옛 첫사랑, 새 이웃, 병원 관계자, 새 프로젝트 협업자 등 — 매번 다르게).\n- 이번 턴 beats 안에서 이 인물을 실제로 등장시키고, 맨 위 [지금까지 확정된 사실]과 지금까지의 대화 흐름에 자연스럽게 이어지는 계기로 만들어라(뜬금없는 등장 금지).\n- 지연의 반응은 이전 라이벌 때와 똑같을 필요는 없다 — 지금 지연-형균 사이의 신뢰가 이미 높다면, 지연은 이번엔 흔들리지 않고 단호하게 거절하는 쪽으로 그려도 된다(그게 더 자연스럽다). 다만 그 인물이 쉽게 물러나지 않고 계속 접근을 시도하는 것 자체가 이번 위기의 핵심이다. 또한 지연이 이 성가신 접근을 형균이 괜한 오해나 질투를 할까 봐 처음엔 굳이 말하지 않고 혼자 처리하려다가, 나중에 형균이 눈치채거나 직접 물어봐서(또는 추궁해서) 뒤늦게 전말이 드러나는 흐름으로 그려도 좋다 — 이 경우 갈등의 핵심은 "지연이 다른 사람에게 흔들렸는가"가 아니라 "형균이 그 사실을 몰랐다는 서운함/불안함을 어떻게 풀어가는가"가 된다. 어느 쪽으로 그릴지는 지금까지의 신뢰도·대화 흐름을 보고 자연스럽게 판단하라.\n- ${rivalCycleIntensityText(arc.cycleIndex)}\n- 이번 응답에서 반드시 이 인물을 등장시켜야 한다. 등장시켰다면 최상위 JSON의 "new_rival_key"(영문 소문자·숫자로 된 짧은 식별자, 예: "rival2" — 지금까지 쓰인 적 없는 새 값), "new_rival_name"(실제 이름), "new_rival_role"(관계/역할, 예: "헬스장 트레이너")을 반드시 채운다. 이 세 필드는 이번 턴에만 채우고, 그 외 모든 턴에는 항상 빈 문자열로 둔다.\n- 이 인물에 대해서도 [절대 규칙](노골적 성적 묘사 금지, AI가 임의로 완전한 불륜을 확정 짓지 않음)은 이전과 동일하게 항상 적용된다.`;
+  }
   return `\n[아크 이벤트 지시 - 매우 중요]\n지금부터 다음 사건을 스토리에 자연스럽게 등장시켜라: "${arc.sub}" (분류: ${arc.major} > ${arc.mid}).\n- 사건을 설명하듯 요약해서 말하지 말고, 지금까지의 대화 흐름과 각 인물의 성격에 맞게 자연스럽게 녹여서 전개하라.\n- 이 사건을 한 턴 만에 끝내지 않아도 되고, 몇 턴에 걸쳐 자연스럽게 펼쳐도 된다.\n- 이 사건이 이번 응답에서 자연스럽게 마무리(화해, 정리, 다음 단계로 넘어감 등)되었다고 판단되면 최상위 JSON에 "arc_resolved": true를 포함시켜라. 아직 진행 중이면 "arc_resolved": false로 둬라.\n- 매우 중요 (뜬금없는 사건 금지 — 반드시 지금까지의 삶과 이어질 것): 이 사건은 맨 위 [지금까지 확정된 사실] 목록과 지금까지의 대화에서 이미 확립된 인물의 직업·성격·인간관계·삶의 사건(예: 이미 아이를 낳았다, 이미 이직했다 등)과 자연스럽게 이어지는 "다음 이야기"여야 한다. 그 인물의 기존 설정과 아무 상관 없는 완전히 새로운 신분·직업·사건(예: 갑자기 대기업 사장이 되어 체포된다는 식)을 맥락 없이 새로 지어내지 않는다. 이미 확정된 삶의 사건이 있다면 그걸 적극적으로 활용해서 사건을 만들어라 (예: 이미 출산했다면 그 아이가 이번 사건에 실제로 등장할 수 있다). 또한 라이벌·제3자가 매 사건마다 반복 등장할 필요는 없다 — 등장 여부는 이 사건의 성격에 맞게 자연스럽게 판단하라.`;
 }
 
@@ -2295,7 +2366,10 @@ beats의 text를 다 쓴 다음, 최종 응답을 보내기 전에 문장을 스
   "key_facts": [이번 턴에 새로 확정되어 앞으로도 절대 뒤집으면 안 되는 중요한 사실이 있으면, 짧은 문장으로 하나씩 담는다. 예: "지연이 준영과 손을 잡은 적이 있음을 인정함", "준영이 형균과의 통화에서 지연과 특별한 사이였음을 인정함". 이런 사실이 새로 생기지 않은 평범한 턴에는 반드시 빈 배열 []로 둔다. 이미 [지금까지 확정된 사실]에 있는 내용은 중복해서 다시 넣지 않는다.],
   "rival_reappear_trigger": [다중 인물 스토리에서 [미해결 갈등을 살아있게 유지할 것] 규칙에 따라 갈등 당사자를 이번 턴에 자동으로 재등장시켰을 때만 "전화_또는_메시지" / "제3자_언급" / "우연한_마주침" / "기타" 중 하나로 표시. 그 장치를 안 쓴 평범한 턴에는 빈 문자열 ""로 둔다.],
   "relationship_ended": [위 [관계 파탄] 규칙에 따라 이번 턴에 실제로 관계가 완전히 끝나는 장면을 만들었으면 true, 그 외 모든 평범한 턴에는 false],
-  "rival_departed_key": [위 [라이벌 감정 게이지] 규칙에 따라, 라이벌 감정 게이지가 낮게 오래 유지된 인물이 이번 턴에 스스로 물러나는 장면을 만들었을 때만 그 인물의 key를 문자열로 표시(예: "junyoung"). 그 외 모든 평범한 턴에는 빈 문자열 ""로 둔다.]
+  "rival_departed_key": [위 [라이벌 감정 게이지] 규칙에 따라, 라이벌 감정 게이지가 낮게 오래 유지된 인물이 이번 턴에 스스로 물러나는 장면을 만들었을 때만 그 인물의 key를 문자열로 표시(예: "junyoung"). 그 외 모든 평범한 턴에는 빈 문자열 ""로 둔다.],
+  "new_rival_key": [[아크 이벤트 지시 - 새로운 라이벌 등장] 지시가 주어졌을 때만 의미 있음. 이번 턴에 새 라이벌을 실제로 등장시켰다면, 영문 소문자·숫자로 된 짧은 새 식별자(예: "rival2")를 넣는다. 그 외 모든 턴에는 반드시 빈 문자열 ""로 둔다.],
+  "new_rival_name": [new_rival_key를 채운 턴에만, 그 인물의 실제 이름. 그 외 턴에는 빈 문자열 ""로 둔다.],
+  "new_rival_role": [new_rival_key를 채운 턴에만, 그 인물과 지연의 관계/접점(예: "헬스장 트레이너"). 그 외 턴에는 빈 문자열 ""로 둔다.]
 }
 이번 턴에 등장하거나 스탯이 변하는 인물마다 char_deltas에 항목을 하나씩 넣는다. 아무 변화도 없으면 해당 인물은 생략해도 된다.
 
@@ -2409,9 +2483,12 @@ function buildGeminiRequestBody(userMessage) {
             enum: ["", "전화_또는_메시지", "제3자_언급", "우연한_마주침", "기타"]
           },
           relationship_ended: { type: "BOOLEAN" },
-          rival_departed_key: { type: "STRING" }
+          rival_departed_key: { type: "STRING" },
+          new_rival_key: { type: "STRING" },
+          new_rival_name: { type: "STRING" },
+          new_rival_role: { type: "STRING" }
         },
-        required: ["beats", "char_deltas", "safety_flag", "suggested_replies", "arc_resolved", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key"]
+        required: ["beats", "char_deltas", "safety_flag", "suggested_replies", "arc_resolved", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
       },
       temperature: 1.0
     }
@@ -2546,7 +2623,7 @@ async function callGeminiStream(userMessage, onBeat) {
         charDeltas.push(obj);
       }
     }
-    finalParsed = { beats, char_deltas: charDeltas, safety_flag: false, suggested_replies: [], arc_resolved: false, immersion_break: 'none', key_facts: [], rival_reappear_trigger: '', relationship_ended: false, rival_departed_key: '' };
+    finalParsed = { beats, char_deltas: charDeltas, safety_flag: false, suggested_replies: [], arc_resolved: false, immersion_break: 'none', key_facts: [], rival_reappear_trigger: '', relationship_ended: false, rival_departed_key: '', new_rival_key: '', new_rival_name: '', new_rival_role: '' };
   }
   if (!Array.isArray(finalParsed.suggested_replies)) finalParsed.suggested_replies = [];
   if (!finalParsed.immersion_break) finalParsed.immersion_break = 'none';
@@ -2554,6 +2631,9 @@ async function callGeminiStream(userMessage, onBeat) {
   if (typeof finalParsed.rival_reappear_trigger !== 'string') finalParsed.rival_reappear_trigger = '';
   if (typeof finalParsed.relationship_ended !== 'boolean') finalParsed.relationship_ended = false;
   if (typeof finalParsed.rival_departed_key !== 'string') finalParsed.rival_departed_key = '';
+  if (typeof finalParsed.new_rival_key !== 'string') finalParsed.new_rival_key = '';
+  if (typeof finalParsed.new_rival_name !== 'string') finalParsed.new_rival_name = '';
+  if (typeof finalParsed.new_rival_role !== 'string') finalParsed.new_rival_role = '';
   return finalParsed;
 }
 
@@ -2705,6 +2785,37 @@ async function runTurn(text, opts) {
     }
     state.history.push({ role: 'model', beats: result.beats || [] });
 
+    // 라이벌 사이클: 이번 턴에 AI가 완전히 새로운 라이벌을 등장시켰다고 표시했으면(new_rival_key),
+    // 이 인물을 currentStory.cast에 실제로 추가하고 상태를 초기화한다. char_deltas 처리보다 먼저 해야
+    // 같은 턴에 이 인물 앞으로 온 delta(rival_gauge_delta 등)가 정상적으로 반영된다.
+    if (result.new_rival_key && result.new_rival_name) {
+      const newKey = result.new_rival_key.trim();
+      const already = newKey && currentStory.cast.some(c => c.key === newKey);
+      if (newKey && !already) {
+        const cycleIndex = (state.rivalCycleIndex || 1) + 1;
+        state.rivalCycleIndex = cycleIndex;
+        const newName = result.new_rival_name.trim() || '새 인물';
+        const newRole = (result.new_rival_role || '').trim() || '새로운 인연';
+        const newMember = {
+          key: newKey, name: newName, role: newRole, gender: '', mbti: '',
+          tier: '보통', multiplier: 1.0,
+          completionRequired: false, // 라이벌 역할이지 연애 공략 대상이 아니므로 "인연 완성" 판정에서 제외
+          persona: `${newName}은(는) ${newRole}로 지연과 자연스럽게 가까워진 인물이다. 매력적이고 편안한 분위기를 만들 줄 알며, 지연에게 은근한 호감을 느끼고 있다. 지연이 기혼자라는 사실을 알면서도 자꾸 곁을 맴돈다. ${rivalCycleIntensityText(cycleIndex)}`,
+          rivalGaugeDef: {
+            target: '지연',
+            text: `지연이 이 인물 쪽으로 기우는 기색을 보이거나 형균이 지연에게 소홀하다는 인상을 주면 이 인물의 마음이 짙어진다. 반대로 지연이 형균에게 확실히 돌아서는 모습을 보이거나, 형균이 단호하지만 정중하게 선을 그으면 옅어진다. 아주 짙을 때는 이 인물이 훨씬 대담해져서 연락을 더 자주 하거나, 우연한 만남을 일부러 만들거나, 손을 잡으려 하는 등 위험 수위의 스킨십을 시도할 수도 있다(다만 [절대 규칙] 1·2번은 항상 그대로 지킨다). 아주 옅을 때는 스스로 조심하며 거리를 둔다. ${rivalCycleIntensityText(cycleIndex)}`
+          },
+          retreatOnLowGauge: { threshold: -40, streakNeeded: rivalCycleStreakNeeded(cycleIndex) }
+        };
+        currentStory.cast.push(newMember);
+        if (!Array.isArray(state.dynamicCast)) state.dynamicCast = [];
+        state.dynamicCast.push(newMember);
+        state.chars[newKey] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
+        state.activeRivalKey = newKey;
+        addDevSys(`[개발자 확인용] 새 라이벌 사이클 시작 (${cycleIndex}번째): ${newName} (${newRole})`);
+      }
+    }
+
     (result.char_deltas || []).forEach(d => {
       const castMember = currentStory.cast.find(c => c.key === d.character);
       const cs = state.chars[d.character];
@@ -2759,14 +2870,23 @@ async function runTurn(text, opts) {
     }
     if (arcIsActiveThisTurn) {
       const arc = state.arcState.activeArc;
-      if (arcJustStarted) {
-        addDevSys(`[개발자 확인용] 아크 시작: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
-      }
-      if (result.arc_resolved) {
-        addDevSys(`[개발자 확인용] 아크 종료: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
+      if (arc.type === 'rivalCrisis') {
+        // "새 라이벌 등장" 아크는 다른 아크와 달리 여러 턴에 걸쳐 진행되지 않고 이번 한 턴 안에서 끝난다
+        // (라이벌이 실제로 새로 등장했든 안 했든, 지시는 이번 턴에서 소진되고 다음 일상 아크 주기로 넘어간다).
+        if (arcJustStarted) addDevSys(`[개발자 확인용] 라이벌 사이클 아크 발동 (${arc.cycleIndex}번째)`);
         state.arcState.activeArc = null;
         state.arcState.sinceLastArc = 0;
         state.arcState.threshold = randomArcThreshold();
+      } else {
+        if (arcJustStarted) {
+          addDevSys(`[개발자 확인용] 아크 시작: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
+        }
+        if (result.arc_resolved) {
+          addDevSys(`[개발자 확인용] 아크 종료: ${arc.major} > ${arc.mid} — "${arc.sub}"`);
+          state.arcState.activeArc = null;
+          state.arcState.sinceLastArc = 0;
+          state.arcState.threshold = randomArcThreshold();
+        }
       }
     }
 
