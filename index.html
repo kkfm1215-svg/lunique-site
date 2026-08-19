@@ -2118,7 +2118,7 @@ function randomArcThreshold() {
 }
 
 function defaultArcState() {
-  return { activeArc: null, sinceLastArc: 0, threshold: randomArcThreshold(), recentMids: [] };
+  return { activeArc: null, sinceLastArc: 0, threshold: randomArcThreshold(), recentMids: [], recentShapes: [] };
 }
 
 function pickRandomFrom(arr) {
@@ -2159,6 +2159,40 @@ function rivalCycleStreakNeeded(cycleIndex) {
   return 6 + (cycleIndex - 1) * 2;
 }
 
+// "새 라이벌 위기" 아크가 매번 "접근 → 밀어붙임 → 거절 → 약화 → 퇴장"이라는 똑같은 뼈대로만 흘러가면
+// 반복 플레이 시 뻔하게 느껴진다는 QA 피드백(2026-08-19, 17일차)을 반영해, 위기가 실제로 전개되는
+// "구조/뼈대"를 여러 개 만들어두고 매번 다른 걸 골라 쓰게 한다. 각 shape는 buildArcDirective에서
+// 공통 지시문 중간에 끼워 넣을 문단(text)을 갖고 있다.
+const RIVAL_CRISIS_SHAPES = {
+  directRejectPersistent: {
+    text: '지연은 이 사람이 다가오는 순간부터 흔들림 없이 명확하고 단호하게 선을 긋는다. 위기의 핵심은 지연의 마음이 흔들리는 게 아니라, 거절당하고도 이 인물이 쉽게 물러나지 않고 계속 다른 방식으로 접근을 시도한다는 점이다.'
+  },
+  hiddenWorry: {
+    text: '지연은 이 인물의 접근이 성가시고 불편하지만, 형균이 괜한 오해나 질투를 할까 봐 처음엔 굳이 말하지 않고 혼자 처리하려 한다. 몇 턴 동안은 형균에게 알리지 않은 채로 진행되다가, 형균이 눈치채거나 직접 캐물어서(추궁해서) 뒤늦게 전말이 드러난다. 이 경우 갈등의 핵심은 "지연이 다른 사람에게 흔들렸는가"가 아니라 "형균이 그 사실을 몰랐다는 서운함·불안함을 어떻게 풀어가는가"다.'
+  },
+  disguisedKindness: {
+    text: '이 인물은 처음엔 노골적인 구애가 아니라 순수한 호의나 도움(챙겨줌, 조언, 배려)으로 다가온다. 지연도 처음엔 그저 친절한 사람이라 여기며 별생각 없이 받아들인다. 몇 턴이 지나서야 이 인물의 감정이 단순한 호의가 아니라는 게 드러나고, 그때부터 지연이 거리를 두기 시작한다.'
+  },
+  thirdPartyPressure: {
+    text: '라이벌 본인의 적극적 구애보다, 주변 사람(동료, 공통 지인, 가족 등)이 자꾸 두 사람을 엮으려 하거나 자리를 만들거나 오해를 부추기는 방식으로 위기가 형성된다. 라이벌 본인은 오히려 소극적이거나 애매한 태도를 보일 수 있다 — 위기의 핵심은 "주변의 압박을 지연과 형균이 함께 어떻게 정리하는가"다.'
+  },
+  workEntanglement: {
+    text: '이 인물은 지연의 일·커리어와 얽혀 있어서(직장 상사, 프로젝트 파트너, 거래처 등) 단순히 안 보고 지내기가 어려운 구조다. 감정 표현은 은근하고 간접적이지만, 물리적으로 계속 부딪히는 상황 자체가 위기를 만든다. 지연은 일 때문에 완전히 끊어낼 수 없다는 현실적 어려움 속에서도 분명히 선을 긋는다.'
+  },
+  suddenSpark: {
+    text: '이 인물과의 접점은 평범한 일상 속에서 갑작스럽게 시작된다(우연한 사고, 도움을 주고받은 사건 등). 관계가 급속도로 가까워질 뻔한 찰나에 지연 스스로 놀라서 거리를 두는 것으로 그려도 좋다 — 위기의 핵심은 "뜻밖의 상황에서도 지연이 스스로 선을 지킨다"는 확인이다.'
+  }
+};
+
+// 최근에 썼던 shape(최대 2개)는 가능하면 피해서 고른다 — ARC_WAREHOUSE의 recentMids 회피 방식과 동일한 원리.
+function pickRivalCrisisShape(as) {
+  const keys = Object.keys(RIVAL_CRISIS_SHAPES);
+  const recent = as.recentShapes || [];
+  let pool = keys.filter(k => !recent.includes(k));
+  if (pool.length === 0) pool = keys;
+  return pickRandomFrom(pool);
+}
+
 // 조건이 맞으면(사귀는 사이 + 턴 카운트 임계값 도달 + 진행 중인 아크 없음) 아크 창고에서
 // 하나를 뽑아 state.arcState.activeArc에 설정한다. 최근에 썼던 중분류(최대 3개)는 가능하면 피한다.
 // 라이벌 사이클이 열려있으면(rivalCycleEligible), 일정 확률로 일상 아크 대신 "새 라이벌 위기" 아크가 뽑힌다.
@@ -2171,7 +2205,11 @@ function maybeTriggerArc(state, story) {
 
   if (rivalCycleEligible(state, story) && Math.random() < RIVAL_CRISIS_CHANCE) {
     const cycleIndex = (state.rivalCycleIndex || 1) + 1;
-    as.activeArc = { type: 'rivalCrisis', cycleIndex };
+    const shapeKey = pickRivalCrisisShape(as);
+    if (!as.recentShapes) as.recentShapes = [];
+    as.recentShapes.push(shapeKey);
+    if (as.recentShapes.length > 2) as.recentShapes.shift();
+    as.activeArc = { type: 'rivalCrisis', cycleIndex, shapeKey };
     return;
   }
 
@@ -2195,7 +2233,8 @@ function buildArcDirective(state) {
   const arc = state && state.arcState && state.arcState.activeArc;
   if (!arc) return '';
   if (arc.type === 'rivalCrisis') {
-    return `\n[아크 이벤트 지시 - 매우 중요, 새로운 라이벌 등장]\n지금까지 있었던 라이벌은 이미 정리됐다. 하지만 이 관계는 여기서 완전히 안전해지지 않는다 — 이번 턴에 완전히 새로운 인물을 하나 만들어서, 자연스러운 계기로 이야기에 등장시켜라. 이 인물은 형균-지연 관계를 다시 흔드는 새로운 위협이 된다.\n- 이름과 관계(직업/접점)는 네가 자유롭게 정한다. 이전 라이벌과는 다른 종류의 관계로 만들어라(예: 헬스장 트레이너, 동호회 사람, 옛 첫사랑, 새 이웃, 병원 관계자, 새 프로젝트 협업자 등 — 매번 다르게).\n- 이번 턴 beats 안에서 이 인물을 실제로 등장시키고, 맨 위 [지금까지 확정된 사실]과 지금까지의 대화 흐름에 자연스럽게 이어지는 계기로 만들어라(뜬금없는 등장 금지).\n- 지연의 반응은 이전 라이벌 때와 똑같을 필요는 없다 — 지금 지연-형균 사이의 신뢰가 이미 높다면, 지연은 이번엔 흔들리지 않고 단호하게 거절하는 쪽으로 그려도 된다(그게 더 자연스럽다). 다만 그 인물이 쉽게 물러나지 않고 계속 접근을 시도하는 것 자체가 이번 위기의 핵심이다. 또한 지연이 이 성가신 접근을 형균이 괜한 오해나 질투를 할까 봐 처음엔 굳이 말하지 않고 혼자 처리하려다가, 나중에 형균이 눈치채거나 직접 물어봐서(또는 추궁해서) 뒤늦게 전말이 드러나는 흐름으로 그려도 좋다 — 이 경우 갈등의 핵심은 "지연이 다른 사람에게 흔들렸는가"가 아니라 "형균이 그 사실을 몰랐다는 서운함/불안함을 어떻게 풀어가는가"가 된다. 어느 쪽으로 그릴지는 지금까지의 신뢰도·대화 흐름을 보고 자연스럽게 판단하라.\n- ${rivalCycleIntensityText(arc.cycleIndex)}\n- 이번 응답에서 반드시 이 인물을 등장시켜야 한다. 등장시켰다면 최상위 JSON의 "new_rival_key"(영문 소문자·숫자로 된 짧은 식별자, 예: "rival2" — 지금까지 쓰인 적 없는 새 값), "new_rival_name"(실제 이름), "new_rival_role"(관계/역할, 예: "헬스장 트레이너")을 반드시 채운다. 이 세 필드는 이번 턴에만 채우고, 그 외 모든 턴에는 항상 빈 문자열로 둔다.\n- 이 인물에 대해서도 [절대 규칙](노골적 성적 묘사 금지, AI가 임의로 완전한 불륜을 확정 짓지 않음)은 이전과 동일하게 항상 적용된다.`;
+    const shape = RIVAL_CRISIS_SHAPES[arc.shapeKey] || RIVAL_CRISIS_SHAPES.directRejectPersistent;
+    return `\n[아크 이벤트 지시 - 매우 중요, 새로운 라이벌 등장]\n지금까지 있었던 라이벌은 이미 정리됐다. 하지만 이 관계는 여기서 완전히 안전해지지 않는다 — 이번 턴에 완전히 새로운 인물을 하나 만들어서, 자연스러운 계기로 이야기에 등장시켜라. 이 인물은 형균-지연 관계를 다시 흔드는 새로운 위협이 된다.\n- 이름과 관계(직업/접점)는 네가 자유롭게 정한다. 이전 라이벌과는 다른 종류의 관계로 만들어라(예: 헬스장 트레이너, 동호회 사람, 옛 첫사랑, 새 이웃, 병원 관계자, 새 프로젝트 협업자 등 — 매번 다르게).\n- 이번 턴 beats 안에서 이 인물을 실제로 등장시키고, 맨 위 [지금까지 확정된 사실]과 지금까지의 대화 흐름에 자연스럽게 이어지는 계기로 만들어라(뜬금없는 등장 금지).\n- 이번 위기가 전개되는 방식(매우 중요 — 이전 라이벌 위기들과 똑같은 흐름으로 반복되지 않도록, 반드시 이 방식을 따를 것): ${shape.text}\n- ${rivalCycleIntensityText(arc.cycleIndex)}\n- 이번 응답에서 반드시 이 인물을 등장시켜야 한다. 등장시켰다면 최상위 JSON의 "new_rival_key"(영문 소문자·숫자로 된 짧은 식별자, 예: "rival2" — 지금까지 쓰인 적 없는 새 값), "new_rival_name"(실제 이름), "new_rival_role"(관계/역할, 예: "헬스장 트레이너")을 반드시 채운다. 이 세 필드는 이번 턴에만 채우고, 그 외 모든 턴에는 항상 빈 문자열로 둔다.\n- 이 인물에 대해서도 [절대 규칙](노골적 성적 묘사 금지, AI가 임의로 완전한 불륜을 확정 짓지 않음)은 이전과 동일하게 항상 적용된다.`;
   }
   return `\n[아크 이벤트 지시 - 매우 중요]\n지금부터 다음 사건을 스토리에 자연스럽게 등장시켜라: "${arc.sub}" (분류: ${arc.major} > ${arc.mid}).\n- 사건을 설명하듯 요약해서 말하지 말고, 지금까지의 대화 흐름과 각 인물의 성격에 맞게 자연스럽게 녹여서 전개하라.\n- 이 사건을 한 턴 만에 끝내지 않아도 되고, 몇 턴에 걸쳐 자연스럽게 펼쳐도 된다.\n- 이 사건이 이번 응답에서 자연스럽게 마무리(화해, 정리, 다음 단계로 넘어감 등)되었다고 판단되면 최상위 JSON에 "arc_resolved": true를 포함시켜라. 아직 진행 중이면 "arc_resolved": false로 둬라.\n- 매우 중요 (뜬금없는 사건 금지 — 반드시 지금까지의 삶과 이어질 것): 이 사건은 맨 위 [지금까지 확정된 사실] 목록과 지금까지의 대화에서 이미 확립된 인물의 직업·성격·인간관계·삶의 사건(예: 이미 아이를 낳았다, 이미 이직했다 등)과 자연스럽게 이어지는 "다음 이야기"여야 한다. 그 인물의 기존 설정과 아무 상관 없는 완전히 새로운 신분·직업·사건(예: 갑자기 대기업 사장이 되어 체포된다는 식)을 맥락 없이 새로 지어내지 않는다. 이미 확정된 삶의 사건이 있다면 그걸 적극적으로 활용해서 사건을 만들어라 (예: 이미 출산했다면 그 아이가 이번 사건에 실제로 등장할 수 있다). 또한 라이벌·제3자가 매 사건마다 반복 등장할 필요는 없다 — 등장 여부는 이 사건의 성격에 맞게 자연스럽게 판단하라.`;
 }
@@ -2382,10 +2421,10 @@ ${buildLanguageDirective()}
 // 캐릭터 설정(castBlock)이나 스토리 원문은 한국어로 고정돼 있어도, 실제 출력 문장은 이 지시를 따라 언어가 바뀐다.
 function buildLanguageDirective() {
   if (currentLang === 'en') {
-    return 'Write every "text" value inside beats, and every string inside suggested_replies, in natural, fluent English — even though the character settings above are written in Korean. Character names may stay as given. Do not mix Korean into the output text.';
+    return 'Write every "text" value inside beats, and every string inside suggested_replies, in natural, fluent English — even though the character settings above are written in Korean. Character names may stay as given. Do not mix Korean into the output text. Vary your narration wording from turn to turn — do not reuse the same descriptive phrases or sentence patterns across different scenes (for example, do not repeatedly fall back on stock lines like "a small silence settled between them"); let word choice and imagery shift naturally with the moment. Avoid stiff, overly literal phrasing that reads like a direct translation — write the way an English-language novelist would. If a Korean-specific cultural detail comes up (e.g. in-laws/시댁 obligations, hierarchical workplace titles, age-based speech norms), briefly and naturally clarify it within the dialogue or narration itself, without turning it into an explanatory aside.';
   }
   if (currentLang === 'ja') {
-    return '上記のキャラクター設定は韓国語で書かれているが、beats内のすべての"text"、およびsuggested_replies内のすべての文字列は、自然で流暢な日本語で書くこと。キャラクター名はそのままでよい。出力文に韓国語を混ぜないこと。';
+    return '上記のキャラクター設定は韓国語で書かれているが、beats内のすべての"text"、およびsuggested_replies内のすべての文字列は、自然で流暢な日本語で書くこと。キャラクター名はそのままでよい。出力文に韓国語を混ぜないこと。二人の関係の親密さに合わせて言葉遣いの丁寧さを調整すること — 恋人・夫婦のように親しい間柄では、状況によって過度に丁寧すぎる敬語表現は避け、自然でくだけた口調も使ってよい(常に敬語で通す必要はない)。ナレーションの言い回しも毎回同じパターンを繰り返さず、場面ごとに自然に変化させること。もし시댁(配偶者の実家)のような韓国特有の家族文化・慣習が話に出てくる場合は、説明台詞にならないよう、セリフやナレーションの中でさりげなく短く補足して、日本の読者にも状況が伝わるようにすること。';
   }
   return '지금까지의 지시대로 자연스러운 한국어로 작성한다.';
 }
