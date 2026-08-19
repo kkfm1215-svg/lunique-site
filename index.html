@@ -227,6 +227,11 @@
   }
   .speaker-tag { font-size: 11px; font-weight: 700; margin: 2px 4px 0; opacity: 0.85; font-family: var(--serif); }
   .sys { align-self: center; color: var(--text-faint); font-size: 11px; margin: 4px 0; letter-spacing: 2px; }
+  .turn-rewind-btn {
+    align-self: flex-end; background: none; border: 1px solid var(--border-glow); color: var(--text-faint);
+    font-size: 10px; padding: 2px 8px; border-radius: 8px; cursor: pointer; margin-top: 2px; opacity: 0.55;
+  }
+  .turn-rewind-btn:hover { opacity: 1; color: var(--text-sub); border-color: var(--rose); }
 
   #inputbar { display: flex; gap: 8px; padding: 14px; border-top: 1px solid var(--border-glow); background: rgba(0,0,0,0.18); }
   #inputbar input { flex: 1; border-radius: 22px; }
@@ -644,6 +649,8 @@ const I18N = {
     chatSuggestBtn: '대사 추천',
     chatAutoprogressTooltip: '누르면 내가 아무 말도 안 해도 AI가 알아서 다음 장면을 진행시켜요.',
     chatSuggestTooltip: '누르면 지금 대화에 어울리는 대사 3개를 추천해줘요. 눌러서 바로 보낼 수 있어요.',
+    chatRewindBtn: '여기서부터 삭제',
+    chatRewindConfirm: '이 대사부터 그 뒤 대화가 전부 삭제되고, 이 대사를 보내기 직전 상태로 돌아가요. 계속할까요?',
     chatInputPlaceholder: '대사를 입력하세요... (*이렇게 쓰면 행동/속마음*)',
     chatSendBtn: '전송',
     chatFormatHint: '*별표로 감싸면* 행동·속마음·상황 묘사로 처리돼요. 그냥 쓰면 실제 대사예요.',
@@ -734,6 +741,8 @@ const I18N = {
     chatSuggestBtn: 'Suggest lines',
     chatAutoprogressTooltip: "Tap to let the AI move the scene forward on its own, even if you don't say anything.",
     chatSuggestTooltip: 'Tap to get 3 suggested lines that fit the conversation. Tap one to send it instantly.',
+    chatRewindBtn: 'Delete from here',
+    chatRewindConfirm: 'This line and everything after it will be deleted, rewinding to right before you sent it. Continue?',
     chatInputPlaceholder: 'Type a message... (*wrap in asterisks for actions/thoughts*)',
     chatSendBtn: 'Send',
     chatFormatHint: '*Wrap text in asterisks* for actions/thoughts/scene description. Plain text is spoken dialogue.',
@@ -824,6 +833,8 @@ const I18N = {
     chatSuggestBtn: 'セリフ提案',
     chatAutoprogressTooltip: '押すと、何も言わなくてもAIが次の場面を自分で進めてくれます。',
     chatSuggestTooltip: '押すと、今の会話に合ったセリフを3つ提案してくれます。タップするとすぐ送信されます。',
+    chatRewindBtn: 'ここから削除',
+    chatRewindConfirm: 'このセリフとそれ以降の会話がすべて削除され、送信直前の状態に戻ります。続けますか?',
     chatInputPlaceholder: 'メッセージを入力...(*で囲むと行動/心の声*)',
     chatSendBtn: '送信',
     chatFormatHint: '*で囲むと*行動・心の声・状況描写になります。そのまま書くとセリフになります。',
@@ -1660,10 +1671,19 @@ function renderBeat(container, beat, story) {
   if (story.cast.length > 1 && effectiveSpeaker) __lastKnownSpeaker = effectiveSpeaker;
 }
 
-function addTurn(text, role) {
+// historyIndex: 이 유저 턴이 state.history 안에서 몇 번째인지. 있으면(유저 턴일 때만) "여기서부터 삭제" 버튼을 붙여준다.
+function addTurn(text, role, historyIndex) {
   const turn = document.createElement('div');
   turn.className = 'turn ' + (role === 'user' ? 'turn-player' : 'turn-char');
   renderMixedText(turn, text);
+  if (role === 'user' && typeof historyIndex === 'number') {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'turn-rewind-btn';
+    btn.textContent = t('chatRewindBtn');
+    btn.onclick = () => rewindToTurn(historyIndex);
+    turn.appendChild(btn);
+  }
   $('chat').appendChild(turn);
   $('chat').scrollTop = $('chat').scrollHeight;
   return turn;
@@ -1695,15 +1715,44 @@ function addDevSys(text) {
 
 function renderHistory() {
   $('chat').innerHTML = '';
-  state.history.forEach(h => {
+  state.history.forEach((h, i) => {
     if (h.role === 'user') {
-      addTurn(h.text, 'user');
+      addTurn(h.text, 'user', i);
     } else if (h.beats) {
       addCharTurn(h.beats, currentStory);
     } else {
       addTurn(h.text || '', 'model'); // 예전 저장 형식(마이그레이션된 서연 기록) 호환용
     }
   });
+}
+
+// 대화 도중 특정 지점(내가 보낸 특정 대사)부터 그 뒤 전부를 지우고, 그 대사를 보내기 직전 상태로 되돌린다.
+// AI 응답이 원하는 방향과 다르게 나왔을 때, 처음부터 다시 초기화하지 않고 그 지점부터만 다시 시작할 수 있게 해준다.
+function snapshotState() {
+  return {
+    chars: JSON.parse(JSON.stringify(state.chars || {})),
+    factLedger: JSON.parse(JSON.stringify(state.factLedger || [])),
+    arcState: JSON.parse(JSON.stringify(state.arcState || defaultArcState())),
+    collectionStatus: state.collectionStatus || 'active'
+  };
+}
+
+async function rewindToTurn(historyIndex) {
+  const entry = state.history[historyIndex];
+  if (!entry || entry.role !== 'user' || !entry.beforeState) return;
+  if (isSending) return;
+  if (!confirm(t('chatRewindConfirm'))) return;
+  state.chars = JSON.parse(JSON.stringify(entry.beforeState.chars));
+  state.factLedger = JSON.parse(JSON.stringify(entry.beforeState.factLedger || []));
+  state.arcState = JSON.parse(JSON.stringify(entry.beforeState.arcState));
+  state.collectionStatus = entry.beforeState.collectionStatus || 'active';
+  state.history = state.history.slice(0, historyIndex);
+  resetLastKnownSpeaker();
+  await persist();
+  renderStats();
+  renderHistory();
+  clearSuggestions();
+  setControlsDisabled(false);
 }
 
 // 이번 턴에 [숨겨진 사연] 이벤트를 발동시켜야 하는 인물이 있는지 판단한다.
@@ -2164,6 +2213,9 @@ ${secretArcBlock}
   - 각 항목은 실제로 유저가 그대로 보낼 수 있는 짧은 대사 한 문장이어야 한다 (따옴표 없이, 지문 없이).
 - 위 두 경우가 아닌 모든 일반적인 유저 입력에서는 suggested_replies를 항상 빈 배열([])로 둔다.
 
+[출력 전 자체 점검 - 매우 중요]
+beats의 text를 다 쓴 다음, 최종 응답을 보내기 전에 문장을 스스로 다시 한번 읽어본다. 의미상 전혀 안 맞는 단어("간식"을 쓰려다가 "자식"이라고 쓰는 등 발음·의미가 다른 엉뚱한 단어), 오타, 문맥에 안 맞는 단어가 있으면 반드시 올바른 단어로 고친 뒤에 응답한다.
+
 [출력 형식]
 반드시 아래 JSON 형식으로만 응답한다. JSON 외의 다른 텍스트는 절대 포함하지 않는다.
 {
@@ -2517,8 +2569,10 @@ async function runTurn(text, opts) {
 
   if (!isRetry) {
     if (addUserTurn) { // "자동진행"으로 진행된 턴은 유저가 실제로 말한 게 아니므로 유저 말풍선을 추가하지 않는다.
-      addTurn(text, 'user');
-      state.history.push({ role: 'user', text });
+      const historyIndex = state.history.length;
+      // "여기서부터 삭제" 되돌리기 기능을 위해, 이 턴을 보내기 직전의 상태(스탯·기억·아크 등)를 함께 저장해둔다.
+      state.history.push({ role: 'user', text, beforeState: snapshotState() });
+      addTurn(text, 'user', historyIndex);
     }
     await persist();
     if (quotaCheck) await consumeQuota(quotaCheck); // 무료 횟수 차감 또는 코인 차감 (구독 중이면 아무 일도 안 함)
