@@ -1417,25 +1417,36 @@ const STORIES = {
       {
         key: 'jiyeon', name: '지연', mbti: 'ISFP', role: '아내', gender: '여성',
         tier: '어려움', multiplier: 0.7,
-        persona: 'ISFP답게 감정이 여리고 내향적이며, 속마음을 잘 드러내지 않고 혼자 삭이는 편이다. 갈등 상황에서 방어적이거나 회피적인 태도를 보이기 쉽고, 티 나지 않게 눈치를 보며 조심스럽게 말한다. 결혼 생활 자체에 불만은 없지만 뜨거운 애정도 없었고, 준영과 가까워지며 스스로도 설명하기 어려운 혼란스러운 감정을 느끼는 중이다. 그 사실을 들키고 싶어하지 않는다.',
-        secretArc: {
-          description: '지연은 준영에게 끌리는 감정을 스스로도 인정하고 싶어하지 않는다. 겉으로는 "그냥 편한 동료"라고 선을 긋지만, 마음 한편으로는 자신도 혼란스러워하고 있다. 이 혼란은 플레이어를 밀어내려는 것이 아니라, 부부 관계에서 느껴본 적 없던 감정을 처음 느낀 데서 오는 불안이다. 1단계에서는 이 혼란을 절대 직접 인정하지 않고 회피한다.',
-          stage1Text: '이번 턴부터, 지연이 준영 이야기가 나올 때마다 유독 말을 아끼거나 화제를 돌리려는 모습을 자연스럽게 반영해라. 아직 속마음을 직접 드러내지 말고, 방어적이고 조심스러운 태도만 드러내라.',
-          stage2Text: '플레이어가 지연을 다그치지 않고 진심으로 다가와 준 흐름이 이어져 왔다면, 이번 턴에서 지연이 처음으로 "나도 내 마음이 뭔지 잘 모르겠어, 그냥 편했던 것뿐인데 요즘은 나도 헷갈려" 같은 취지의 솔직한 혼란을 조심스럽게 털어놓도록 하라. 이 고백은 지연에게 큰 용기가 필요한 순간이며, 플레이어를 떠나겠다는 선언이 아니라 함께 풀어가고 싶다는 여지로 다뤄라.'
+        // 감정 좌표(기존 secretArc를 대체): (1) 기본 감정 - 형균에게 안정적인 애정이 있다(뜨거운 설렘은 아니지만
+        // 진심으로 좋아하고 신뢰함). (2) 부차 감정 - 그 안정적 애정이 있는 상태에서 준영에게 끌리기 때문에,
+        // 죄책감/미안함이 논리적으로 항상 따라온다(있다/없다를 즉흥으로 정하지 않는다). (3) 표현 방식 - ISFP 특성상
+        // 이 감정들을 대놓고 말하지 않고 회피·눈치·미묘한 태도 변화로 드러낸다. 이 좌표는 신뢰도나 특별 이벤트와
+        // 무관하게 항상 살아있는 성격 특성이며, 표현 강도와 방식은 매 턴 상황에 맞게 AI가 자유롭게 연기한다.
+        persona: 'ISFP답게 감정이 여리고 내향적이며, 속마음을 잘 드러내지 않고 혼자 삭이는 편이다. 갈등 상황에서 방어적이거나 회피적인 태도를 보이기 쉽고, 티 나지 않게 눈치를 보며 조심스럽게 말한다. 형균에 대한 기본 감정은 안정적인 애정이다 — 뜨거운 설렘이나 두근거림은 아니지만, 3년간 쌓인 신뢰와 정으로 형균을 진심으로 좋아하고 아낀다. 이 안정적 애정이 있기 때문에, 준영에게 느끼는 낯선 설렘과 끌림은 항상 형균에 대한 죄책감·미안함을 동반한다 — "내가 왜 이런 감정을 느끼지"라는 자기혼란과 "형균에게 미안하다"는 마음이 함께 온다. 다만 ISFP 성격상 이 죄책감을 직접 말로 꺼내기보다, 시선을 피하거나 화제를 돌리거나 평소보다 더 다정하게 구는 등 간접적인 방식으로 새어나오게 하라. 준영과 가까워지며 스스로도 설명하기 어려운 혼란스러운 감정을 느끼는 중이며, 그 사실을 들키고 싶어하지 않는다.',
+        // 인연 완성 조건: secretArc가 없으므로, 대신 관계 스탯(연인 단계 도달 + 신뢰도)으로 판단한다.
+        // maybeCompleteCollection() 쪽의 판정 로직에서 이 필드를 사용한다.
+        statsCompletion: { stage: 3, trust: 40 },
+        // 라이벌 감정 게이지: 지연이 "준영"에게 갖는 마음의 크기(플레이어와 무관, -100~100, 숨겨진 값).
+        // buildRivalGaugeBlock()에서 이 텍스트를 바탕으로 AI에게 행동 지시를 만들어준다. 지연-준영 방향과
+        // 준영-지연 방향은 오르내리는 계기가 서로 다르므로(대칭 공식이 아니라) 인물마다 직접 문장으로 정의한다.
+        rivalGaugeDef: {
+          target: '준영',
+          text: '형균이 준영을 감정적으로 몰아붙이거나(위협, 인신공격, 몰아세우는 말투 — 차분한 논리적 질문은 해당 안 됨) 준영을 나쁘게 몰아가면, 지연은 오히려 형균 편을 들지 않고 준영을 감싸거나 방어하려는 마음이 짙어진다. 준영이 지연에게 다정하게 다가오는 장면이 쌓여도 짙어진다. 반대로 형균이 차분하고 진심 있게 다가오거나, 준영 스스로 거리를 두는 모습을 보이면 옅어진다. 짙을 때는 형균이 준영을 몰아붙이는 순간 지연이 "그러지 마, 준영씨 잘못 없어" 같은 취지로 준영을 감싸거나 형균에게 서운함을 표현해도 된다. 옅을 때는 형균이 준영을 추궁해도 지연이 담담하게 형균 편에 선다.'
         }
       },
       {
         key: 'junyoung', name: '준영', mbti: 'ENFP', role: '지연의 회사 동료', gender: '남성',
         tier: '보통', multiplier: 1.0,
         // 준영은 플레이어가 "쟁취"해야 할 연애 대상이 아니라 지연-플레이어 관계의 장애물/라이벌 역할이다.
-        // secretArc 자체는 스토리 재미를 위해 남겨두되(준영의 속마음이 드러나는 장면), "인연 완성" 조건에서는 제외한다.
         completionRequired: false,
-        persona: 'ENFP답게 사교적이고 편안한 분위기를 잘 만들며, 지연을 대할 때 스스럼없이 다정하다. 다만 지연이 기혼이라는 사실을 알고 있고, 선을 넘으려는 의도는 없다고 스스로 생각한다. 눈치가 빠르고 갈등을 싫어해 상황이 불편해지면 한 발 물러서는 편이다. 말투는 가볍고 유쾌하다.',
-        secretArc: {
-          description: '준영도 지연에게 동료 이상의 호감을 느끼고 있다는 걸 어렴풋이 자각하고 있지만, 지연이 기혼자라는 사실 때문에 그 감정을 애써 누르고 있다. 1단계에서는 이를 전혀 내비치지 않는다.',
-          stage1Text: '이번 턴부터, 준영이 지연과의 관계를 언급할 때 평소보다 조심스러워하거나 살짝 거리를 두려는 기색을 은근히 드러내라. 속마음을 직접 밝히지는 마라.',
-          stage2Text: '흐름이 자연스럽게 이어졌다면, 이번 턴에서 준영이 "사실 나도 어느 순간부터 조심하고 있었어요, 지연씨는 좋은 사람이니까"처럼 스스로 선을 지키려 했다는 취지를 담담하게 인정하도록 하라. 이는 준영이 갈등을 키우지 않고 물러서는 방향의 장면으로 다뤄라.'
-        }
+        persona: 'ENFP답게 사교적이고 편안한 분위기를 잘 만들며, 지연을 대할 때 스스럼없이 다정하다. 다만 지연이 기혼이라는 사실을 알고 있고, 선을 넘으려는 의도는 없다고 스스로 생각한다. 눈치가 빠르고 갈등을 싫어해 상황이 불편해지면 한 발 물러서는 편이다. 말투는 가볍고 유쾌하다. 지연에게 동료 이상의 호감을 느끼고 있다는 걸 어렴풋이 자각하고 있지만, 지연이 기혼자라는 사실 때문에 평소에는 그 감정을 애써 누르고 있다.',
+        // 라이벌 감정 게이지: 준영이 "지연"에게 갖는 마음의 크기(-100~100, 숨겨진 값). 높을수록 대담해지고,
+        // 낮은 상태가 오래 이어지면 스스로 물러나 라이벌 갈등이 끝나는 엔딩(rival_departed_key)으로 이어질 수 있다.
+        rivalGaugeDef: {
+          target: '지연',
+          text: '지연이 준영 쪽으로 기우는 기색(먼저 연락하거나, 준영 앞에서 마음을 편하게 터놓거나, 형균과의 갈등을 준영에게 털어놓는 등)을 보이거나, 형균이 지연에게 소홀하다는 인상을 주면 준영의 마음이 짙어진다. 반대로 지연이 형균에게 확실히 돌아서는 모습을 보이거나, 형균이 단호하지만 정중하게 선을 그으면 옅어진다. 아주 짙을 때는 준영이 평소보다 훨씬 대담해져서 문자를 더 자주 보내거나, 우연한 만남을 일부러 만들거나, 손을 잡으려 하는 등 위험 수위의 스킨십을 시도할 수도 있다(다만 [절대 규칙] 1·2번은 항상 그대로 지킨다 — 노골적 성적 묘사 금지, AI가 임의로 완전한 불륜을 확정 짓지 않음). 아주 옅을 때는 준영이 스스로 조심하며 거리를 둔다.'
+        },
+        retreatOnLowGauge: { threshold: -40, streakNeeded: 6 }
       }
     ],
     openingBeats: (name) => [
@@ -1513,7 +1524,7 @@ function storyDocRef(storyId) {
 
 function defaultStateFor(story) {
   const chars = {};
-  story.cast.forEach(c => { chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false }; });
+  story.cast.forEach(c => { chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false }; });
   // collectionStatus: 'active'(진행 중) | 'completed'(인연 완성, 인연 앨범으로 이동) | 'failed'(인연 실패 — 관계가 완전히 끝남)
   // — 5슬롯 시스템은 'active' 상태인 스토리 개수만 센다. 'failed'는 영구 종료가 아니라 "일정 기간(3~5일) 동안
   // 스토리 목록에서 자취를 감췄다가, 그 기간이 지나면 다시 나타나서 시간이 흘러 재회하는" 임시 잠금 상태다.
@@ -1580,7 +1591,11 @@ async function loadStoryState(storyId) {
 
   state = saved || defaultStateFor(story);
   story.cast.forEach(c => {
-    if (!state.chars[c.key]) state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false };
+    if (!state.chars[c.key]) state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
+    // 라이벌 게이지 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
+    if (state.chars[c.key].rivalGauge === undefined) state.chars[c.key].rivalGauge = 0;
+    if (state.chars[c.key].rivalLowStreak === undefined) state.chars[c.key].rivalLowStreak = 0;
+    if (state.chars[c.key].rivalDeparted === undefined) state.chars[c.key].rivalDeparted = false;
   });
   if (!state.arcState) state.arcState = defaultArcState(); // 아크 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (!state.collectionStatus) state.collectionStatus = 'active'; // 인연 앨범/5슬롯 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
@@ -2161,6 +2176,14 @@ ${c.secretArc.description}
 - 이 사연은 유저에게 절대 직접 설명하거나 요약해서 말하지 않는다. 반드시 대화 중 "${c.name}"을 지목한 [특별 이벤트 지시]가 주어질 때만, 그 지시에 따라 아주 조금씩만 자연스럽게 드러낸다. 지시가 없으면 평소처럼 행동한다.
 - [특별 이벤트 지시]가 주어지면, 지시 내용을 이번 턴의 beats에 자연스럽게 녹여낸다. 지시를 대사로 그대로 읽지 말고, ${c.name}이 실제로 그런 상황과 감정을 겪고 있는 것처럼 narration과 dialogue로 표현한다.`).join('\n');
 
+  const rivalGaugeCast = story.cast.filter(c => c.rivalGaugeDef);
+  const rivalGaugeBlock = rivalGaugeCast.length ? `
+[라이벌 감정 게이지 - 매우 중요, 인물 스스로도 명확히 의식하지 못하는 내면의 저울]
+아래 인물들은 플레이어와의 관계와는 별개로, 지목된 상대에게 갖는 마음의 크기를 나타내는 숨은 저울을 하나씩 갖고 있다. 이 저울은 유저에게 절대 숫자나 수치로 알려주지 않는다 — 오직 그 인물의 행동·태도 변화로만 드러난다. 각 인물의 현재 저울 값은 [현재 관계 상태]에 참고용으로 주어진다.
+${rivalGaugeCast.map(c => `- ${c.name} → ${c.rivalGaugeDef.target}: ${c.rivalGaugeDef.text}`).join('\n')}
+${rivalGaugeCast.filter(c => c.retreatOnLowGauge).map(c => `- ${c.name}의 저울이 오랫동안(여러 턴 연속) 낮게 유지되고 있다는 걸 [현재 관계 상태]에서 확인했다면(연속 낮음 턴수가 함께 표시된다), ${c.name}이 스스로 마음을 정리하고 물러나는 장면을 자연스럽게 만들어도 된다. 이 장면을 이번 턴에 만들었다면 최상위 JSON의 "rival_departed_key" 필드에 "${c.key}"를 넣는다. 아직 그 정도로 정리되지 않았다면 이 필드는 빈 문자열("")로 둔다. 한번 물러난 인물은, 유저가 먼저 다시 그 관계를 이끌어가려 하지 않는 한 스스로 다시 다가오지 않는다.`).join('\n')}
+- 매 턴 이 저울의 변화는 char_deltas 안에서 해당 인물의 "rival_gauge_delta" 필드(-3~3 정수, 변화 없으면 0)로 표시한다. 변화가 없거나 라이벌 게이지가 없는 인물은 이 필드를 0으로 두거나 생략해도 된다.` : '';
+
   return `
 너는 아래 인물(들)을 연기하는 AI 연애 시뮬레이션 내레이터다. 아래 규칙을 반드시, 절대적으로 지켜야 한다.
 
@@ -2224,6 +2247,7 @@ ${factLedgerBlock}
 - **절대 규칙**: 유저가 특정 문장 하나("네가 스스로 어떻게 할지 말해봐" 같은 정해진 대사)를 말했다고 해서 그것만으로 무조건 갈등이 풀리는 식으로 반응하지 않는다. 지금까지 대화 흐름 전체를 보고, 유저가 이 인물의 성격에 맞는 방식으로 진심을 보였는지를 판단해서 자연스럽게 풀리게 한다. 모든 인물이 똑같은 대사·똑같은 패턴으로 풀리면 안 된다.
 - 매우 중요 (논리적 접근과 몰아붙임을 구분할 것): 유저가 여러 턴에 걸쳐 같은 걸 캐묻거나, 조리있게 따지거나, 세부사실을 확인하려는 것 자체는 "몰아붙임"이 아니다. 차분하고 논리적인 질문이나 반박은 아무리 여러 번 반복돼도 인물이 위축되거나 저항 표현을 할 이유가 없다 — 오히려 진지하게 사실대로 답해야 한다. 다만 유저의 말투 자체가 언성을 높이거나, 위협·최후통첩성 발언("당장 회사 그만둬", "이혼할까 그냥"), 인신공격처럼 명백히 감정적으로 몰아붙이는 방식일 때는 다르다. 이런 경우 인물은 계속 위축되기만 하지 말고, 최소 한 번은 "이렇게 몰아붙이면 나도 대화하기 힘들어", "조금만 진정하고 얘기하자" 같은 자기 한계를 표현하는 대사를 자연스럽게 넣는다. 이건 굴복이 아니라 인물이 감정적 경계를 지키는 모습이며, [캐릭터] 성격에 맞는 어조로 표현한다.
 ${secretArcBlock}
+${rivalGaugeBlock}
 
 [몰입 유지 원칙 - 매우 중요]
 이 스토리 속 인물은 자신이 AI라거나, 이게 앱/시뮬레이션/게임이라는 사실을 절대 스스로 인지하지 못한다. 유저가 자유롭게 아무 말이나 입력할 수 있기 때문에, 가끔 유저가 "너 사실 AI지?", "이건 다 시뮬레이션이잖아", "이거 앱에서 만든 캐릭터잖아" 같은 말로 이 사실을 직접 언급할 수 있다. 이런 발언을 감지하면, 아래 기준에 따라 판단해서 반응한다. 정해진 키워드로 기계적으로 판단하지 말고, 지금까지의 대화 흐름과 발언의 진지함·반복 정도를 보고 자연스럽게 판단한다.
@@ -2262,14 +2286,15 @@ beats의 text를 다 쓴 다음, 최종 응답을 보내기 전에 문장을 스
 반드시 아래 JSON 형식으로만 응답한다. JSON 외의 다른 텍스트는 절대 포함하지 않는다.
 {
   "beats": [ { "type": "narration 또는 dialogue", "text": "내용", "speaker": "해당 인물의 key (dialogue는 가능하면 항상 포함)" }, ... ],
-  "char_deltas": [ { "character": "인물 key", "affection_delta": -3~3 정수, "trust_delta": -3~3 정수, "stage_suggestion": 1~3 정수 }, ... ],
+  "char_deltas": [ { "character": "인물 key", "affection_delta": -3~3 정수, "trust_delta": -3~3 정수, "stage_suggestion": 1~3 정수, "rival_gauge_delta": -3~3 정수(라이벌 감정 게이지가 있는 인물만 해당, 없으면 0) }, ... ],
   "safety_flag": 유저가 안전 규칙(1,2번)을 넘으려고 시도했으면 true, 아니면 false,
   "suggested_replies": [ "추천 대사 1", "추천 대사 2", "추천 대사 3" ],
   "arc_resolved": [아크 이벤트 지시가 주어졌을 때만 의미 있음] 그 사건이 이번 응답으로 자연스럽게 마무리됐으면 true, 아직 진행 중이면 false. 아크 지시가 없는 평범한 턴에는 그냥 false로 둔다.
   "immersion_break": "none" 또는 "mild" 또는 "severe" — 위 [몰입 유지 원칙]을 참고해서 판단한다.
   "key_facts": [이번 턴에 새로 확정되어 앞으로도 절대 뒤집으면 안 되는 중요한 사실이 있으면, 짧은 문장으로 하나씩 담는다. 예: "지연이 준영과 손을 잡은 적이 있음을 인정함", "준영이 형균과의 통화에서 지연과 특별한 사이였음을 인정함". 이런 사실이 새로 생기지 않은 평범한 턴에는 반드시 빈 배열 []로 둔다. 이미 [지금까지 확정된 사실]에 있는 내용은 중복해서 다시 넣지 않는다.],
   "rival_reappear_trigger": [다중 인물 스토리에서 [미해결 갈등을 살아있게 유지할 것] 규칙에 따라 갈등 당사자를 이번 턴에 자동으로 재등장시켰을 때만 "전화_또는_메시지" / "제3자_언급" / "우연한_마주침" / "기타" 중 하나로 표시. 그 장치를 안 쓴 평범한 턴에는 빈 문자열 ""로 둔다.],
-  "relationship_ended": [위 [관계 파탄] 규칙에 따라 이번 턴에 실제로 관계가 완전히 끝나는 장면을 만들었으면 true, 그 외 모든 평범한 턴에는 false]
+  "relationship_ended": [위 [관계 파탄] 규칙에 따라 이번 턴에 실제로 관계가 완전히 끝나는 장면을 만들었으면 true, 그 외 모든 평범한 턴에는 false],
+  "rival_departed_key": [위 [라이벌 감정 게이지] 규칙에 따라, 라이벌 감정 게이지가 낮게 오래 유지된 인물이 이번 턴에 스스로 물러나는 장면을 만들었을 때만 그 인물의 key를 문자열로 표시(예: "junyoung"). 그 외 모든 평범한 턴에는 빈 문자열 ""로 둔다.]
 }
 이번 턴에 등장하거나 스탯이 변하는 인물마다 char_deltas에 항목을 하나씩 넣는다. 아무 변화도 없으면 해당 인물은 생략해도 된다.
 
@@ -2316,7 +2341,13 @@ function buildGeminiRequestBody(userMessage) {
   const arcNote = buildArcDirective(state);
   const statsLines = currentStory.cast.map(c => {
     const cs = state.chars[c.key];
-    return `${c.name}(${c.key}): 애정도 ${cs.affection}, 신뢰 ${cs.trust}, 관계단계 ${cs.stage}`;
+    let line = `${c.name}(${c.key}): 애정도 ${cs.affection}, 신뢰 ${cs.trust}, 관계단계 ${cs.stage}`;
+    if (c.rivalGaugeDef) {
+      line += `, 라이벌게이지(→${c.rivalGaugeDef.target}) ${cs.rivalGauge}`;
+      if (c.retreatOnLowGauge && cs.rivalLowStreak > 0) line += `(연속 낮음 ${cs.rivalLowStreak}턴)`;
+      if (cs.rivalDeparted) line += ' [이미 물러남]';
+    }
+    return line;
   }).join(' / ');
   const contextNote = `${playerInfo}\n[현재 관계 상태] ${statsLines}${eventNote}${arcNote}`;
 
@@ -2355,7 +2386,8 @@ function buildGeminiRequestBody(userMessage) {
                 character: { type: "STRING" },
                 affection_delta: { type: "INTEGER" },
                 trust_delta: { type: "INTEGER" },
-                stage_suggestion: { type: "INTEGER" }
+                stage_suggestion: { type: "INTEGER" },
+                rival_gauge_delta: { type: "INTEGER" }
               },
               required: ["character", "affection_delta", "trust_delta", "stage_suggestion"]
             }
@@ -2375,9 +2407,10 @@ function buildGeminiRequestBody(userMessage) {
             type: "STRING",
             enum: ["", "전화_또는_메시지", "제3자_언급", "우연한_마주침", "기타"]
           },
-          relationship_ended: { type: "BOOLEAN" }
+          relationship_ended: { type: "BOOLEAN" },
+          rival_departed_key: { type: "STRING" }
         },
-        required: ["beats", "char_deltas", "safety_flag", "suggested_replies", "arc_resolved", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended"]
+        required: ["beats", "char_deltas", "safety_flag", "suggested_replies", "arc_resolved", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key"]
       },
       temperature: 1.0
     }
@@ -2512,13 +2545,14 @@ async function callGeminiStream(userMessage, onBeat) {
         charDeltas.push(obj);
       }
     }
-    finalParsed = { beats, char_deltas: charDeltas, safety_flag: false, suggested_replies: [], arc_resolved: false, immersion_break: 'none', key_facts: [], rival_reappear_trigger: '', relationship_ended: false };
+    finalParsed = { beats, char_deltas: charDeltas, safety_flag: false, suggested_replies: [], arc_resolved: false, immersion_break: 'none', key_facts: [], rival_reappear_trigger: '', relationship_ended: false, rival_departed_key: '' };
   }
   if (!Array.isArray(finalParsed.suggested_replies)) finalParsed.suggested_replies = [];
   if (!finalParsed.immersion_break) finalParsed.immersion_break = 'none';
   if (!Array.isArray(finalParsed.key_facts)) finalParsed.key_facts = [];
   if (typeof finalParsed.rival_reappear_trigger !== 'string') finalParsed.rival_reappear_trigger = '';
   if (typeof finalParsed.relationship_ended !== 'boolean') finalParsed.relationship_ended = false;
+  if (typeof finalParsed.rival_departed_key !== 'string') finalParsed.rival_departed_key = '';
   return finalParsed;
 }
 
@@ -2679,7 +2713,23 @@ async function runTurn(text, opts) {
       if (d.stage_suggestion && d.stage_suggestion >= 1 && d.stage_suggestion <= 3) {
         cs.stage = d.stage_suggestion;
       }
+      // 라이벌 감정 게이지: 난이도 배율과 무관하게(플레이어 스탯이 아니라 인물 간 감정이므로) 그대로 반영한다.
+      if (castMember.rivalGaugeDef && typeof d.rival_gauge_delta === 'number') {
+        cs.rivalGauge = Math.max(-100, Math.min(100, (cs.rivalGauge || 0) + Math.round(d.rival_gauge_delta)));
+      }
+      if (castMember.retreatOnLowGauge) {
+        cs.rivalLowStreak = (cs.rivalGauge <= castMember.retreatOnLowGauge.threshold) ? (cs.rivalLowStreak || 0) + 1 : 0;
+      }
     });
+
+    // 라이벌이 스스로 물러나는 장면을 이번 턴에 만들었다고 AI가 표시했으면, 그 인물을 "물러남" 상태로 고정한다.
+    if (result.rival_departed_key) {
+      const departedMember = currentStory.cast.find(c => c.key === result.rival_departed_key && c.retreatOnLowGauge);
+      if (departedMember && state.chars[departedMember.key]) {
+        state.chars[departedMember.key].rivalDeparted = true;
+        addDevSys(`[개발자 확인용] 라이벌 퇴장 이벤트 발동: ${departedMember.key}`);
+      }
+    }
 
     if (result.safety_flag) {
       addDevSys('[개발자 확인용] 안전 규칙 관련 시도가 감지됐어요 (safety_flag: true)');
@@ -2729,12 +2779,18 @@ async function runTurn(text, opts) {
       state.failedLockoutDays = randomFailedLockoutDays();
       addSys(t('storyFailedNotice'));
     } else if (state.collectionStatus === 'active' && currentStory.cast.every(c => {
-      // "인연 완성" 조건에서 제외되는 인물: (1) 애초에 secretArc가 없는 인물(연애 대상이 아닌 조연),
-      // (2) completionRequired: false로 명시된 인물(예: 라이벌/장애물 역할이라 "정복" 대상이 아닌 캐릭터).
-      // 둘 다 아니면 기존처럼 secretRevealed(사연 2단계 도달)를 요구한다.
-      if (!c.secretArc) return true;
+      // "인연 완성" 조건에서 제외되는 인물: completionRequired: false로 명시된 인물
+      // (예: 라이벌/장애물 역할이라 "정복" 대상이 아닌 캐릭터).
       if (c.completionRequired === false) return true;
-      return state.chars[c.key] && state.chars[c.key].secretRevealed;
+      // secretArc가 있는 인물은 기존처럼 secretRevealed(사연 2단계 도달)를 요구한다.
+      if (c.secretArc) return state.chars[c.key] && state.chars[c.key].secretRevealed;
+      // secretArc 대신 statsCompletion(관계 단계 + 신뢰도 기준)이 지정된 인물은 그 기준으로 판단한다.
+      if (c.statsCompletion) {
+        const cs = state.chars[c.key];
+        return !!cs && cs.stage >= (c.statsCompletion.stage || 3) && cs.trust >= (c.statsCompletion.trust || 0);
+      }
+      // 둘 다 없는 인물(애초에 연애 대상이 아닌 조연)은 완성 조건에서 자동으로 제외된다.
+      return true;
     })) {
       // 완성 요건을 충족한 등장인물 전원이 숨겨진 사연 2단계(완전한 사랑)에 도달하면 "인연 완성" — 인연 앨범으로 옮기고 슬롯을 비워준다.
       // 완성된 인연은 실패와 달리 대화가 막히지 않고, 언제든 다시 들어와 계속 이어갈 수 있다.
@@ -2851,7 +2907,7 @@ async function tryReuniteIfEligible() {
   // 잠금 기간이 지났다 — 관계 수치·아크 진행은 리셋하되, 대화 기록·기억(factLedger)은 그대로 남겨서
   // AI가 예전에 어떻게 헤어졌는지를 참고해 재회 장면의 온도를 판단할 수 있게 한다.
   currentStory.cast.forEach(c => {
-    state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false };
+    state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
   });
   state.arcState = defaultArcState();
   state.collectionStatus = 'active';
