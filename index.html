@@ -151,9 +151,12 @@
   .gender-toggle button.active { background: linear-gradient(135deg, var(--rose), var(--lavender-deep)); color: #1a0f24; border-color: transparent; font-weight: 700; }
   .error-msg { margin-top: 10px; color: #ff9db3; font-size: 12px; display:none; }
 
+  /* 46일차(스토리 카드 개편): 사진을 카드 왼쪽에 꽉 채워 정렬하고, 오른쪽에 이름·난이도·진행상태·
+     한 줄 소개(cardHook)를 배치하는 구조로 변경 (형균님 피드백 — 기존엔 원형 프로필 사진 +
+     이름/MBTI/소속만 나와서 어떤 스토리인지 감이 안 오고, 진행 중인 것과 새 스토리 구분도 안 됐음). */
   .char-card {
-    display: flex; gap: 12px; align-items: center;
-    padding: 14px; margin: 0 16px 12px;
+    display: flex; align-items: stretch;
+    padding: 0; margin: 0 16px 12px; overflow: hidden;
     background: var(--bg-panel); border: 1px solid var(--border-glow); border-radius: 16px;
     cursor: pointer;
     backdrop-filter: blur(4px);
@@ -163,13 +166,13 @@
   .char-card:active { transform: scale(0.985); }
   .char-card:not(.disabled):hover { border-color: rgba(255,158,199,0.5); }
   .char-card.disabled { opacity: 0.42; cursor: not-allowed; }
-  .char-avatar {
-    width: 50px; height: 50px; border-radius: 50%; overflow: hidden;
+  .char-card-photo {
+    width: 84px; flex-shrink: 0; overflow: hidden;
     background: linear-gradient(150deg, var(--lavender-deep), var(--rose-deep));
-    color: #fff; font-size: 12px; font-weight: 700; font-family: var(--serif);
-    display:flex; align-items:center; justify-content:center; flex-shrink:0;
-    box-shadow: 0 0 0 2px rgba(255,255,255,0.08) inset, 0 4px 14px rgba(0,0,0,0.35);
+    color: #fff; font-size: 13px; font-weight: 700; font-family: var(--serif);
+    display:flex; align-items:center; justify-content:center;
   }
+  .char-card-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 22%; display: block; }
   .cast-row { display: flex; gap: 4px; flex-shrink: 0; }
   .diff-badge {
     display: inline-block; margin: 0 4px 4px 0; padding: 2px 9px;
@@ -178,8 +181,11 @@
   .diff-easy   { background: rgba(127,224,160,0.15); color: #8fe6ac; }
   .diff-normal { background: rgba(183,154,239,0.18); color: #cbb8e8; }
   .diff-hard   { background: rgba(255,140,170,0.15); color: #ff9db3; }
+  .badge-progress { background: rgba(127,224,160,0.14); color: #8fe6ac; }
+  .badge-full { background: rgba(255,255,255,0.08); color: var(--text-faint); }
+  .char-info { padding: 12px 14px 12px 0; display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 1; }
   .char-info b { color: var(--text-main); font-size: 14.5px; font-family: var(--serif); }
-  .char-info div { color: var(--text-sub); font-size: 12px; margin-top: 3px; }
+  .char-info .hook-line { color: var(--text-sub); font-size: 12px; line-height: 1.5; margin-top: 1px; }
 
   #intro-box {
     margin: 14px 16px 0; padding: 16px 18px; background: var(--bg-panel);
@@ -697,7 +703,8 @@ const I18N = {
     charlistHeader: '스토리를 선택하세요',
     charlistMypageBtn: '마이페이지',
     charlistPreparing: '준비 중',
-    charlistSlotFullBadge: '슬롯 꽉 참',
+    charlistSlotFullBadge: '지금은 못 만나요',
+    charlistProgressBadge: '진행중',
     charintroPortraitPlaceholder: '캐릭터 이미지 (준비 중)',
     charintroStartBtn: '대화 시작하기',
     charintroDifficultyLabel: '난이도',
@@ -798,7 +805,8 @@ const I18N = {
     charlistHeader: 'Choose a Story',
     charlistMypageBtn: 'My Page',
     charlistPreparing: 'Coming soon',
-    charlistSlotFullBadge: 'Slots full',
+    charlistSlotFullBadge: 'Not available now',
+    charlistProgressBadge: 'In progress',
     charintroPortraitPlaceholder: 'Character image (coming soon)',
     charintroStartBtn: 'Start Chatting',
     charintroDifficultyLabel: 'Difficulty',
@@ -899,7 +907,8 @@ const I18N = {
     charlistHeader: 'ストーリーを選んでください',
     charlistMypageBtn: 'マイページ',
     charlistPreparing: '準備中',
-    charlistSlotFullBadge: 'スロット満杯',
+    charlistSlotFullBadge: '今は会えません',
+    charlistProgressBadge: '進行中',
     charintroPortraitPlaceholder: 'キャラクター画像(準備中)',
     charintroStartBtn: '会話を始める',
     charintroDifficultyLabel: '難易度',
@@ -1423,6 +1432,7 @@ const STORIES = {
   seoyeon: {
     title: '서연',
     subtitle: '서연 · ISFJ · 마케팅팀',
+    cardHook: '늘 남을 먼저 챙기는 다정한 그녀, 정작 자신의 진심은 좀처럼 티내지 않는다.',
     playable: true,
     summary: {
       intro: '서연은 친구 민지의 회사 동기로, 민지의 소개로 알게 된 사이다. 아직 서로 잘 모르지만 편안한 첫인상을 주고받았다.',
@@ -1451,6 +1461,7 @@ const STORIES = {
   dongeo: {
     title: '동거 스토리 (프리뷰)',
     subtitle: '지수 · 민호와 함께 사는 셰어하우스',
+    cardHook: '한 지붕 아래, 성격 다른 두 사람과 함께 지내는 셰어하우스 생활이 시작된다.',
     playable: true,
     summary: {
       intro: '새로 계약한 셰어하우스에 입주한 지 나흘째. 이 집에는 지수와 민호가 먼저 살고 있었고, 셋이 한 지붕 아래 살게 됐다.',
@@ -1480,6 +1491,7 @@ const STORIES = {
   haeun: {
     title: '하은',
     subtitle: '하은 · ENFP · 첫사랑',
+    cardHook: '고백 한 번 못 해보고 흩어졌던 첫사랑, 세월이 지나 다시 마주쳤다.',
     playable: true,
     summary: {
       intro: '하은은 플레이어의 학창 시절 짝사랑 상대다. 그때는 뜨겁게 좋아하면서도 고백 한 번 제대로 못 해보고, 서로 다른 대학과 도시로 흩어지며 자연스레 연락이 끊겼다. 세월이 꽤 흐른 지금, 오랜만에 참석한 동창 모임에서 우연히 다시 마주쳤다.',
@@ -1505,6 +1517,7 @@ const STORIES = {
   yujin: {
     title: '유진',
     subtitle: '유진 · INFJ · 투자심사역',
+    cardHook: '웬만해선 마음을 안 여는 냉철한 투자심사역, 진심을 보여줄 수 있을까?',
     playable: true,
     summary: {
       intro: '플레이어는 작은 스타트업을 운영하는 대표다. 투자 유치를 준비하던 중, 업계 경력이 오래된 것으로 유명한 벤처캐피털 심사역 유진과 미팅이 잡혔다. 여러 심사역 중에서도 연차와 안목으로 정평이 나 있어, "웬만한 설득에는 흔들리지 않는 사람"으로 통한다.',
@@ -1530,6 +1543,7 @@ const STORIES = {
   somin: {
     title: '소민',
     subtitle: '소민 · ESTJ · 사내 비밀 연애',
+    cardHook: '같은 팀 동료와의 아슬아슬한 사내 비밀 연애가 시작된다.',
     playable: true,
     summary: {
       intro: '플레이어와 소민은 같은 팀에서 일하는 동료이며, 소민은 팀 안에서 실무를 총괄하는 위치에 있다. 사내연애가 금지된 건 아니지만, 업무 라인이 얽힌 사이의 연애는 회사 안에서 말이 많아지기 딱 좋은 조합이라 둘 다 조심스럽다. 소민은 팀 안에서 빈틈없고 원칙적인 사람으로 유명해서, 아무도 그녀에게 이런 사적인 면이 있을 거라고 생각하지 못한다.',
@@ -1554,6 +1568,7 @@ const STORIES = {
   daeun: {
     title: '다은',
     subtitle: '다은 · ESFJ · 소꿉친구 (가벼운 집착)',
+    cardHook: '어릴 적부터 붙어 지낸 소꿉친구, 다시 가까워진 이 마음은 그저 우정일까?',
     playable: true,
     summary: {
       intro: '다은은 어릴 때부터 바로 옆집에 살던 소꿉친구다. 부모님들끼리도 워낙 친해서 어린 시절부터 자연스럽게 붙어다녔고, 그 관계는 어른이 된 지금까지도 편하게 이어지고 있다. 최근 다은이 형균과 가까운 동네로 다시 이사를 오면서, 예전처럼 거의 매일 얼굴을 보는 사이가 됐다.',
@@ -1578,6 +1593,7 @@ const STORIES = {
   riwon: {
     title: '리원',
     subtitle: '리원 · ISFP · 동네 책방 알바생 (조용한 집착)',
+    cardHook: '말수 적은 책방 알바생이, 사실 오래전부터 나를 지켜보고 있었다면?',
     playable: true,
     summary: {
       intro: '리원은 형균이 퇴근길에 자주 들르는 동네 책방의 아르바이트생이다. 말수가 적고 늘 책 뒤에 반쯤 숨어있는 듯한 사람이라 특별히 대화를 나눈 적은 별로 없다. 하지만 사실 리원은 몇 달째 형균이 오는 요일과 시간, 즐겨 찾는 책의 종류, 자주 시키는 음료까지 조용히 다 기억하고 있었다.',
@@ -1602,6 +1618,7 @@ const STORIES = {
   hyejin: {
     title: '혜진',
     subtitle: '혜진 · INFP · 후견인의 도움을 받는 처지 (위태로운 신뢰)',
+    cardHook: '갈 곳 없는 그녀를 돕게 되면서 생긴 위태로운 신뢰, 조심스레 다가가야 한다.',
     playable: true,
     summary: {
       intro: '혜진은 스무 살, 부모님이 운영하던 사업이 크게 실패하면서 감당하기 힘든 빚을 떠안게 됐다. 여기저기 손 벌릴 곳도 없어 막막하던 차에, 아버지의 지인을 통해 형균과 연이 닿았다. 형균은 혜진 가족의 빚 문제를 정리해주는 대신, 당장 갈 곳 없는 혜진이 안전하게 지낼 수 있도록 자신의 도움을 받게 했다. 혜진은 이 호의 뒤에 뭔가 다른 속셈이 있을 거라 믿으며 잔뜩 경계하고 있다.',
@@ -1626,6 +1643,7 @@ const STORIES = {
   jia: {
     title: '지아',
     subtitle: '지아 · ISTP · 회복 중인 오랜 지인 (거친 결)',
+    cardHook: '크게 배신당해 마음을 닫은 오랜 지인, 다시 곁을 내줄 수 있을까?',
     playable: true,
     summary: {
       intro: '지아는 형균과 오래전부터 알고 지낸 사이다. 얼마 전 믿었던 동업자에게 사업 자금을 통째로 가로채이고, 그 동업자와 몰래 만나고 있던 연인에게도 배신당하면서 한꺼번에 모든 걸 잃었다. 감당할 수 없는 충격과 과로가 겹쳐 쓰러졌고, 응급실을 거쳐 입원했다는 소식을 뒤늦게 전해 듣는다.',
@@ -1650,6 +1668,7 @@ const STORIES = {
   doyoon: {
     title: '도윤',
     subtitle: '도윤 · ENFJ · 필라테스 트레이너',
+    cardHook: '늘 밝고 믿음직한 트레이너, 그 뒤에 숨겨둔 약한 모습이 있다면?',
     playable: true,
     summary: {
       intro: '도윤은 최근 등록한 필라테스 스튜디오에서 배정받은 담당 트레이너다. 첫 수업부터 살뜰히 챙겨줘서 좋은 인상을 받았다.',
@@ -1678,6 +1697,7 @@ const STORIES = {
   siwoo: {
     title: '시우',
     subtitle: '시우 · ISTP · 동네 사진관 사장',
+    cardHook: '무뚝뚝한 동네 사진관 사장, 사실은 다시 마음 여는 게 두려운 사람이다.',
     playable: true,
     summary: {
       intro: '시우는 동네에서 작은 사진관 겸 카페를 운영하는 사장이다. 몇 번 들르면서 안면을 텄지만, 늘 무뚝뚝하고 말수가 적은 편이다.',
@@ -1706,6 +1726,7 @@ const STORIES = {
   eunho: {
     title: '은호',
     subtitle: '은호 · ENFP · 러닝크루 멤버',
+    cardHook: '밝고 붙임성 좋은 러닝크루 멤버, 그 이면엔 불안한 마음이 숨어있다.',
     playable: true,
     summary: {
       intro: '은호는 최근 가입한 러닝크루에서 만난 활발한 멤버다. 낯가림 없이 먼저 다가와줘서 금방 편해졌다.',
@@ -1734,6 +1755,7 @@ const STORIES = {
   seeun: {
     title: '세은',
     subtitle: '세은 · INTP · 골목 헌책방 겸 북카페 사장',
+    cardHook: '혼자 헌책방을 지키는 그녀, 사실은 누군가 끝까지 관심 가져주길 바란다.',
     playable: true,
     summary: {
       intro: '세은은 골목 안쪽에 있는 작은 헌책방 겸 북카페 사장이다. 우연히 비를 피해 들어갔다가 단골이 됐다.',
@@ -1762,6 +1784,7 @@ const STORIES = {
   taeo: {
     title: '태오',
     subtitle: '태오 · ENTJ · 갤러리 겸 편집숍 오너',
+    cardHook: '자신감 넘치는 갤러리 오너, 진짜 마음 앞에서는 의외로 서투르다.',
     playable: true,
     summary: {
       intro: '태오는 지인의 소개로 알게 된 작은 갤러리 겸 편집숍의 오너다. 자신감 넘치고 화려한 이력의 소유자로, 처음엔 다가가기 어려운 인상이었다.',
@@ -1790,6 +1813,7 @@ const STORIES = {
   layoung: {
     title: '라영',
     subtitle: '라영 · ESFP · 작은 와인바 오너',
+    cardHook: '누구에게나 다정한 와인바 사장, 진심으로 좋아할 사람을 기다리고 있다.',
     playable: true,
     summary: {
       intro: '라영은 골목 안 작은 와인바를 혼자 운영하는 사장이다. 친구 소개로 처음 갔다가, 이제는 종종 혼자 들르는 단골이 됐다.',
@@ -1818,6 +1842,7 @@ const STORIES = {
   soi: {
     title: '소이',
     subtitle: '소이 · ISFJ · 동물병원 보조 간호사',
+    cardHook: '낯을 많이 가리는 동물병원 간호사, 그런 나를 편하게 봐줄 사람을 찾고 있다.',
     playable: true,
     summary: {
       intro: '소이는 반려동물을 데리고 다니는 동네 동물병원의 보조 간호사다. 낯을 많이 가려서 처음엔 인사만 겨우 주고받는 사이였다.',
@@ -1846,6 +1871,7 @@ const STORIES = {
   junseo: {
     title: '준서',
     subtitle: '준서 · ISTJ · 회사 입사 동기 (라이벌)',
+    cardHook: '까칠한 입사 동기이자 라이벌, 사실은 진짜 내 편이 필요했던 사람이다.',
     playable: true,
     summary: {
       intro: '준서는 같은 해 입사한 회사 동기로, 매 분기 실적으로 은근히 경쟁해온 사이다. 겉으로는 까칠하고 시니컬하지만 일 하나는 확실히 잘한다.',
@@ -1874,6 +1900,7 @@ const STORIES = {
   kairo: {
     title: '카이로',
     subtitle: '카이로 · ISFP · 조용한 재즈바 바텐더 (전직 아이돌)',
+    cardHook: '화려했던 과거를 숨긴 재즈바 바텐더, 이미지 말고 진짜 나를 봐주길 바란다.',
     playable: true,
     summary: {
       intro: '카이로는 몇 년 전까지 꽤 인기 있던 아이돌 그룹 멤버였지만, 지금은 조용한 재즈바에서 바텐더로 일하고 있다. 예전 얘기는 손님들 앞에서 거의 꺼내지 않는다.',
@@ -1902,6 +1929,7 @@ const STORIES = {
   hyeonseo: {
     title: '현서',
     subtitle: '현서 · INFP · 골목 꽃집 사장',
+    cardHook: '다정하지만 마음을 에둘러 표현하는 꽃집 사장, 그 진심을 알아볼 수 있을까?',
     playable: true,
     summary: {
       intro: '현서는 친구의 소개팅 주선으로 처음 만난 사람이다. 골목 안 작은 꽃집을 혼자 운영하고 있고, 첫 만남에서는 다정하지만 조금 서먹한 인상이었다.',
@@ -1930,6 +1958,7 @@ const STORIES = {
   dahee: {
     title: '다희',
     subtitle: '다희 · ENTP · 여행지 게스트하우스 사장',
+    cardHook: '여행지에서 만난 게스트하우스 사장, 정착이 두려운 그녀를 붙잡을 수 있을까?',
     playable: true,
     summary: {
       intro: '다희는 플레이어가 종종 주말마다 훌쩍 떠나는 근교 여행지에서 작은 게스트하우스를 운영하는 사장이다. 몇 달 전 우연히 묵었다가, 그 뒤로 스트레스 쌓일 때마다 이 동네를 찾게 됐고 이제는 올 때마다 꼭 들르는 단골이 됐다.',
@@ -1958,6 +1987,7 @@ const STORIES = {
   chanyoung: {
     title: '찬영',
     subtitle: '찬영 · ENFP · 과외 온 대학 후배',
+    cardHook: '장난처럼 마음을 감춰온 대학 후배, 진지하게 봐주길 바라고 있다.',
     playable: true,
     summary: {
       intro: '찬영은 같은 동아리 출신 대학 후배로, 플레이어에게 종종 과제나 진로 상담을 받으러 오는 사이였다. 밝고 살가운 성격에 어느새 편한 사이가 됐다.',
@@ -1986,6 +2016,7 @@ const STORIES = {
   jungwoo: {
     title: '정우',
     subtitle: '정우 · INFJ · 동네 작은 도서관 사서',
+    cardHook: '티내지 않고 조용히 챙기는 도서관 사서, 이번엔 먼저 마음을 말하고 싶어한다.',
     playable: true,
     summary: {
       intro: '정우는 동네 작은 도서관에서 일하는 사서다. 조용하고 안경 너머로 살짝 무심해 보이는 인상이지만, 몇 번 마주치다 보니 은근히 편한 사이가 됐다.',
@@ -2014,6 +2045,7 @@ const STORIES = {
   yoona: {
     title: '윤아',
     subtitle: '윤아 · INTJ · 한정식집 안주인 (가업 계승자)',
+    cardHook: '우아한 한정식집 안주인, 가업이 아닌 자기 자신으로 봐주길 바란다.',
     playable: true,
     summary: {
       intro: '윤아는 대대로 이어온 고급 한정식집의 셋째 딸이자 실질적인 안주인이다. 손님들에게는 흠잡을 데 없이 우아하지만, 개인적인 이야기는 철저히 선을 긋는 사람이었다.',
@@ -2042,6 +2074,7 @@ const STORIES = {
   eunbi: {
     title: '은비',
     subtitle: '은비 · ISTP · 편집숍 스타일리스트',
+    cardHook: '도도한 편집숍 스타일리스트, 사실은 있는 그대로 인정받고 싶어한다.',
     playable: true,
     summary: {
       intro: '은비는 자주 들르는 편집숍의 스타일리스트다. 도도하고 안목이 확고해서 처음엔 다가가기 어려운 인상이었지만, 옷 취향 얘기를 나누다 보니 은근히 편한 사이가 됐다.',
@@ -2070,6 +2103,7 @@ const STORIES = {
   leehyun: {
     title: '이현',
     subtitle: '이현 · ISTJ · 계약 연애 상대',
+    cardHook: '편의상 시작한 계약 연애, 어느새 진짜가 되어가고 있다.',
     playable: true,
     summary: {
       intro: '이현은 양쪽 집안 어른들의 성화에 못 이겨, 서로 편의상 사귀는 척하기로 합의한 상대다. 원칙적이고 무뚝뚝해서 처음엔 그저 계약을 지키는 사이일 뿐이었다.',
@@ -2098,6 +2132,7 @@ const STORIES = {
   jiho: {
     title: '지호',
     subtitle: '지호 · ENTP · 오빠의 친구',
+    cardHook: '오빠의 친구로 지내온 오랜 인연, 감춰온 마음을 꺼내볼 수 있을까?',
     playable: true,
     summary: {
       intro: '지호는 플레이어의 오빠와 친한 친구로, 어릴 때부터 종종 집에 놀러 오던 사이였다. 장난기 많고 능글맞은 성격이라 늘 친오빠처럼 편하게 대해왔다.',
@@ -2126,6 +2161,7 @@ const STORIES = {
   harin: {
     title: '하린',
     subtitle: '하린 · ESTJ · 고문서 보존실 연구원',
+    cardHook: '감정을 절제하는 고문서 연구원, 이 사람 앞에서는 다를 수 있을까?',
     playable: true,
     summary: {
       intro: '하린은 도서관 지하 고문서 보존실에서 오래된 책과 문서를 복원하는 연구원이다. 표정 변화가 거의 없고 필요한 말만 정확히 하는 성격이라, 처음 보는 사람은 차갑다고 오해하기 쉽다.',
@@ -2154,6 +2190,7 @@ const STORIES = {
   dohyun: {
     title: '도현',
     subtitle: '도현 · ESFJ · 피아노 조율사',
+    cardHook: '다정하게 챙겨주는 피아노 조율사, 사실은 챙김받고 싶은 사람이다.',
     playable: true,
     summary: {
       intro: '도현은 콘서트홀과 개인 연습실을 오가며 피아노를 조율하는 조율사이자, 한때 콩쿠르 무대에 섰던 피아니스트다. 사람을 편하게 챙기는 다정한 성격에 우아한 태도가 몸에 배어 있다.',
@@ -2182,6 +2219,7 @@ const STORIES = {
   soyul: {
     title: '소율',
     subtitle: '소율 · ESTP · 복싱 체육관 관장',
+    cardHook: '강해 보이는 복싱 체육관 관장, 가끔은 그녀도 기대고 싶어한다.',
     playable: true,
     summary: {
       intro: '소율은 동네 복싱 체육관을 운영하는 관장이다. 강렬한 인상과 시원시원한 태도 때문에 다가가기 어려워 보이지만, 실제로는 회원들을 살뜰히 챙기는 다정한 사람이다.',
@@ -2210,6 +2248,7 @@ const STORIES = {
   eunjae: {
     title: '은재',
     subtitle: '은재 · ENFJ · 옆집에서 자란 앙숙',
+    cardHook: '옆집에서 자란 앙숙, 이제는 다른 사이가 되고 싶어한다.',
     playable: true,
     summary: {
       intro: '은재는 어릴 때부터 옆집에 살며 사사건건 부딪혀온 소꿉친구다. 프리랜서 사진작가로 일하다가, 동네 기록 사진집 작업을 위해 당분간 본가에 다시 눌러앉아 지내기로 하면서, 여전히 옆집에 사는 플레이어와 매일 다시 마주치게 됐다.',
@@ -2364,18 +2403,22 @@ function tierClass(tier) {
 // 이미 시작된 스토리 id 목록을 한 번의 Firestore 조회로 함께 구해온다. (형균님 UI/UX QA 32일차 —
 // 슬롯 상태가 마이페이지에만 작은 글씨로 있고 스토리 목록에는 전혀 안 보이던 문제를 여기서 해결한다.)
 async function getStorySlotStatus() {
-  if (!currentUid) return { activeCount: 0, startedIds: new Set() };
+  if (!currentUid) return { activeCount: 0, startedIds: new Set(), statusById: {} };
   const snap = await db.collection('players').doc(currentUid).collection('storyStates').get();
   let count = 0;
   const startedIds = new Set();
+  // 46일차: 스토리 카드에 "진행중" 배지를 붙이려면 단순히 "시작했는지"뿐 아니라
+  // "지금도 진행 중(active)인지, 이미 완료/실패로 끝났는지"까지 구분해야 해서 상태를 함께 담아둔다.
+  const statusById = {};
   snap.forEach(doc => {
     startedIds.add(doc.id);
     const story = STORIES[doc.id];
     if (story && story.isEventStory) return;
     const status = doc.data().collectionStatus || 'active';
+    statusById[doc.id] = status;
     if (status === 'active') count++;
   });
-  return { activeCount: count, startedIds };
+  return { activeCount: count, startedIds, statusById };
 }
 
 async function renderStoryList() {
@@ -2390,7 +2433,7 @@ async function renderStoryList() {
   // 원하는 쪽 캐릭터만 골라 볼 수 있다. "모두"를 고른 경우(또는 기존 유저처럼 아직
   // 선호값이 없는 경우)는 전체 스토리를 그대로 보여준다.
   const interest = (playerProfile && playerProfile.interest) || '모두';
-  const { activeCount, startedIds } = await getStorySlotStatus();
+  const { activeCount, startedIds, statusById } = await getStorySlotStatus();
   const slotEl = $('charlist-slot-status');
   if (slotEl) {
     slotEl.textContent = `${t('mypageSlotStatusPrefix')}${activeCount} / ${MAX_STORY_SLOTS}`;
@@ -2404,18 +2447,27 @@ async function renderStoryList() {
     const story = localizeStory(STORIES[id], id);
     const isBrandNew = !startedIds.has(id);
     const blocked = isBrandNew && !story.isEventStory && activeCount >= MAX_STORY_SLOTS;
+    // 46일차: 이미 시작했고(브랜드뉴가 아니고) 아직 완료/실패로 끝나지 않은(collectionStatus==='active')
+    // 스토리에만 "진행중" 배지를 붙인다 — 완료/실패 스토리나 아직 시작 안 한 스토리에는 붙이지 않는다.
+    const inProgress = !isBrandNew && statusById[id] === 'active';
     const card = document.createElement('div');
     card.className = blocked ? 'char-card disabled' : 'char-card';
-    const avatars = story.cast.map(c => `<div class="char-avatar" style="width:32px;height:32px;font-size:9px;">${avatarSVG(c.key, 32)}</div>`).join('');
+    // 카드 왼쪽에 꽉 채워 넣는 대표 사진: 실사/일러스트가 있으면 그 이미지를, 없으면 기존 그라데이션+이니셜.
+    const photoKey = story.cast[0].key;
+    const photoInner = AVATAR_IMAGE[photoKey]
+      ? `<img src="${AVATAR_IMAGE[photoKey]}" alt="">`
+      : avatarSVG(photoKey, 84);
     const badges = story.cast.map(c => `<span class="diff-badge diff-${tierClass(c.tier)}">${c.name} ${c.tier}</span>`).join('');
-    const desc = story.subtitle || '';
-    const blockedBadge = blocked ? `<span class="diff-badge" style="background:rgba(255,255,255,0.08); color:var(--text-faint);">${t('charlistSlotFullBadge')}</span>` : '';
+    const progressBadge = inProgress ? `<span class="diff-badge badge-progress">${t('charlistProgressBadge')}</span>` : '';
+    const blockedBadge = blocked ? `<span class="diff-badge badge-full">${t('charlistSlotFullBadge')} (${activeCount}/${MAX_STORY_SLOTS})</span>` : '';
+    // cardHook(46일차, 목적/후킹 한 줄 문구)이 있으면 그걸, 아직 없는 스토리(번역 대상 외 등)는 기존 subtitle로 대체.
+    const hookText = story.cardHook || story.subtitle || '';
     card.innerHTML = `
-      <div class="cast-row">${avatars}</div>
+      <div class="char-card-photo">${photoInner}</div>
       <div class="char-info">
         <b>${story.title}</b>
-        <div>${badges}${blockedBadge}</div>
-        <div>${desc}</div>
+        <div>${badges}${progressBadge}${blockedBadge}</div>
+        <div class="hook-line">${hookText}</div>
       </div>`;
     card.addEventListener('click', () => { if (blocked) { showSlotFullNotice(); return; } openStoryIntro(id); });
     container.appendChild(card);
