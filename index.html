@@ -713,7 +713,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.16</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.17</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1552,7 +1552,140 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.16';
+window.__BUILD = 'v2026-08-24.17';
+// =====================================================
+// 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
+// ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
+// 대화하므로 아크·썸 이벤트·수치·반복 감지까지 전부 실전과 동일하게 작동한다.
+// 비용 감각: 턴당 호출 2회(플레이어 생성 + 게임 응답), 100턴 ≈ 몇백 원 수준.
+// =====================================================
+const QA_PERSONAS = {
+  '다정함': '너는 다정하고 배려심 있는 플레이어다. 상대의 말에 공감하고, 질문도 하고, 가끔 가벼운 스킨십이나 데이트를 제안한다.',
+  '장난꾸러기': '너는 장난기 많은 플레이어다. 농담을 던지고, 놀리고, 능청을 떤다. 가끔은 진지해진다.',
+  '퉁명함': '너는 말수가 적고 퉁명스러운 플레이어다. 짧게 대답하고, 먼저 다가가는 일이 드물다.',
+  '막무가내': '너는 예측 불가능한 플레이어다. 갑자기 화제를 바꾸고, 무리한 요구를 하고, 가끔 상황과 안 맞는 말을 던진다. (스트레스 테스트용)'
+};
+let __qaRunning = false, __qaLog = [];
+
+async function qaCallGemini(sys, user, schema, maxTokens) {
+  const body = {
+    system_instruction: { parts: [{ text: sys }] },
+    contents: [{ role: 'user', parts: [{ text: user }] }],
+    generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 1.0, maxOutputTokens: maxTokens || 300 }
+  };
+  const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const txt = await res.text();
+  let full = '';
+  txt.split('\n').forEach(l => {
+    if (!l.startsWith('data: ')) return;
+    try { const j = JSON.parse(l.slice(6)); const p = j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0] && j.candidates[0].content.parts[0].text; if (p) full += p; } catch (e) {}
+  });
+  return JSON.parse(full);
+}
+
+function qaTranscript(fromIdx) {
+  return (state.history || []).slice(fromIdx || 0).map(h => {
+    if (h.role === 'user') return '플레이어: ' + (h.text || '');
+    return (h.beats || []).map(b => b.type === 'dialogue' ? ((b.speaker || '상대') + ': "' + b.text + '"') : ('(' + b.text + ')')).join('\n');
+  }).join('\n');
+}
+
+async function qaPlayerMessage(persona) {
+  const recent = qaTranscript(Math.max(0, state.history.length - 8));
+  const cs = state.chars[currentStory.cast[0].key] || {};
+  const out = await qaCallGemini(
+    QA_PERSONAS[persona] + ' 아래 연애 시뮬레이션 대화의 다음 플레이어 대사를 만들어라. 한두 문장, 자연스럽게. 필요하면 *별표*로 행동 묘사를 섞어도 된다. 직전에 했던 말을 되풀이하지 마라.',
+    '[지금까지 대화 끝부분]\n' + recent + '\n\n[현재 관계] 호감 ' + (cs.affection || 0) + ', 신뢰 ' + (cs.trust || 0) + ', 단계 ' + (cs.stage || 1),
+    { type: 'OBJECT', properties: { message: { type: 'STRING' } }, required: ['message'] }, 200);
+  return String(out.message || '').slice(0, 300);
+}
+
+async function startAutoQA(turns, persona) {
+  if (__qaRunning) return;
+  if (!currentStory || !state) { alert('스토리에 들어간 상태에서 시작하세요.'); return; }
+  __qaRunning = true; __qaLog = [];
+  const startIdx = state.history.length;
+  const bar = document.getElementById('qa-progress');
+  const btn = document.getElementById('qa-start');
+  if (btn) btn.textContent = '중지';
+  for (let i = 1; i <= turns; i++) {
+    if (!__qaRunning) break;
+    try {
+      const msg = await qaPlayerMessage(persona);
+      if (!__qaRunning) break;
+      await runTurn(msg, { quotaCheck: null });   // QA는 무료 횟수·코인을 소모하지 않는다
+      const cs = state.chars[currentStory.cast[0].key] || {};
+      __qaLog.push({ turn: i, aff: cs.affection, trust: cs.trust, stage: cs.stage, arcs: (state.arcState && state.arcState.clearedArcs) || 0 });
+      if (bar) bar.textContent = i + ' / ' + turns + '  (호감 ' + cs.affection + ' · 신뢰 ' + cs.trust + ' · 단계 ' + cs.stage + ')';
+      if (state.collectionStatus !== 'active') { if (bar) bar.textContent += '  — ' + state.collectionStatus + '로 종료'; break; }
+    } catch (e) {
+      __qaLog.push({ turn: i, error: e.message });
+      await new Promise(r => setTimeout(r, 3000));
+    }
+    await new Promise(r => setTimeout(r, 600));
+  }
+  __qaRunning = false;
+  if (btn) btn.textContent = '시작';
+  if (bar) bar.textContent += '  — 대화 종료, 평가 중...';
+  try { await qaEvaluate(startIdx); } catch (e) { alert('평가 실패: ' + e.message); }
+}
+
+async function qaEvaluate(startIdx) {
+  const transcript = qaTranscript(startIdx);
+  const first = __qaLog[0] || {}, last = __qaLog[__qaLog.length - 1] || {};
+  const statLine = '턴 수 ' + __qaLog.length + ' / 호감 ' + (first.aff||0) + '→' + (last.aff||0) + ' / 신뢰 ' + (first.trust||0) + '→' + (last.trust||0) + ' / 단계 ' + (first.stage||1) + '→' + (last.stage||1) + ' / 함께 넘긴 아크 ' + (last.arcs||0) + ' / 오류 턴 ' + __qaLog.filter(l => l.error).length + '개';
+  const out = await qaCallGemini(
+    '너는 AI 연애 시뮬레이션의 품질 평가자다. 아래 자동 플레이 대화 전체를 읽고 냉정하게 평가하라. 각 항목은 10점 만점이고, 문제는 반드시 대화에서 실제 문장을 인용해서 지적하라.',
+    '[수치 요약] ' + statLine + '\n\n[대화 전문]\n' + transcript + '\n\n[평가 항목]\n1. 문맥 일관성 (시간·장소·사실이 어긋나지 않는가)\n2. 반복 패턴 (같은 반응·문형·묘사가 반복되지 않는가)\n3. 캐릭터 일관성 (성격이 유지되면서도 관계에 따라 변화하는가)\n4. 관계 진행 속도 (너무 빠르거나 느리지 않은가)\n5. 이벤트 (사건이 적절한 빈도로, 상황에 맞게 일어나는가)\n6. 매체 표현 (문자·통화·대면 구분이 맞는가)\n7. 몰입 (어색하거나 몰입이 깨지는 순간이 있는가)',
+    { type: 'OBJECT', properties: {
+        scores: { type: 'ARRAY', items: { type: 'OBJECT', properties: { category: { type: 'STRING' }, score: { type: 'INTEGER' }, comment: { type: 'STRING' } }, required: ['category', 'score', 'comment'] } },
+        issues: { type: 'ARRAY', items: { type: 'OBJECT', properties: { quote: { type: 'STRING' }, problem: { type: 'STRING' } }, required: ['quote', 'problem'] } },
+        summary: { type: 'STRING' }
+      }, required: ['scores', 'issues', 'summary'] }, 4000);
+  // 보고서 표시 + 복사
+  const lines = [];
+  lines.push('== 자동 QA 보고서 ==');
+  lines.push(statLine); lines.push('');
+  (out.scores || []).forEach(x => lines.push(x.score + '/10  ' + x.category + ' — ' + x.comment));
+  lines.push(''); lines.push('-- 발견된 문제 --');
+  (out.issues || []).forEach((x, i) => lines.push((i + 1) + '. "' + x.quote + '"\n   → ' + x.problem));
+  lines.push(''); lines.push('총평: ' + out.summary);
+  const report = lines.join('\n');
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(7,10,16,.94);z-index:99;display:flex;flex-direction:column;padding:24px;overflow:auto;';
+  ov.innerHTML = '<div style="max-width:640px;margin:0 auto;width:100%;">' +
+    '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
+    '<button id="qa-copy" style="padding:6px 14px;border:1px solid var(--brass);background:none;color:var(--brass);cursor:pointer;">복사</button>' +
+    '<button id="qa-close" style="padding:6px 14px;border:1px solid var(--hair);background:none;color:var(--dim);cursor:pointer;">닫기</button></div>' +
+    '<pre style="white-space:pre-wrap;font-family:var(--sans);font-size:13px;line-height:1.8;color:var(--paper);"></pre></div>';
+  ov.querySelector('pre').textContent = report;
+  document.body.appendChild(ov);
+  ov.querySelector('#qa-close').onclick = () => ov.remove();
+  ov.querySelector('#qa-copy').onclick = () => { navigator.clipboard.writeText(report); ov.querySelector('#qa-copy').textContent = '복사됨'; };
+  console.log(report);
+}
+
+(function qaInit() {
+  try {
+    if (!/[?&]qa=1/.test(location.search)) return;
+    const host = document.getElementById('screen-chat');
+    if (!host) return;
+    const panel = document.createElement('div');
+    panel.style.cssText = 'display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(201,162,39,.08);border-bottom:1px solid var(--brass-mid);font-size:11px;color:var(--dim);flex-wrap:wrap;';
+    panel.innerHTML = '<b style="color:var(--brass);">자동 QA</b>' +
+      '<input id="qa-turns" type="number" value="100" min="5" max="300" style="width:56px;background:var(--ink);border:1px solid var(--hair);color:var(--paper);padding:2px 6px;">턴' +
+      '<select id="qa-persona" style="background:var(--ink);border:1px solid var(--hair);color:var(--paper);padding:2px 4px;">' +
+      Object.keys(QA_PERSONAS).map(k => '<option>' + k + '</option>').join('') + '</select>' +
+      '<button id="qa-start" style="padding:3px 12px;border:1px solid var(--brass);background:none;color:var(--brass);cursor:pointer;">시작</button>' +
+      '<span id="qa-progress"></span>';
+    host.insertBefore(panel, host.firstChild);
+    document.getElementById('qa-start').onclick = () => {
+      if (__qaRunning) { __qaRunning = false; return; }
+      startAutoQA(parseInt(document.getElementById('qa-turns').value, 10) || 100, document.getElementById('qa-persona').value);
+    };
+  } catch (e) { console.error('QA init 실패', e); }
+})();
+
 window.addEventListener('error', (e) => {
   const where = (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
   logClientError('error', where);
