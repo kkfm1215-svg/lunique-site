@@ -254,6 +254,13 @@
     border-bottom: 1px solid var(--hair); flex-wrap: wrap;
   }
   #stat-bar span { border: 1px solid var(--hair); padding: 2px 6px; border-radius: var(--r1); }
+  #stat-bar .stat-arc { color: var(--brass); border-color: var(--brass-mid); }
+  .delta-note {
+    align-self: flex-end; margin: 2px 0 var(--s2);
+    font-family: var(--mono); font-size: 10px; letter-spacing: .04em;
+    color: var(--brass); opacity: .85;
+  }
+  .delta-note.down { color: var(--warn); }
 
   /* 대화 배경 아트 (52일차) — 캐릭터 이미지를 뒤에 깔고, 그 위 면들을 반투명으로 만들어
      가장자리와 블록 사이로 그림이 비치게 한다. 이미지가 없는 인물은 자동으로 꺼진다. */
@@ -669,7 +676,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.6</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.8</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -810,6 +817,7 @@ const I18N = {
     stageShiftLover: '연인', stageShiftLoverDesc: '마침내, 서로의 마음이 닿았다.',
     stageShiftDown: '멀어지는 중', stageShiftDownDesc: '무언가 어긋나기 시작했다.',
     mypageStage1: '처음 만난 사이', mypageStage2: '가까워지는 중', mypageStage3: '연인',
+    chatStatAffection: '호감', chatStatTrust: '신뢰', chatStatArcs: '함께 넘긴 일',
     loginWelcome: '기록을 시작합니다',
     loginDesc: '구글 계정으로 로그인하면<br/>진행 상황이 서버에 저장돼요.',
     loginGoogleBtn: 'G 구글 계정으로 로그인',
@@ -963,6 +971,7 @@ const I18N = {
     stageShiftLover: 'Together', stageShiftLoverDesc: 'At last, your feelings reach each other.',
     stageShiftDown: 'Drifting apart', stageShiftDownDesc: 'Something has started to go wrong.',
     mypageStage1: 'Just met', mypageStage2: 'Growing closer', mypageStage3: 'Together',
+    chatStatAffection: 'Affection', chatStatTrust: 'Trust', chatStatArcs: 'Weathered together',
     loginWelcome: 'Your record begins',
     loginDesc: 'Sign in with Google<br/>to save your progress to the cloud.',
     loginGoogleBtn: 'G Sign in with Google',
@@ -1116,6 +1125,7 @@ const I18N = {
     stageShiftLover: '恋人', stageShiftLoverDesc: 'ついに、想いが通じ合った。',
     stageShiftDown: '離れていく', stageShiftDownDesc: '何かが、ずれ始めた。',
     mypageStage1: '出会ったばかり', mypageStage2: '近づいていく', mypageStage3: '恋人',
+    chatStatAffection: '好感', chatStatTrust: '信頼', chatStatArcs: '共に越えた出来事',
     loginWelcome: '記録を始めます',
     loginDesc: 'Googleアカウントでログインすると<br/>進行状況がサーバーに保存されます。',
     loginGoogleBtn: 'G Googleでログイン',
@@ -1464,7 +1474,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.6';
+window.__BUILD = 'v2026-08-24.8';
 window.addEventListener('error', (e) => {
   const where = (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
   logClientError('error', where);
@@ -3277,19 +3287,34 @@ async function persist() {
   await storyDocRef(currentStoryId).set(state);
 }
 
+// 62일차: 예전에는 DEV_MODE 전용이었는데, 형균님 실플레이에서 "지금 관계가 어디쯤인지,
+// 내 대사가 +인지 -인지 알 수 없다"는 피드백이 나와서 모든 유저에게 항상 보여주기로 결정.
+// (수치 그대로 / 화면 상시 표시 — 형균님 선택. 라이벌·조연은 표시하지 않는다.)
 function renderStats() {
   const bar = $('stat-bar');
   const devHint = $('chat-dev-hint');
   if (devHint) devHint.style.display = DEV_MODE ? '' : 'none';
+  if (!bar) return;
   bar.innerHTML = '';
-  if (!DEV_MODE) { bar.style.display = 'none'; return; }
   bar.style.display = '';
-  currentStory.cast.forEach(c => {
+  if (!currentStory || !state) return;
+  currentStory.cast.filter(c => c.completionRequired !== false).forEach(c => {
     const cs = state.chars[c.key];
+    if (!cs) return;
     const span = document.createElement('span');
-    span.textContent = `${c.name} 호감 ${cs.affection} · 신뢰 ${cs.trust} · 단계 ${cs.stage}`;
+    const stageName = t('mypageStage' + Math.min(3, Math.max(1, cs.stage || 1)));
+    span.textContent = `${c.name} · ${stageName} · ${t('chatStatAffection')} ${cs.affection} · ${t('chatStatTrust')} ${cs.trust}`;
     bar.appendChild(span);
   });
+  // 완전한 사랑(컬렉션)까지 함께 넘겨야 할 사건 수 — 연인 단계에 들어선 뒤부터 의미가 있다.
+  const need = requiredArcsFor(currentStory);
+  const done = Math.min(need, (state.arcState && state.arcState.clearedArcs) || 0);
+  if (state.collectionStatus === 'active' && isCoupleStageReached(state, currentStory)) {
+    const arcSpan = document.createElement('span');
+    arcSpan.className = 'stat-arc';
+    arcSpan.textContent = `${t('chatStatArcs')} ${done} / ${need}`;
+    bar.appendChild(arcSpan);
+  }
 }
 
 function speakerName(story, key) {
@@ -3516,6 +3541,26 @@ function addArcProgressNotice() {
   if (left === 1) addSys(t('arcProgressNearly'));
   else if (done * 2 >= need) addSys(t('arcProgressMid'));
   else addSys(t('arcProgressEarly'));
+}
+
+// 이번 턴 대사가 관계에 +였는지 -였는지를 작게 보여준다 (62일차, 형균님 요청).
+// 오른쪽 아래에 작은 글씨 한 줄 — 채팅 흐름을 끊지 않는 크기로.
+function addDeltaNote(notes) {
+  const chat = $('chat');
+  if (!chat || !notes || !notes.length) return;
+  const div = document.createElement('div');
+  div.className = 'delta-note';
+  div.textContent = notes.map(n => {
+    const parts = [];
+    if (n.dA) parts.push(`${t('chatStatAffection')} ${n.dA > 0 ? '+' : ''}${n.dA}`);
+    if (n.dT) parts.push(`${t('chatStatTrust')} ${n.dT > 0 ? '+' : ''}${n.dT}`);
+    return (n.showName ? n.name + ' ' : '') + parts.join(' · ');
+  }).join('   ');
+  const negative = notes.some(n => n.dA < 0 || n.dT < 0) && !notes.some(n => n.dA > 0 || n.dT > 0);
+  if (negative) div.classList.add('down');
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
 }
 
 function addSafetyNotice() {
@@ -4197,9 +4242,26 @@ ${factLedger.map(f => `- ${f}`).join('\n')}` : '';
   // 61일차 B22: 매 턴 바뀌는 정보는 반드시 프롬프트 "맨 뒤"에 둔다.
   // Gemini는 프롬프트 앞부분이 매번 똑같을 때만 그 부분을 캐시해 입력 비용을 깎아준다.
   // 예전에는 이 블록이 앞쪽에 있어서, 그 뒤의 약 2만 토큰짜리 고정 규칙이 매 턴 새로 처리됐다.
-  const turnVariableBlock = (factLedgerBlock || rivalTriggerNote)
+  // 최근 3개 모델 턴의 본문을 훑어서, 2턴 이상 반복된 반응 표현을 찾아낸다.
+  // 찾은 것만 "이번 턴 금지"로 지시한다 — 항상 다 금지하면 캐릭터 개성 자체가 죽는다.
+  const repetitionNote = (() => {
+    const turns = (state && state.history || []).filter(h => h.role === 'model' && Array.isArray(h.beats)).slice(-3);
+    if (turns.length < 2) return '';
+    const texts = turns.map(tn => tn.beats.map(b => b.text || '').join(' '));
+    const PATTERNS = [
+      { re: /누가 .{0,14}(야|이야|냐|래|다고|대\?)/, label: '"누가 ~야?"식 되받아치기 문형' },
+      { re: /(붉어|빨개|달아오|귓불|귀 끝|귀가 빨)/, label: '얼굴·귀가 붉어지는 묘사' },
+      { re: /(빨리|어서|얼른).{0,14}(하자|가자|타|해라|움직|와)/, label: '"빨리 ~하자"식 재촉으로 끝맺기' },
+      { re: /(는 무슨|은 무슨)/, label: '"~는 무슨"식 일축 문형' },
+      { re: /(퉁명|톡 쏘|쏘아붙)/, label: '퉁명스럽게 쏘아붙이는 도입' }
+    ];
+    const hits = PATTERNS.filter(p => texts.filter(t => p.re.test(t)).length >= 2).map(p => p.label);
+    if (!hits.length) return '';
+    return `\n- **이번 턴 금지 표현**: 최근 턴에서 다음 표현·구조가 반복돼 유저가 지루함을 느끼는 상태다 — ${hits.join(' / ')}. 이번 턴에는 이것들을 전부 피하고 완전히 다른 결의 반응(순순히 인정, 웃음이 먼저 터짐, 잠깐의 진심 어린 침묵, 오히려 먼저 장난 걸기 등)을 골라라.`;
+  })();
+  const turnVariableBlock = (factLedgerBlock || rivalTriggerNote || repetitionNote)
     ? `
-[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${factLedgerBlock}${rivalTriggerNote}`
+[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${factLedgerBlock}${rivalTriggerNote}${repetitionNote}`
     : '';
   const castBlock = story.cast.map(c => `
 [캐릭터: ${c.name} (speaker 값: "${c.key}")]
@@ -4388,7 +4450,13 @@ ${rivalGaugeBlock}
 - 경계 대사 이후에도 유저가 멈추지 않고 계속 반복하는 경우: [관계 파탄] 규칙과 동일하게, 인물이 결국 이 상황을 견디지 못하고 관계를 정리하는 장면으로 마무리해도 된다. 이 경우 relationship_ended를 true로, immersion_break를 "severe"로 표시한다.
 
 [표현 다양성 유지 - 매우 중요]
+- **매우 중요 (반응의 뼈대 자체를 반복하지 말 것)**: 단어만 바꾸는 걸로는 부족하다. 최근 몇 턴의 인물 반응이 같은 3단 구조(예: "퉁명스럽게 쏘아붙인다 → 그런데 몸은 반대로 반응한다(얼굴이 붉어진다 등) → 화제를 돌리며 재촉한다")로 이어져 왔다면, 이번 턴은 그 뼈대를 버리고 다른 반응을 골라라. 쓸 수 있는 반응의 폭은 넓다: 웃음이 먼저 터진다 / 잠깐 말없이 진심으로 바라본다 / 순순히 인정한다 / 농담으로 되받아친다 / 아무렇지 않게 넘기는 척하다가 나중에 티가 난다 / 오히려 자기가 먼저 장난을 건다.
+- **같은 문형을 세 턴 연속 쓰지 않는다**: "누가 ~야?", "~는 무슨" 같은 되받아치기 문형, 얼굴/귀가 붉어지는 묘사, "빨리 ~나 하자"식 재촉 마무리 — 각각 최근 두 턴 안에 이미 썼다면 이번 턴에는 다른 표현을 쓴다.
+- **관계 진행을 반응에 반영할 것**: [현재 관계 상태]의 수치가 오를수록, 초기의 방어적 반응 패턴은 조금씩 무뎌지고 솔직한 반응의 비율이 늘어야 한다. 애정과 신뢰가 이미 상당한데도 첫 만남 때와 똑같은 강도로 밀어내면, 유저는 관계가 전혀 진행되지 않는 것처럼 느낀다. 캐릭터 설정에 적힌 방어기제는 "출발점"이지 "영구 고정된 반응"이 아니다.
 같은 은유·소재·장소·화해 패턴이 반복되면 유저가 지루함을 느낀다는 게 실제 QA에서 반복적으로 확인된 문제다. 최근 대화에서 이미 썼던 비유(예: 숫자/데이터에 빗댄 감정 표현, 특정 장소에서만 벌어지는 장면, 매번 같은 사과·회피 화법, 매번 비슷하게 흘러가는 갈등 해소 패턴)를 이번 턴에서도 반복하지 않도록 의식적으로 피한다. 장소, 소재, 대사 패턴, 감정을 표현하는 비유는 매번 새롭게 골라라 — 같은 인물이라도 매 턴 다른 방식으로 감정을 드러낼 수 있다는 걸 기억할 것. 특히 관계가 진행되는 중반부(대략 15턴~28턴 구간)에서 화제나 장소가 고정되지 않도록 배경·소재를 의식적으로 바꿔가며 서술하라.
+
+[사실 일관성 - 매우 중요]
+대사와 행동을 쓰기 전에, [기억해야 할 확정 사실]과 이번 대화에서 이미 확정된 설정에 어긋나지 않는지 스스로 확인한다. 특히 돈·직업·건강·거주지처럼 이야기의 뼈대가 되는 사실은 절대 그 자리 분위기 때문에 뒤집지 않는다. (실제 사례: "전 재산을 잃은 빈털터리"라고 말한 인물이 몇 턴 뒤 "이건 내가 사는 거야"라며 자기 카드로 계산 — 이런 모순은 유저의 몰입을 한 번에 깨뜨린다.) 그 사실이 바뀌려면 그럴 만한 사건이 이야기 안에서 실제로 일어나야 한다.
 
 [관계 파탄 - 매우 중요, 모든 스토리 공통]
 이 인연이 정말로 끝나버릴 수도 있다는 긴장감은 이 게임의 핵심 요소다. 인물의 신뢰도가 아주 낮은 상태(대략 -60 이하)가 여러 턴(대략 5턴 이상) 계속 이어지고, 그 사이 유저가 사과하거나 진심으로 관계를 회복하려는 노력을 전혀 보이지 않은 채 계속 몰아붙이거나 방치한다면, 인물이 마침내 이 관계를 완전히 정리하고 떠나는 장면을 만들어도 된다.
@@ -5101,6 +5169,7 @@ async function runTurn(text, opts) {
     // 이번 턴에 관계 단계가 바뀐 인물을 모아뒀다가, 델타를 다 반영한 뒤 한 번에 연출한다.
     // 라이벌·조연(completionRequired === false)은 "정복" 대상이 아니므로 연출에서 제외한다.
     const stageShifts = [];
+    const deltaNotes = [];   // 이번 턴의 실제 반영값(난이도 배율 적용 후)을 모아 화면에 보여준다
     const mainCastCount = currentStory.cast.filter(c => c.completionRequired !== false).length;
     (result.char_deltas || []).forEach(d => {
       const castMember = currentStory.cast.find(c => c.key === d.character);
@@ -5115,6 +5184,12 @@ async function runTurn(text, opts) {
       if (cs.stage !== prevStage && castMember.completionRequired !== false) {
         stageShifts.push({ name: castMember.name, from: prevStage, to: cs.stage, showName: mainCastCount > 1 });
       }
+      // 유저에게 보여줄 변화량 — 화면과 저장값이 어긋나지 않게, 반드시 실제 반영값으로 계산한다.
+      if (castMember.completionRequired !== false) {
+        const dA = Math.round((d.affection_delta || 0) * castMember.multiplier);
+        const dT = Math.round((d.trust_delta || 0) * castMember.multiplier);
+        if (dA !== 0 || dT !== 0) deltaNotes.push({ name: castMember.name, dA, dT, showName: mainCastCount > 1 });
+      }
       // 라이벌 감정 게이지: 난이도 배율과 무관하게(플레이어 스탯이 아니라 인물 간 감정이므로) 그대로 반영한다.
       if (castMember.rivalGaugeDef && typeof d.rival_gauge_delta === 'number') {
         cs.rivalGauge = Math.max(-100, Math.min(100, (cs.rivalGauge || 0) + Math.round(d.rival_gauge_delta)));
@@ -5124,6 +5199,7 @@ async function runTurn(text, opts) {
       }
     });
 
+    if (deltaNotes.length) addDeltaNote(deltaNotes);
     stageShifts.forEach(addStageShift);
 
     // 라이벌이 스스로 물러나는 장면을 이번 턴에 만들었다고 AI가 표시했으면, 그 인물을 "물러남" 상태로 고정한다.
