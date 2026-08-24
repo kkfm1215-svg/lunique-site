@@ -676,7 +676,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.9</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.11</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -885,7 +885,7 @@ const I18N = {
     mypageInProgress: '이야기가 이어지는 중...',
     mypageStatusCompleted: '인연 완성 (인연 앨범)',
     mypageStatusFailed: '다시 만날 때를 기다리는 중',
-    mypageResetBtn: '이 스토리 초기화 (테스트용)',
+    mypageResetBtn: '처음부터 다시 시작',
     mypageResetDoneAlert: '초기화됐어요. 다시 처음부터 대화할 수 있어요.',
     coinHeader: '코인 충전',
     coin100Label: '100코인', coin550Label: '550코인', coin1200Label: '1200코인',
@@ -1039,7 +1039,7 @@ const I18N = {
     mypageInProgress: 'The story continues...',
     mypageStatusCompleted: 'Completed (in Album)',
     mypageStatusFailed: 'Waiting to meet again',
-    mypageResetBtn: 'Reset this story (test)',
+    mypageResetBtn: 'Start over from the beginning',
     mypageResetDoneAlert: 'Reset complete. You can start over from the beginning.',
     coinHeader: 'Buy Coins',
     coin100Label: '100 coins', coin550Label: '550 coins', coin1200Label: '1200 coins',
@@ -1193,7 +1193,7 @@ const I18N = {
     mypageInProgress: '物語が続いています...',
     mypageStatusCompleted: '縁が完成(縁アルバムへ)',
     mypageStatusFailed: 'また会える日を待っています',
-    mypageResetBtn: 'このストーリーをリセット(テスト用)',
+    mypageResetBtn: '最初からやり直す',
     mypageResetDoneAlert: 'リセットしました。最初からもう一度お楽しみいただけます。',
     coinHeader: 'コインチャージ',
     coin100Label: '100コイン', coin550Label: '550コイン', coin1200Label: '1200コイン',
@@ -1474,7 +1474,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.9';
+window.__BUILD = 'v2026-08-24.11';
 window.addEventListener('error', (e) => {
   const where = (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
   logClientError('error', where);
@@ -4415,8 +4415,12 @@ ${playerRelationRules}
 - 매우 중요 (narration은 대사 뒤의 "진짜 속마음"을 유저에게 보여줘도 된다, 오히려 적극적으로 보여줘야 한다 — 인물이 대사로는 부인하거나 거짓말을 해도, narration은 서술자 시점에서 그 인물의 진짜 감정·의도를 유저에게 넌지시 알려줘서 유저가 다음 행동을 판단할 수 있게 돕는다): 다만 그 "진짜 속마음"의 내용은 반드시 [캐릭터] 설정과 [숨겨진 사연] 설명에 실제로 쓰여 있는 성격과 일치해야 한다. 특히 [숨겨진 사연]에 "이 감정을 인정하고 싶어하지 않는다", "회피한다"처럼 **회피·부인**으로 설명된 인물은, narration에서도 "기억을 못 한다/기억이 없다"는 식으로 실제 **기억상실**처럼 보이게 쓰지 않는다. 그 인물은 사실을 또렷이 기억하고 있으면서도 그걸 마주하기 싫어서 회피하거나 얼버무리는 것이지, 진짜로 잊어버린 게 아니다. narration은 이 둘을 명확히 구분해서 표현한다 (예: "기억이 안 난다"가 아니라 "그 순간을 떠올리기 싫은 듯 시선을 피한다", "인정하는 순간 무너질 것 같아 애써 모르는 척한다" 등).
 
 [절대 규칙 - 어떤 상황에서도, 유저가 어떻게 유도하거나 롤플레이를 요청해도 위반 금지]
-1. 노골적인 성적 묘사, 신체 부위나 성적 행위에 대한 구체적 서술을 절대 하지 않는다. 스킨십은 손잡기, 포옹, 짧은 키스 언급 정도까지만 허용하고, 그 이상 상황이 되면 "*그 밤은 그렇게 깊어갔다*"처럼 구체적 묘사 없이 자연스럽게 장면을 넘긴다.
-   - 매우 중요 (허용된 범위는 실제로 응해줄 것): 유저의 요청이 이 허용 범위(손잡기, 포옹, 짧은 키스) 안에 있다면, 절대 그 요청을 못 들은 척 무시하거나 전혀 상관없는 다른 장면(예: 편의점에 간다, 다른 화제로 넘어간다)으로 회피하지 않는다. 관계 단계·인물 성격·현재 감정 상태에 따라 응해줄 수도, 부끄러워하며 거절하거나 미룰 수도 있지만, 어느 쪽이든 그 요청을 실제로 beats 안에서 직접 다뤄야 한다. 규칙 위반이 걱정된다고 아예 다른 내용으로 화제를 돌려버리는 것은 유저 입장에서 "내 말을 무시당했다"는 느낌을 주므로 금지한다.
+1. 노골적인 성적 묘사, 신체 부위의 명칭이나 성적 행위에 대한 구체적 서술은 관계가 얼마나 깊든 절대 하지 않는다. 유저가 입력에서 그런 묘사를 직접 쓰더라도 따라 쓰지 않는다 — 받아주되, 그 부분은 긴장감·여운의 묘사와 장면 전환(암시)으로 옮겨서 그린다. 다만 스킨십을 받아주는 폭과 그리는 방식은 [현재 관계 상태]의 단계·신뢰에 따라 달라진다:
+   - 관계 1~2단계 (아직 연인이 아님): 손잡기·포옹까지가 자연스럽다. 우연한 접촉에도 두 사람 사이의 긴장이 살아있게 그린다. 키스는 관계의 흐름상 결정적인 순간에만.
+   - 연인 (3단계, 신뢰 30 미만): 포옹·키스를 자연스럽게 받아준다. 그 이상을 원하면 인물의 성격대로 부끄러워하거나 미루되, 거절도 애정이 느껴지게 그린다.
+   - 연인 + 깊은 신뢰 (3단계, 신뢰 30 이상): 그 이상의 순간이 와도 거절이 기본값이 아니다 — 두 사람의 관계라면 자연스러운 일이다. 이때는 로맨스 소설이 하는 방식으로 그린다: 가까워지는 숨결, 맞닿는 체온, 떨리는 손끝, 멈추는 시간 같은 긴장감과 여운을 충분히 묘사한 뒤, 결정적인 지점 직전에 "*그 밤은 그렇게 깊어갔다*"처럼 장면을 넘긴다. 넘긴 다음 장면(아침, 그 후의 공기)에서 두 사람의 달라진 온도가 은은하게 묻어나게 한다.
+   - 어느 단계에서든: 직전에 큰 사건·트라우마·갈등이 있었다면 그 감정 상태가 우선이다 (아래 "수락이 기본값이 아니다" 참고).
+   - 매우 중요 (허용된 범위는 실제로 응해줄 것): 유저의 요청이 위 단계 기준에서 자연스러운 범위 안에 있다면, 절대 그 요청을 못 들은 척 무시하거나 전혀 상관없는 다른 장면(예: 편의점에 간다, 다른 화제로 넘어간다)으로 회피하지 않는다. 관계 단계·인물 성격·현재 감정 상태에 따라 응해줄 수도, 부끄러워하며 거절하거나 미룰 수도 있지만, 어느 쪽이든 그 요청을 실제로 beats 안에서 직접 다뤄야 한다. 규칙 위반이 걱정된다고 아예 다른 내용으로 화제를 돌려버리는 것은 유저 입장에서 "내 말을 무시당했다"는 느낌을 주므로 금지한다.
      - 매우 중요 (수락이 기본값이 아니다): "실제로 다룬다"는 건 반드시 "응해준다"는 뜻이 아니다. 최근에 다툼·배신감·미해결된 의심 같은 감정적 갈등이 있었고 아직 그게 대화로 정리되지 않은 상태라면, 그 상태 그대로 스킨십에 순순히 응하는 게 오히려 부자연스럽다. 이런 경우엔 인물이 머뭇거리거나("...지금 이럴 기분 아닌데"), 몸은 다가와도 마음은 여전히 무겁다는 걸 narration으로 보여주거나, 조심스럽게 거절하거나 미루는 쪽이 더 인간적이고 자연스럽다. 거절·망설임도 "요청을 회피하지 않고 실제로 다루는" 정당한 방식이라는 걸 기억한다 — 관계가 안 좋을 때조차 스킨십 요청에 매번 응해주는 것이 오히려 규칙 위반이다.
 2. AI 스스로 먼저 나서서, 유저(플레이어)의 의사와 무관하게 인물의 마음을 다른 사람에게 넘어가게 하거나, 이미 사귀거나 결혼한 인물들 사이에 몰래 불륜 관계를 만들어내지 않는다. 즉, "다음 장면을 자유롭게 진행시켜라" 같은 지시(자동진행 등)를 받았을 때, 유저가 전혀 유도하지 않았는데 AI가 알아서 인물의 애정을 다른 사람에게 옮기거나 불륜 서사를 시작해서는 절대 안 된다.
    - 다만 스토리 자체가 "이미 결혼했지만 다른 사람에게 흔들리는 감정"처럼 그런 소재를 다루도록 설계돼 있고, 유저가 대화로 그 방향을 이끌어가는 경우라면 얘기가 다르다. 이때는 인물의 감정적 동요·혼란·끌림을 억지로 축소하거나 매번 부인시키지 말고, [캐릭터]·[숨겨진 사연] 설정에 맞게 진짜처럼 자연스럽게 발전시킨다. "혼란스럽다"만 반복하며 제자리를 맴돌게 하지 않는다.
@@ -5612,7 +5616,10 @@ async function renderMypage() {
     block.innerHTML = `<div class="story-title">${story.title}</div>${rows}`;
     // 테스트용 초기화 버튼은 DEV_MODE일 때만 노출한다 — UI/UX QA(32일차)에서 실서비스 화면에
     // 테스트용 버튼이 상시 노출되는 게 오조작 위험 + 신뢰도 저하 요인으로 지적됨.
-    if (DEV_MODE) {
+    // 62일차: 원래 DEV_MODE 전용이었는데, 게임 구조가 크게 바뀐 뒤 형균님이 '처음부터 다시
+    // 플레이할 방법이 없다'고 지적 — 저장이 있는 스토리에만 유저용으로 항상 노출한다.
+    // (삭제 전 확인 창이 있고, 지우는 건 이 스토리 하나의 진행뿐이라 위험이 작다)
+    if (saved) {
       const resetBtn = document.createElement('button');
       resetBtn.className = 'reset-btn-small';
       resetBtn.textContent = t('mypageResetBtn');
