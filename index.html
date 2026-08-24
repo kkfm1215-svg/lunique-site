@@ -713,7 +713,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.14</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.16</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1552,7 +1552,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.14';
+window.__BUILD = 'v2026-08-24.16';
 window.addEventListener('error', (e) => {
   const where = (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
   logClientError('error', where);
@@ -2127,9 +2127,9 @@ const STORIES = {
     ],
     openingBeats: (name) => [
       { type: 'narration', text: '며칠 전 건네받은 번호로, 서연에게서 먼저 메시지가 도착한다.' },
-      { type: 'dialogue', text: `안녕하세요, ${name}! 민지한테 연락처 받았어요 :) 저는 서연이라고 해요.`, speaker: 'seoyeon' },
-      { type: 'narration', text: '약간 머뭇거리듯 이어지는 다음 문장에는 옅은 웃음기가 느껴진다.' },
-      { type: 'dialogue', text: '사실 좀 어색하긴 한데… 민지가 하도 좋은 분이라고 얘기해서 궁금했어요. 혹시 지금 대화 편하신 시간이세요?', speaker: 'seoyeon' }
+      { type: 'dialogue', text: `안녕하세요, ${name}! 민지한테 연락처 받았어요 :) 저는 서연이라고 해요.`, speaker: 'seoyeon', medium: 'text' },
+      { type: 'narration', text: '약간 머뭇거리듯 이어지는 다음 문장에는 옅은 웃음기가 느껴진다.', medium: 'text' },
+      { type: 'dialogue', text: '사실 좀 어색하긴 한데… 민지가 하도 좋은 분이라고 얘기해서 궁금했어요. 혹시 지금 대화 편하신 시간이세요?', speaker: 'seoyeon', medium: 'text' }
     ]
   },
   haeun: {
@@ -2339,9 +2339,9 @@ const STORIES = {
     ],
     openingBeats: (name) => [
       { type: 'narration', text: '다음 수업을 앞두고, 예약 앱 메시지로 도윤에게서 먼저 연락이 온다.' },
-      { type: 'dialogue', text: `${name}님, 안녕하세요! 지난 수업 때 자세 교정 정말 잘 따라와 주셨어요. 오늘 컨디션은 어떠세요?`, speaker: 'doyoon' },
-      { type: 'narration', text: '격려하듯 이어지는 메시지에는 시원시원한 웃음기가 느껴진다.' },
-      { type: 'dialogue', text: '무리하지 않는 선에서 오늘도 같이 잘 해봐요. 혹시 지금 잠깐 얘기 나눌 시간 되세요?', speaker: 'doyoon' }
+      { type: 'dialogue', text: `${name}님, 안녕하세요! 지난 수업 때 자세 교정 정말 잘 따라와 주셨어요. 오늘 컨디션은 어떠세요?`, speaker: 'doyoon', medium: 'text' },
+      { type: 'narration', text: '격려하듯 이어지는 메시지에는 시원시원한 웃음기가 느껴진다.', medium: 'text' },
+      { type: 'dialogue', text: '무리하지 않는 선에서 오늘도 같이 잘 해봐요. 혹시 지금 잠깐 얘기 나눌 시간 되세요?', speaker: 'doyoon', medium: 'text' }
     ]
   },
   siwoo: {
@@ -2368,9 +2368,9 @@ const STORIES = {
     ],
     openingBeats: (name) => [
       { type: 'narration', text: '평소엔 먼저 연락이 없던 시우에게서, 짧은 메시지 하나가 도착한다.' },
-      { type: 'dialogue', text: `필름 다 나왔어요. ${name}씨 시간 되실 때 찾으러 오세요.`, speaker: 'siwoo' },
-      { type: 'narration', text: '용건만 담긴 짧은 문장 뒤로, 조금 뜸을 들이다 이어지는 메시지.' },
-      { type: 'dialogue', text: '...날씨도 괜찮은데, 오는 김에 커피나 한 잔 하고 가시든가.', speaker: 'siwoo' }
+      { type: 'dialogue', text: `필름 다 나왔어요. ${name}씨 시간 되실 때 찾으러 오세요.`, speaker: 'siwoo', medium: 'text' },
+      { type: 'narration', text: '용건만 담긴 짧은 문장 뒤로, 조금 뜸을 들이다 이어지는 메시지.', medium: 'text' },
+      { type: 'dialogue', text: '...날씨도 괜찮은데, 오는 김에 커피나 한 잔 하고 가시든가.', speaker: 'siwoo', medium: 'text' }
     ]
   },
   eunho: {
@@ -2397,9 +2397,9 @@ const STORIES = {
     ],
     openingBeats: (name) => [
       { type: 'narration', text: '주말 정기 러닝을 앞두고, 단체 채팅방이 아닌 개인 메시지로 은호에게서 연락이 온다.' },
-      { type: 'dialogue', text: `${name}님! 이번 주말 러닝 오시죠?? 저 완전 기대하고 있어요 ㅎㅎ`, speaker: 'eunho' },
-      { type: 'narration', text: '신난 기색이 그대로 느껴지는 메시지가 바로 이어진다.' },
-      { type: 'dialogue', text: '이번엔 저랑 페이스 맞춰서 같이 뛰어요! 끝나고 맛있는 것도 먹으러 가고요 ㅋㅋ', speaker: 'eunho' }
+      { type: 'dialogue', text: `${name}님! 이번 주말 러닝 오시죠?? 저 완전 기대하고 있어요 ㅎㅎ`, speaker: 'eunho', medium: 'text' },
+      { type: 'narration', text: '신난 기색이 그대로 느껴지는 메시지가 바로 이어진다.', medium: 'text' },
+      { type: 'dialogue', text: '이번엔 저랑 페이스 맞춰서 같이 뛰어요! 끝나고 맛있는 것도 먹으러 가고요 ㅋㅋ', speaker: 'eunho', medium: 'text' }
     ]
   },
   seeun: {
@@ -2426,9 +2426,9 @@ const STORIES = {
     ],
     openingBeats: (name) => [
       { type: 'narration', text: '마감 시간이 다 되어 가는데, 세은에게서 오늘따라 먼저 메시지가 도착한다.' },
-      { type: 'dialogue', text: `저... 오늘 좀 한가한데, ${name}님 아직 안 오세요? 새로 들어온 책이 있는데 보여드리고 싶어서요.`, speaker: 'seeun' },
-      { type: 'narration', text: '안경을 슬쩍 밀어 올리며, 평소보다 조금 들뜬 듯한 말투로 이어진다.' },
-      { type: 'dialogue', text: '아, 부담 갖지 마시고요. 그냥... 이 책 얘기할 사람이 딱히 없어서요.', speaker: 'seeun' }
+      { type: 'dialogue', text: `저... 오늘 좀 한가한데, ${name}님 아직 안 오세요? 새로 들어온 책이 있는데 보여드리고 싶어서요.`, speaker: 'seeun', medium: 'text' },
+      { type: 'narration', text: '안경을 슬쩍 밀어 올리며, 평소보다 조금 들뜬 듯한 말투로 이어진다.', medium: 'text' },
+      { type: 'dialogue', text: '아, 부담 갖지 마시고요. 그냥... 이 책 얘기할 사람이 딱히 없어서요.', speaker: 'seeun', medium: 'text' }
     ]
   },
   taeo: {
@@ -2745,9 +2745,9 @@ const STORIES = {
     ],
     openingBeats: (name) => [
       { type: 'narration', text: '신상품이 들어온 날, 은비에게서 짧은 메시지가 도착한다.' },
-      { type: 'dialogue', text: `신상 들어왔는데, ${name}씨한테 어울릴 것 같은 거 몇 개 빼놨어. 와서 보든가.`, speaker: 'eunbi' },
-      { type: 'narration', text: '시크한 말투와 달리, 이미 옷걸이에 몇 벌을 따로 골라 걸어둔 게 눈에 띈다.' },
-      { type: 'dialogue', text: '내 안목 믿고 그냥 입어봐. 후회 안 할 거야, 원래 이런 거 잘 틀리는 사람 아니거든.', speaker: 'eunbi' }
+      { type: 'dialogue', text: `신상 들어왔는데, ${name}씨한테 어울릴 것 같은 거 몇 개 빼놨어. 와서 보든가.`, speaker: 'eunbi', medium: 'text' },
+      { type: 'narration', text: '시크한 말투와 달리, 이미 옷걸이에 몇 벌을 따로 골라 걸어둔 게 눈에 띈다.', medium: 'text' },
+      { type: 'dialogue', text: '내 안목 믿고 그냥 입어봐. 후회 안 할 거야, 원래 이런 거 잘 틀리는 사람 아니거든.', speaker: 'eunbi', medium: 'text' }
     ]
   },
   leehyun: {
@@ -3035,9 +3035,15 @@ function localizeStory(story, storyId) {
     cardHook: loc.cardHook !== undefined ? loc.cardHook : story.cardHook,
     summary: loc.summary || story.summary,
     cast: newCast,
-    openingBeats: (name) => (loc.openingBeats || []).map(b => Object.assign({}, b, {
-      text: typeof b.text === 'string' ? b.text.split('《NAME》').join(name) : b.text
-    }))
+    // 62일차: 번역본 오프닝에는 medium(문자/통화 표시)이 없어서, 한국어 원본의 같은 순번
+    // beat에서 물려받는다. 안 그러면 EN/JA에서만 문자 오프닝이 대면처럼 보인다.
+    openingBeats: (name) => {
+      const baseBeats = (typeof story.openingBeats === 'function') ? story.openingBeats(name) : [];
+      return (loc.openingBeats || []).map((b, i) => Object.assign({}, b, {
+        text: typeof b.text === 'string' ? b.text.split('《NAME》').join(name) : b.text,
+        medium: b.medium !== undefined ? b.medium : (baseBeats[i] ? baseBeats[i].medium : undefined)
+      }));
+    }
   });
 }
 
@@ -4402,7 +4408,7 @@ function buildArcDirective(state) {
     return `\n[아크 이벤트 지시 - 매우 중요, 새로운 라이벌 등장]\n지금까지 있었던 라이벌은 이미 정리됐다. 하지만 이 관계는 여기서 완전히 안전해지지 않는다 — 이번 턴에 완전히 새로운 인물을 하나 만들어서, 자연스러운 계기로 이야기에 등장시켜라. 이 인물은 형균-지연 관계를 다시 흔드는 새로운 위협이 된다.\n- 이름과 관계(직업/접점)는 네가 자유롭게 정한다. 이전 라이벌과는 다른 종류의 관계로 만들어라(예: 헬스장 트레이너, 동호회 사람, 옛 첫사랑, 새 이웃, 병원 관계자, 새 프로젝트 협업자 등 — 매번 다르게).\n- 이번 턴 beats 안에서 이 인물을 실제로 등장시키고, 맨 위 [지금까지 확정된 사실]과 지금까지의 대화 흐름에 자연스럽게 이어지는 계기로 만들어라(뜬금없는 등장 금지).\n- 이번 위기가 전개되는 방식(매우 중요 — 이전 라이벌 위기들과 똑같은 흐름으로 반복되지 않도록, 반드시 이 방식을 따를 것): ${shape.text}\n- ${rivalCycleIntensityText(arc.cycleIndex)}\n- 이번 응답에서 반드시 이 인물을 등장시켜야 한다. 등장시켰다면 최상위 JSON의 "new_rival_key"(영문 소문자·숫자로 된 짧은 식별자, 예: "rival2" — 지금까지 쓰인 적 없는 새 값), "new_rival_name"(실제 이름), "new_rival_role"(관계/역할, 예: "헬스장 트레이너")을 반드시 채운다. 이 세 필드는 이번 턴에만 채우고, 그 외 모든 턴에는 항상 빈 문자열로 둔다.\n- 이 인물에 대해서도 [절대 규칙](노골적 성적 묘사 금지, AI가 임의로 완전한 불륜을 확정 짓지 않음)은 이전과 동일하게 항상 적용된다.`;
   }
   if (arc.type === 'miniEvent') {
-    return `\n[짧은 이벤트 지시 - 가볍게, 이번 턴 안에서 끝낼 것]\n지금부터 다음 짧은 순간을 이번 턴 안에서 자연스럽게 등장시켜라: "${arc.text}".\n- 이건 정식 사건(아크)이 아니라 일상에 색을 더하는 아주 짧은 순간이다. beats 2~4개 정도로 가볍게 다루고, 갈등이나 긴 전개로 확장하지 않는다.\n- 맨 위 [지금까지 확정된 사실]과 자연스럽게 이어지도록, 뜬금없지 않게 녹여낸다.\n- 이 지시는 이번 턴에서 자동으로 끝난다 — "arc_resolved" 값은 신경 쓰지 않아도 된다(그냥 false로 둬라).`;
+    return `\n[짧은 이벤트 지시 - 가볍게, 이번 턴 안에서 끝낼 것]\n지금부터 다음 짧은 순간을 이번 턴 안에서 자연스럽게 등장시켜라: "${arc.text}".\n- **매우 중요 (지금 상황에 맞게 각색할 것)**: 이 지시는 소재일 뿐이다. 현재 장면의 장소·거리·매체와 어긋나면 그대로 우겨넣지 말고 취지를 살려 바꿔라. 예: 두 사람이 아직 만나지 않았는데(문자·통화 중, 만나러 가는 중) "사소한 부탁"류 지시가 오면, 손을 빌리는 부탁이 아니라 "오는 길에 물 한 병만" 같은 원격으로 가능한 부탁으로 바꾼다. 어떻게 바꿔도 어색하면 이 소재는 버리고 평범하게 진행해도 된다.\n- 이건 정식 사건(아크)이 아니라 일상에 색을 더하는 아주 짧은 순간이다. beats 2~4개 정도로 가볍게 다루고, 갈등이나 긴 전개로 확장하지 않는다.\n- 맨 위 [지금까지 확정된 사실]과 자연스럽게 이어지도록, 뜬금없지 않게 녹여낸다.\n- 이 지시는 이번 턴에서 자동으로 끝난다 — "arc_resolved" 값은 신경 쓰지 않아도 된다(그냥 false로 둬라).`;
   }
   return `\n[아크 이벤트 지시 - 매우 중요]\n지금부터 다음 사건을 스토리에 자연스럽게 등장시켜라: "${arc.sub}" (분류: ${arc.major} > ${arc.mid}).\n- 사건을 설명하듯 요약해서 말하지 말고, 지금까지의 대화 흐름과 각 인물의 성격에 맞게 자연스럽게 녹여서 전개하라.\n- 이 사건을 한 턴 만에 끝내지 않아도 되고, 몇 턴에 걸쳐 자연스럽게 펼쳐도 된다.\n- 이 사건이 이번 응답에서 자연스럽게 마무리(화해, 정리, 다음 단계로 넘어감 등)되었다고 판단되면 최상위 JSON에 "arc_resolved": true를 포함시켜라. 아직 진행 중이면 "arc_resolved": false로 둬라.\n- 매우 중요 (뜬금없는 사건 금지 — 반드시 지금까지의 삶과 이어질 것): 이 사건은 맨 위 [지금까지 확정된 사실] 목록과 지금까지의 대화에서 이미 확립된 인물의 직업·성격·인간관계·삶의 사건(예: 이미 아이를 낳았다, 이미 이직했다 등)과 자연스럽게 이어지는 "다음 이야기"여야 한다. 그 인물의 기존 설정과 아무 상관 없는 완전히 새로운 신분·직업·사건(예: 갑자기 대기업 사장이 되어 체포된다는 식)을 맥락 없이 새로 지어내지 않는다. 이미 확정된 삶의 사건이 있다면 그걸 적극적으로 활용해서 사건을 만들어라 (예: 이미 출산했다면 그 아이가 이번 사건에 실제로 등장할 수 있다). 또한 라이벌·제3자가 매 사건마다 반복 등장할 필요는 없다 — 등장 여부는 이 사건의 성격에 맞게 자연스럽게 판단하라.`;
 }
@@ -4592,6 +4598,8 @@ ${playerRelationRules}
 - "text" : 문자·메신저로 주고받는 짧은 글. 실제로 손으로 쳐서 보낸 글에만 쓴다. 말투가 입말보다 짧고 끊어지며, 이모티콘이나 줄임말이 섞일 수 있다.
 - "call" : 전화 통화. 얼굴이 안 보이므로 목소리·숨소리·주변 소음이 서술의 재료가 된다. 표정 묘사는 유저가 볼 수 없다는 점을 지키되, 서술자 시점으로 인물의 상태를 전하는 것은 된다.
 - "letter" : 편지·쪽지·손으로 쓴 글. 문어체에 가깝고, 한 번에 길게 쓰며, 즉답을 기대하지 않는다.
+- **매우 중요 (같은 공간에 없으면 face 금지)**: 인물이 유저와 아직 물리적으로 같은 자리에 있지 않다면 — 만나러 오는 중이거나, 다른 장소에 있거나, 방금 헤어진 뒤라면 — 그 인물의 대사 medium은 반드시 "text"나 "call"이다. "거의 다 왔어요", "어디에 계세요?" 같은 말은 정의상 원격 연락이다.
+- **매우 중요 (만나는 순간을 건너뛰지 말 것)**: 원격(문자/통화)에서 대면으로 넘어가려면, 두 사람이 실제로 만나는 순간(도착해서 눈이 마주치는 장면, 손을 흔드는 장면 등)을 narration으로 분명히 그린 다음에야 face 대사를 쓸 수 있다. 같은 턴 안에서 만나기 전과 만난 후가 뒤섞이면 안 된다. 아직 만나지 않았다면 물건을 건네거나 손을 빌리는 등 접촉이 필요한 행동도 당연히 불가능하다.
 - 매우 중요: 같은 턴 안에서 방식이 바뀌면 그 시점의 beat부터 medium을 바꾼다. 예를 들어 문자를 주고받다가 전화가 걸려오면, 그 뒤의 beat는 "call"이 된다. 화면에는 방식이 바뀔 때마다 구분선이 표시되므로 유저가 바로 알아본다.
 - 유저가 *별표 안에서* "문자를 보낸다", "전화를 건다", "편지를 쓴다"처럼 방식을 정하면 그것을 그대로 따른다. 유저가 따로 정하지 않았다면 지금 상황에 맞는 방식을 자연스럽게 고른다 — 늦은 밤 갑자기 할 말이 생겼다면 문자가, 급한 일이라면 전화가 어울린다.
 - 방식을 바꾸는 것 자체가 이야기의 재료다. 얼굴 보고 말 못 할 이야기를 문자로 보내거나, 문자로는 안 되겠어서 전화를 거는 순간에 감정이 실린다. 다만 억지로 자주 바꾸지는 않는다.
