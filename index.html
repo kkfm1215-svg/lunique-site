@@ -259,7 +259,7 @@
   }
 
   #stat-bar {
-    display: flex; gap: var(--s2); padding: var(--s2) var(--s4); background: rgba(9,13,20,.92);
+    display: flex; gap: var(--s2); margin-top: 4px; padding: var(--s2) var(--s4); background: rgba(9,13,20,.92);
     font-family: var(--mono); font-size: 10px; color: var(--faint);
     border-bottom: 1px solid var(--hair); flex-wrap: wrap;
   }
@@ -267,7 +267,8 @@
   #stat-bar .stat-arc { color: var(--brass); border-color: var(--brass-mid); }
   .delta-note {
     align-self: flex-end; margin: 2px 0 var(--s2);
-    font-family: var(--mono); font-size: 10px; letter-spacing: .04em;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+    animation: fadeUp .5s ease;
     color: var(--brass); opacity: .85;
   }
   .delta-note.down { color: var(--warn); }
@@ -416,8 +417,8 @@
   .sys { align-self: center; color: var(--faint); font-family: var(--mono); font-size: 10px; letter-spacing: .16em; margin: var(--s1) 0; text-align: center; }
   .turn-rewind-btn {
     align-self: flex-end; background: none; border: 1px solid var(--hair); color: var(--faint);
-    font-family: var(--mono); font-size: 9px; letter-spacing: .1em; padding: 2px 7px;
-    border-radius: var(--r1); cursor: pointer; margin-top: 2px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: .1em; padding: 8px 12px;
+    border-radius: var(--r1); cursor: pointer; margin-top: 2px; min-height: 30px;
   }
   .turn-rewind-btn:hover { color: var(--brass); border-color: var(--brass-mid); }
 
@@ -534,7 +535,8 @@
   #tabbar .tb:focus-visible { outline: 1px solid var(--brass); outline-offset: -2px; }
   #tabbar .tb-logo { display: none; }
   #tabbar .tb-sec, #tab-cont { display: none; }
-  .coin-chip { margin-left: auto; border: 1px solid var(--brass-mid); color: var(--brass); background: none; padding: 3px 10px; font-size: 11px; border-radius: var(--r1); cursor: pointer; font-family: var(--sans); white-space: nowrap; }
+  /* 62일차 QA: 우상단 고정 언어탭(KO/EN/JA)과 겹치던 것 — 언어탭 폭만큼 왼쪽으로 비켜선다 */
+  .coin-chip { margin-left: auto; margin-right: 106px; border: 1px solid var(--brass-mid); color: var(--brass); background: none; padding: 3px 10px; font-size: 11px; border-radius: var(--r1); cursor: pointer; font-family: var(--sans); white-space: nowrap; }
   .coin-chip b { font-family: var(--serif); font-weight: 400; }
   /* 62일차: 입력 글자수 표시 — 400자를 넘어설 때만 나타나 부담을 주지 않는다 */
   #inputbar { position: relative; }
@@ -758,7 +760,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.21</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.22</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1600,7 +1602,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.21';
+window.__BUILD = 'v2026-08-24.22';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -6013,7 +6015,11 @@ function showSlotFullNotice() {
 }
 
 // --- 마이페이지 ---
+let __mypageRun = 0;
 async function renderMypage() {
+  // 62일차 QA 예방: renderStoryList의 46일차 중복 버그와 같은 유형 — 늦게 끝난 이전 실행이
+  // 화면을 덮어쓰지 못하게 실행 토큰으로 최신 호출만 그리게 한다.
+  const myRun = ++__mypageRun;
   if (!playerProfile) await loadProfile();
   $('my-name').textContent = playerProfile ? playerProfile.name : '-';
   $('my-coins').textContent = t('mypageLoading');
@@ -6070,6 +6076,7 @@ async function renderMypage() {
     }
     blocks.push(block);
   }
+  if (myRun !== __mypageRun) return;   // 더 최신 호출이 있으면 이 결과는 버린다
   container.innerHTML = '';
   if (!blocks.length) {
     const empty = document.createElement('div');
