@@ -4,6 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>LUNIQUE — Interactive Romance Fiction</title>
+<!-- 62일차: favicon(초승달 문양)과 링크 공유 미리보기. 도메인을 사면 og:url·og:image 주소를 바꿀 것 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230C1017'/%3E%3Cpath d='M40 8a26 26 0 1 0 0 48 22 22 0 0 1 0-48Z' fill='%23C9A227'/%3E%3C/svg%3E">
+<meta name="description" content="An AI romance where every conversation is remembered. Meet, grow close, and be part of a story that never forgets you.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LUNIQUE">
+<meta property="og:title" content="LUNIQUE — Interactive Romance Fiction">
+<meta property="og:description" content="An AI romance where every conversation is remembered. Meet, grow close, and be part of a story that never forgets you.">
+<meta property="og:url" content="https://stately-pegasus-2b6e10.netlify.app/">
+<meta property="og:image" content="https://stately-pegasus-2b6e10.netlify.app/images/seoyeon.jpg">
+<meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -261,6 +271,16 @@
     color: var(--brass); opacity: .85;
   }
   .delta-note.down { color: var(--warn); }
+  /* 62일차 UI 2단계: 넓은 화면 전용 '인연 기록' 패널. 모바일은 상단 수치 줄이 같은 역할을 한다 */
+  #chat-rail { display: none; }
+  #chat-rail h4 { font-size: 10px; letter-spacing: .18em; color: var(--faint); margin: 16px 0 8px; font-weight: 500; text-transform: uppercase; }
+  #chat-rail h4:first-child { margin-top: 0; }
+  #chat-rail .kv { display: flex; justify-content: space-between; color: var(--paper); font-size: 12px; margin-top: 6px; }
+  #chat-rail .bar { height: 3px; background: var(--hair-soft); margin: 4px 0 2px; }
+  #chat-rail .bar i { display: block; height: 100%; background: var(--brass); }
+  #chat-rail .memo { color: var(--faint); font-size: 11.5px; line-height: 1.8; }
+  #chat-rail .stagename { color: var(--brass); font-family: var(--serif); font-size: 13px; }
+  #chat-rail .arcline { color: var(--brass); font-size: 12px; }
 
   /* 대화 배경 아트 (52일차) — 캐릭터 이미지를 뒤에 깔고, 그 위 면들을 반투명으로 만들어
      가장자리와 블록 사이로 그림이 비치게 한다. 이미지가 없는 인물은 자동으로 꺼진다. */
@@ -513,8 +533,13 @@
   #tabbar .tb.on { color: var(--brass); }
   #tabbar .tb:focus-visible { outline: 1px solid var(--brass); outline-offset: -2px; }
   #tabbar .tb-logo { display: none; }
+  #tabbar .tb-sec, #tab-cont { display: none; }
   .coin-chip { margin-left: auto; border: 1px solid var(--brass-mid); color: var(--brass); background: none; padding: 3px 10px; font-size: 11px; border-radius: var(--r1); cursor: pointer; font-family: var(--sans); white-space: nowrap; }
   .coin-chip b { font-family: var(--serif); font-weight: 400; }
+  /* 62일차: 입력 글자수 표시 — 400자를 넘어설 때만 나타나 부담을 주지 않는다 */
+  #inputbar { position: relative; }
+  #char-count { position: absolute; right: 14px; top: -16px; font-family: var(--mono); font-size: 10px; color: var(--faint); display: none; }
+  #char-count.warn { display: block; color: var(--warn); }
   .sect-label { font-size: var(--t-meta); letter-spacing: .16em; color: var(--faint); margin: var(--s2) 0; }
   .cont-card { display: flex; align-items: center; gap: var(--s3); border: 1px solid var(--brass-mid); background: var(--brass-dim); padding: var(--s3) var(--s4); margin-bottom: var(--s2); cursor: pointer; }
   .cont-card:hover { border-color: var(--brass); }
@@ -550,6 +575,23 @@
     #tabbar .tb .ic { display: inline; font-size: 13px; margin: 0; }
     #tabbar .tb.on { border-left-color: var(--brass); background: var(--brass-dim); }
     #tabbar .tb-logo { display: block; font-family: var(--serif); letter-spacing: .24em; font-size: 13px; color: var(--paper); padding: 0 20px 18px; }
+    /* 대화 화면 오른쪽 인연 기록 패널 — 12% 패딩 대신 오른쪽에 고정 폭을 내준다 */
+    #screen-chat #chat, #screen-chat #inputbar, #screen-chat .format-hint, #screen-chat .hint, #screen-chat #stat-bar, #screen-chat .chat-toolbar, #screen-chat #suggest-row { padding-left: 6%; padding-right: calc(6% + 230px); }
+    /* #screen-chat > *:not(.chat-art) 규칙(배경 아트 겹침 방지)이 position:relative를 강제하므로 id 2개로 이긴다 */
+    #screen-chat > #chat-rail {
+      display: block; position: absolute; right: 0; top: 0; bottom: 0; width: 218px;
+      border-left: 1px solid var(--hair); background: rgba(12,16,23,.88);
+      padding: 74px 18px 18px; overflow-y: auto; z-index: 3;
+    }
+    /* 사이드바 진행 중 목록 */
+    #tabbar .tb-sec { display: block; font-size: 9.5px; letter-spacing: .18em; color: var(--faint); padding: 22px 20px 8px; text-transform: uppercase; }
+    #tab-cont { display: block; }
+    #tab-cont .cv { display: flex; gap: 9px; align-items: center; padding: 7px 18px; cursor: pointer; border-left: 2px solid transparent; }
+    #tab-cont .cv:hover { background: var(--hair-soft); }
+    #tab-cont .cv img, #tab-cont .cv .cc-av { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; object-position: center 20%; flex: 0 0 auto; }
+    #tab-cont .cv .cc-av { display: flex; align-items: center; justify-content: center; background: var(--ink2); color: var(--dim); font-family: var(--serif); font-size: 11px; }
+    #tab-cont .cv .nm { color: var(--dim); font-size: 12px; line-height: 1.3; }
+    #tab-cont .cv .mt { color: var(--faint); font-size: 9.5px; display: block; }
   }
 </style>
 </head>
@@ -567,6 +609,8 @@
     <button type="button" class="tb" id="tab-conn" onclick="goTo('screen-charlist')"><span class="ic">◈</span><span data-i18n="tabConnections">인연</span></button>
     <button type="button" class="tb" id="tab-album" onclick="goTo('screen-album')"><span class="ic">✦</span><span data-i18n="tabAlbum">앨범</span></button>
     <button type="button" class="tb" id="tab-me" onclick="goTo('screen-mypage')"><span class="ic">◐</span><span data-i18n="tabMe">내 정보</span></button>
+    <span class="tb-sec" data-i18n="contSectionTitle">이어하기</span>
+    <div id="tab-cont"></div>
   </nav>
   <div class="screen active" id="screen-landing">
     <div class="starfield"></div>
@@ -687,9 +731,10 @@
     <div id="chat"></div>
     <div id="suggest-row"></div>
     <div id="inputbar">
-      <textarea id="msg-input" rows="1" placeholder="대사를 입력하세요... (*이렇게 쓰면 행동/속마음*)" data-i18n-placeholder="chatInputPlaceholder"></textarea>
+      <textarea id="msg-input" rows="1" maxlength="500" placeholder="대사를 입력하세요... (*이렇게 쓰면 행동/속마음*)" data-i18n-placeholder="chatInputPlaceholder"></textarea><span id="char-count" aria-hidden="true"></span>
       <button id="send-btn" data-i18n="chatSendBtn">전송</button>
     </div>
+    <aside id="chat-rail" aria-label="인연 기록"></aside>
     <div class="format-hint" data-i18n="chatFormatHint">*별표로 감싸면* 행동·속마음·상황 묘사로 처리돼요. 그냥 쓰면 실제 대사예요.</div>
     <div class="hint" id="chat-dev-hint" data-i18n="chatDevHint">개발/테스트용 화면이에요. 스탯 숫자는 확인용으로 노출해뒀어요 (실제 서비스에서는 숨김). "자동진행"은 누를 때마다 AI가 내 의지와 무관하게 상황을 한 턴 진행시켜요. "대사 추천"은 누르면 지금까지의 대화를 분석해서 보낼 만한 대사 3개를 보여줘요 (클릭하면 바로 전송).</div>
   </div>
@@ -713,7 +758,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.19</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.21</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -852,6 +897,7 @@ const I18N = {
     stageShiftDown: '멀어지는 중', stageShiftDownDesc: '무언가 어긋나기 시작했다.',
     mypageStage1: '처음 만난 사이', mypageStage2: '가까워지는 중', mypageStage3: '연인',
     chatStatAffection: '호감', chatStatTrust: '신뢰', chatStatArcs: '함께 넘긴 일',
+    chatRailTitle: '인연 기록', chatRailUpcoming: '다가오는 일', chatRailMemory: '기억', chatRailToday: '오늘', chatRailInDays: '{n}일 뒤',
     loginWelcome: '기록을 시작합니다',
     loginDesc: '구글 계정으로 로그인하면<br/>진행 상황이 서버에 저장돼요.',
     loginGoogleBtn: 'G 구글 계정으로 로그인',
@@ -1014,6 +1060,7 @@ const I18N = {
     stageShiftDown: 'Drifting apart', stageShiftDownDesc: 'Something has started to go wrong.',
     mypageStage1: 'Just met', mypageStage2: 'Growing closer', mypageStage3: 'Together',
     chatStatAffection: 'Affection', chatStatTrust: 'Trust', chatStatArcs: 'Weathered together',
+    chatRailTitle: 'Record', chatRailUpcoming: 'Coming up', chatRailMemory: 'Memories', chatRailToday: 'Today', chatRailInDays: 'in {n}d',
     loginWelcome: 'Your record begins',
     loginDesc: 'Sign in with Google<br/>to save your progress to the cloud.',
     loginGoogleBtn: 'G Sign in with Google',
@@ -1176,6 +1223,7 @@ const I18N = {
     stageShiftDown: '離れていく', stageShiftDownDesc: '何かが、ずれ始めた。',
     mypageStage1: '出会ったばかり', mypageStage2: '近づいていく', mypageStage3: '恋人',
     chatStatAffection: '好感', chatStatTrust: '信頼', chatStatArcs: '共に越えた出来事',
+    chatRailTitle: '縁の記録', chatRailUpcoming: 'この先の予定', chatRailMemory: '記憶', chatRailToday: '今日', chatRailInDays: '{n}日後',
     loginWelcome: '記録を始めます',
     loginDesc: 'Googleアカウントでログインすると<br/>進行状況がサーバーに保存されます。',
     loginGoogleBtn: 'G Googleでログイン',
@@ -1552,7 +1600,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.19';
+window.__BUILD = 'v2026-08-24.21';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -3244,14 +3292,27 @@ function renderContinueSection(statusById, metaById) {
   label.className = 'sect-label';
   label.textContent = t('contSectionTitle');
   box.appendChild(label);
+  const side = document.getElementById('tab-cont');
+  if (side) side.innerHTML = '';
   ids.forEach(id => {
     const story = localizeStory(STORIES[id], id);
     const m = metaById[id] || {};
+    if (side) {
+      const key0 = story.cast[0].key;
+      const cv = document.createElement('div');
+      cv.className = 'cv';
+      cv.innerHTML = (AVATAR_IMAGE[key0]
+        ? `<img src="${AVATAR_IMAGE[key0]}" alt="" loading="lazy" onerror="this.style.display='none'">`
+        : `<span class="cc-av">${story.title.slice(0, 1)}</span>`)
+        + `<span class="nm">${story.title}<span class="mt">${relTimeText(m.last)}</span></span>`;
+      cv.addEventListener('click', () => enterChat(id));
+      side.appendChild(cv);
+    }
     const card = document.createElement('div');
     card.className = 'cont-card';
     const key = story.cast[0].key;
     const av = AVATAR_IMAGE[key]
-      ? `<img src="${AVATAR_IMAGE[key]}" alt="" loading="lazy">`
+      ? `<img src="${AVATAR_IMAGE[key]}" alt="" loading="lazy" onerror="this.style.display='none'">`
       : `<span class="cc-av">${story.title.slice(0, 1)}</span>`;
     const need = requiredArcsFor(story);
     const arcPart = m.cleared ? ` · ${t('chatStatArcs')} ${Math.min(m.cleared, need)}/${need}` : '';
@@ -3384,7 +3445,7 @@ async function renderStoryList() {
     // 위쪽 6장은 바로 받고, 스크롤해야 보이는 아래쪽만 미룬다.
     const eager = shown <= 6;
     const photoInner = AVATAR_IMAGE[photoKey]
-      ? `<img src="${AVATAR_IMAGE[photoKey]}" alt="${t('a11yPortrait')}" decoding="async" width="320" height="320"${eager ? '' : ' loading="lazy"'}>`
+      ? `<img src="${AVATAR_IMAGE[photoKey]}" alt="${t('a11yPortrait')}" decoding="async" width="320" height="320" onerror="this.style.display='none'"${eager ? '' : ' loading="lazy"'}>`
       : avatarSVG(photoKey, 84);
     const badges = story.cast.map(c => `<span class="diff-badge diff-${tierClass(c.tier)}">${c.name} ${c.tier}</span>`).join('');
     const progressBadge = inProgress ? `<span class="diff-badge badge-progress">${t('charlistProgressBadge')}</span>` : '';
@@ -3417,7 +3478,7 @@ function openStoryIntro(storyId) {
   // 실사/일러스트 이미지가 있는 캐릭터는 사각 프레임을 꽉 채우는 큰 사진으로, 없는 캐릭터는 기존 원형 placeholder 아이콘으로.
   const introKey = story.cast[0].key;
   $('intro-portrait').innerHTML = AVATAR_IMAGE[introKey]
-    ? `<img src="${AVATAR_IMAGE[introKey]}" style="width:100%; height:100%; object-fit:cover; object-position:center 22%; display:block;" alt="${t('a11yPortrait')}" decoding="async" fetchpriority="high">`
+    ? `<img src="${AVATAR_IMAGE[introKey]}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover; object-position:center 22%; display:block;" alt="${t('a11yPortrait')}" decoding="async" fetchpriority="high">`
     : avatarSVG(introKey, 140);
   $('charintro-cast').innerHTML = story.cast.map(c => `<span class="diff-badge diff-${tierClass(c.tier)}">${c.name} · ${t('charintroDifficultyLabel')} ${c.tier}</span>`).join('');
   const approachHints = story.cast.filter(c => c.approachHint).map(c => (story.cast.length > 1 ? `<b>${c.name}</b> ${c.approachHint}` : c.approachHint)).join('<br/><br/>');
@@ -3587,6 +3648,46 @@ async function persist() {
 // 62일차: 예전에는 DEV_MODE 전용이었는데, 형균님 실플레이에서 "지금 관계가 어디쯤인지,
 // 내 대사가 +인지 -인지 알 수 없다"는 피드백이 나와서 모든 유저에게 항상 보여주기로 결정.
 // (수치 그대로 / 화면 상시 표시 — 형균님 선택. 라이벌·조연은 표시하지 않는다.)
+// 62일차 UI 2단계: 넓은 화면에서 대화 오른쪽에 항상 열려 있는 '인연 기록'.
+// '지금 어디쯤인지 모르겠다'는 피드백을 웹에서 한 번 더 해결하는 패널이다.
+// renderStats가 돌 때마다(입장·매 턴) 같이 갱신된다. CSS가 모바일에서는 숨긴다.
+function renderChatRail() {
+  const rail = document.getElementById('chat-rail');
+  if (!rail || !currentStory || !state) return;
+  rail.innerHTML = '';
+  const esc = (x) => String(x == null ? '' : x).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  let html = `<h4>${esc(t('chatRailTitle'))}</h4>`;
+  currentStory.cast.filter(c => c.completionRequired !== false).forEach(c => {
+    const cs = state.chars[c.key];
+    if (!cs) return;
+    const stageName = t('mypageStage' + Math.min(3, Math.max(1, cs.stage || 1)));
+    html += `<div class="stagename">${esc(c.name)} · ${esc(stageName)}</div>`;
+    html += `<div class="kv"><span>${esc(t('chatStatAffection'))}</span><span>${cs.affection}</span></div><div class="bar"><i style="width:${Math.max(0, Math.min(100, cs.affection))}%"></i></div>`;
+    html += `<div class="kv"><span>${esc(t('chatStatTrust'))}</span><span>${cs.trust}</span></div><div class="bar"><i style="width:${Math.max(0, Math.min(100, cs.trust))}%"></i></div>`;
+  });
+  if (state.collectionStatus === 'active' && isCoupleStageReached(state, currentStory)) {
+    const need = requiredArcsFor(currentStory);
+    const done = Math.min(need, (state.arcState && state.arcState.clearedArcs) || 0);
+    html += `<div class="arcline" style="margin-top:8px;">${esc(t('chatStatArcs'))} ${done} / ${need}</div>`;
+  }
+  const evs = (state.scheduledEvents || []);
+  if (evs.length) {
+    html += `<h4>${esc(t('chatRailUpcoming'))}</h4><div class="memo">`;
+    const day = 86400000;
+    evs.slice(0, 4).forEach(e => {
+      const left = Math.ceil((e.dueAt - Date.now()) / day);
+      const when = left <= 0 ? t('chatRailToday') : fill(t('chatRailInDays'), { n: left });
+      html += `· ${esc(when)} — ${esc(e.what)}<br>`;
+    });
+    html += '</div>';
+  }
+  const facts = (state.factLedger || []).slice(-5);
+  if (facts.length) {
+    html += `<h4>${esc(t('chatRailMemory'))}</h4><div class="memo">` + facts.map(f => '· ' + esc(f)).join('<br>') + '</div>';
+  }
+  rail.innerHTML = html;
+}
+
 function renderStats() {
   const bar = $('stat-bar');
   const devHint = $('chat-dev-hint');
@@ -3612,6 +3713,7 @@ function renderStats() {
     arcSpan.textContent = `${t('chatStatArcs')} ${done} / ${need}`;
     bar.appendChild(arcSpan);
   }
+  renderChatRail();
 }
 
 function speakerName(story, key) {
@@ -5741,7 +5843,9 @@ function showQuotaExceededMessage() {
 async function sendMessage(forcedText) {
   if (isSending) return; // 응답을 기다리는 중에 엔터를 다시 누르거나 버튼을 눌러도 무시한다.
   const input = $('msg-input');
-  const text = (typeof forcedText === 'string' ? forcedText : input.value).trim();
+  // 62일차: 긴 붙여넣기가 그대로 AI에 가면 입력 토큰 비용이 튄다. maxlength가 있지만
+  // 붙여넣기 등 우회 경로가 있으므로 여기서 한 번 더 자른다.
+  const text = (typeof forcedText === 'string' ? forcedText : input.value).trim().slice(0, 500);
   if (!text) return;
 
   // 62일차: Firebase 통신이 막히거나 아주 느리면 여기서 아무 반응 없이 멈춰버렸다.
@@ -5763,6 +5867,13 @@ $('send-btn').addEventListener('click', () => {
 // "조합 확정"과 "전송"이 겹쳐서 마지막 글자가 잘리거나 같은 문장이 두 번 전송된다.
 // e.isComposing이 true면 아직 조합 중이라는 뜻이므로 전송하지 않는다.
 // (keyCode 229는 isComposing을 지원하지 않는 구형 브라우저용 예비 확인.)
+$('msg-input').addEventListener('input', () => {
+  const el = $('char-count');
+  if (!el) return;
+  const n = $('msg-input').value.length;
+  el.textContent = n + ' / 500';
+  el.classList.toggle('warn', n >= 400);
+});
 $('msg-input').addEventListener('keydown', (e) => {
   if (e.key !== 'Enter') return;
   if (e.isComposing || e.keyCode === 229) return;
@@ -5941,7 +6052,8 @@ async function renderMypage() {
         // 채팅창은 몰입 공간이라 상태를 감추지만, 마이페이지는 관리 화면이므로 실제 관계 단계를 보여준다.
         else label = t('mypageStage' + Math.min(3, Math.max(1, cs.stage || 1)));
       }
-      rows += `<div class="mypage-char-row"><span>${c.name}</span><b>${label}</b></div>`;
+      // 62일차: 1인 스토리는 제목과 인물 이름이 같아 두 번 보였다 (형균님 지적). 이름은 여럿일 때만.
+      rows += `<div class="mypage-char-row"><span>${story.cast.length > 1 ? c.name : ''}</span><b>${label}</b></div>`;
     });
     block.innerHTML = `<div class="story-title">${story.title}</div>${rows}`;
     // 테스트용 초기화 버튼은 DEV_MODE일 때만 노출한다 — UI/UX QA(32일차)에서 실서비스 화면에
