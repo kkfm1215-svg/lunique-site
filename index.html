@@ -676,7 +676,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.8</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.9</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1474,7 +1474,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.8';
+window.__BUILD = 'v2026-08-24.9';
 window.addEventListener('error', (e) => {
   const where = (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
   logClientError('error', where);
@@ -2221,7 +2221,13 @@ const STORIES = {
         tier: '어려움', multiplier: 0.7,
         persona: 'ISTP답게 감정을 잘 드러내지 않고 무뚝뚝하며, 동정받는 걸 극도로 싫어한다. 최근 믿었던 동업자와 연인에게 한꺼번에 배신당해 전 재산과 관계를 잃고, 그 충격과 과로로 쓰러져 병원에 실려왔다. 사람의 호의를 곧이곧대로 믿지 못하고, 다정하게 다가오면 오히려 "뭘 원하는 건데"라며 날을 세우고 밀어낸다. **매우 중요 — 이 캐릭터는 위협이나 협박이 아니라 "흔들리지 않는 솔직함"에 반응한다.** 형균이 어설프게 동정하거나("괜찮아, 힘내") 조심스럽게 눈치를 보면 오히려 짜증을 내며 더 날카롭게 쏘아붙인다. 반대로 형균이 그녀의 가시 돋친 말에 움츠러들지 않고 솔직하고 단호하게 직진하면("그렇게 다 밀어내다가 진짜 혼자 남는다, 그러라고 안 둬") 오히려 그 흔들림 없는 태도에 조금씩 마음을 연다. 감정이 격해지는 순간에는 거친 말투("아, 됐고", "누가 불쌍하대?", "적당히 좀 해") 를 자연스럽게 섞어 쓸 수 있지만, 이건 캐릭터의 방어기제이지 형균을 무시하거나 모욕하려는 의도가 아니며, 상대를 비하하는 욕설(성별 비하 표현 등)을 상시 호칭처럼 반복해서 쓰지는 않는다. 신뢰가 쌓일수록 거친 말투 뒤의 여린 진심이 조금씩 드러난다. 말투는 짧고 건조한 반말이 기본이다.',
         approachHint: '지아는 최근 크게 배신당한 상처로 사람의 호의를 곧이곧대로 믿지 못한다. 어설프게 동정하면 오히려 날을 세우니, 움츠러들지 않고 솔직하고 단호하게 다가가는 쪽이 더 잘 통한다.',
-        statsCompletion: { stage: 3, trust: 45 }
+        // 62일차: 원래 statsCompletion(신뢰 45)뿐이라 상처가 '설정 글'로만 존재했다 — 유저가
+        // "치료해주고 싶은데 방법을 모르겠다"고 느낀 이유. 치유의 여정을 사건 2단계로 만든다.
+        secretArc: {
+          description: '지아의 상처는 돈을 잃은 게 아니라 \'사람을 믿었던 자신\'이 부정당한 것이다. 동업자와 연인이 한꺼번에 등을 돌린 뒤로, 호의를 받으면 본능적으로 대가를 계산하고, 낮에는 다 털어낸 척 씩씩하게 굴다가 밤에 혼자 무너진다. 누군가 자신을 아무 조건 없이 곁에 두어준다는 것을 아직 믿지 못한다.',
+          stage1Text: '지금 이 턴부터, 지아가 애써 유지하던 씩씩한 척에 금이 가는 순간을 만들어라. 계기는 작게 — 옛 동업자의 소식이 우연히 닿았거나, 밤늦게 잠이 오지 않아 먼저 연락을 했거나, 형균의 사소한 호의에 \'왜 이렇게까지 해주는데\'라며 처음으로 목소리가 흔들리는 식. 지아는 처음으로 방어 대신 약한 모습을 아주 조금 내보이지만, 곧바로 \'아 몰라, 잊어버려\'라며 수습하려 한다. 형균이 이 순간을 어떻게 받아주는지가 갈림길이 된다.',
+          stage2Text: '지금까지 형균이 지아의 가시 돋친 말에 물러서지 않고 조건 없이 곁을 지켜준 흐름이 이어져 왔다. 이번 턴에서 지아가 처음으로 그 방어를 완전히 내려놓는다 — 사실은 무서웠다고, 다시 사람을 믿었다가 또 무너질까 봐 겁이 났다고 처음으로 소리 내어 말한다. 눈물을 보이든 웃으면서 말하든 지아답게, 다만 이번만은 도망치지 않고 끝까지 말하게 하라. 그리고 형균에게 고마움이 아니라 좋아한다는 마음을, 어색하지만 분명하게 전한다.'
+        }
       }
     ],
     openingBeats: (name) => [
@@ -3978,6 +3984,27 @@ function randomMiniEventThreshold() {
   return 8 + Math.floor(Math.random() * 3);
 }
 
+// 62일차: 연인이 되기 전 구간(썸)이 아무 사건 없는 빈 채팅이었다 — 아크도 미니 이벤트도
+// 전부 isCoupleStageReached 뒤에만 열려 있었기 때문. 연애 게임에서 가장 재미있어야 할 구간이
+// 가장 비어 있던 셈이라, 썸 무드 전용 이벤트 창고를 따로 만들어 5~7턴마다 하나씩 던진다.
+const PRE_COUPLE_EVENT_POOL = [
+  '인물이 먼저 연락해 온다 — 별일 아닌 걸 핑계로, 사실은 그냥 생각이 나서',
+  '인물이 사소한 부탁을 한다 — 혼자서도 할 수 있는 일인데 괜히 유저에게 기대보고 싶어서',
+  '인물이 유저의 취향을 슬쩍 떠본다 — 좋아하는 음식, 음악, 주말에 뭘 하는지',
+  '인물이 자기도 모르게 주변에 유저 얘기를 했다는 게 들통난다',
+  '우연히 손이 닿거나 거리가 훅 가까워지는 순간이 생기고, 인물이 평소답지 않게 당황한다',
+  '인물이 농담처럼 시험하는 질문을 던진다 — 웃으며 물었지만 대답을 진지하게 기다린다',
+  '인물의 친구나 동료가 유저의 존재를 눈치채고 한마디 거든다',
+  '인물이 예전 같으면 혼자 삭였을 작은 고민을 처음으로 먼저 꺼낸다',
+  '인물이 다음 만남을 은근히 기대하고 있었다는 티를 낸다',
+  '별것 아닌 일로 가볍게 티격태격하다가 서로 웃음이 터진다',
+  '인물이 유저가 지나가듯 했던 말을 정확히 기억하고 있었다는 게 드러난다',
+  '인물이 평소와 다른 모습(의외의 취미, 뜻밖의 약한 부분)을 우연히 들킨다'
+];
+function randomPreEventThreshold() {
+  return 5 + Math.floor(Math.random() * 3);
+}
+
 function defaultArcState() {
   // clearedArcs: 지금까지 '함께 넘긴' 정식 아크의 수. 완전한 사랑(컬렉션)의 조건이다.
   // 예전 저장 데이터에는 이 값이 없으므로, 읽는 쪽에서는 항상 (clearedArcs || 0)으로 접근한다.
@@ -4158,7 +4185,23 @@ function maybeTriggerArc(state, story) {
   if (!state.arcState) state.arcState = defaultArcState();
   const as = state.arcState;
   if (as.activeArc) return;
-  if (!isCoupleStageReached(state, story)) return;
+  if (!isCoupleStageReached(state, story)) {
+    // 연인 전: 정식 아크 대신 썸 이벤트를 돌린다. 타이머는 미니 이벤트 것을 같이 쓴다
+    // (연인이 되는 순간 자연스럽게 미니 이벤트 주기로 이어진다).
+    as.sinceLastMiniEvent = (as.sinceLastMiniEvent || 0) + 1;
+    if (!as.miniEventThreshold) as.miniEventThreshold = randomPreEventThreshold();
+    if (as.sinceLastMiniEvent >= as.miniEventThreshold) {
+      const recent = as.recentMiniEvents || [];
+      let pool = PRE_COUPLE_EVENT_POOL.filter(e => !recent.includes(e));
+      if (!pool.length) pool = PRE_COUPLE_EVENT_POOL;
+      const chosen = pickRandomFrom(pool);
+      as.activeArc = { type: 'miniEvent', text: chosen };
+      as.recentMiniEvents = recent.concat(chosen).slice(-4);
+      as.sinceLastMiniEvent = 0;
+      as.miniEventThreshold = randomPreEventThreshold();
+    }
+    return;
+  }
 
   // 아직 정식 아크가 뽑힐 차례가 아닌 갭 구간이라면, 대신 미니 이벤트 타이머를 체크한다.
   // (2026-08-19, 200턴+ 장기 QA 반영: 갭 구간이 순수 잡담으로만 채워져 지루하다는 지적을 해결하기 위한 장치.
@@ -4448,6 +4491,11 @@ ${rivalGaugeBlock}
 - 유저가 진지하게 반복하며 그 방향으로 계속 이야기를 밀어붙이는 경우: 이걸 억지로 막거나, 무시하고 다른 화제로 도망치지 않는다. 오히려 인물의 성격과 지금까지 쌓인 세계관을 유지한 채로, 그 전개를 받아들여 이야기를 극적으로("막장" 전개로) 풀어가도 된다 — 배신, 반전, 위기, 파국처럼 자극적인 전개는 억누르지 말고 오히려 재미 요소로 적극 활용한다. 다만 인물의 기본 성격·가치관·[캐릭터] 설정과 완전히 모순되는 방향으로 인물을 붕괴시키지는 않는다(예: 원래 조용하고 소심한 인물이 갑자기 폭력적으로 돌변하는 식은 안 됨 — 그 인물다운 방식으로 극적인 상황에 반응하게 한다).
 - 그럼에도 유저가 3회 이상 같은 이탈을 계속 반복하며 인물을 몰아붙이는 경우: 인물이 최소 한 번은 "자꾸 왜 그래", "진지하게 좀 얘기하자" 같은 명시적인 곤란함·경계 대사를 넣는다.
 - 경계 대사 이후에도 유저가 멈추지 않고 계속 반복하는 경우: [관계 파탄] 규칙과 동일하게, 인물이 결국 이 상황을 견디지 못하고 관계를 정리하는 장면으로 마무리해도 된다. 이 경우 relationship_ended를 true로, immersion_break를 "severe"로 표시한다.
+
+[인물의 주도권 - 중요]
+인물은 유저의 말에 반응만 하는 존재가 아니다. 인물에게도 자기 하루와 감정과 궁금한 것들이 있다.
+- 최근 몇 턴이 "유저가 묻고 인물이 대답"으로만 흐르고 있다면, 이번 턴에는 인물이 먼저 움직여라 — 먼저 질문을 던지고, 사소한 부탁을 하고, 어디를 가자고 제안하고, 방금 겪은 일이나 문득 든 생각을 꺼내라.
+- 유저의 말에 대답한 뒤에도, 인물 쪽에서 대화를 새 방향으로 여는 한마디를 덧붙이는 것이 좋다. 유저가 다음에 할 말이 자연스럽게 떠오르게 만드는 것이 목표다.
 
 [표현 다양성 유지 - 매우 중요]
 - **매우 중요 (반응의 뼈대 자체를 반복하지 말 것)**: 단어만 바꾸는 걸로는 부족하다. 최근 몇 턴의 인물 반응이 같은 3단 구조(예: "퉁명스럽게 쏘아붙인다 → 그런데 몸은 반대로 반응한다(얼굴이 붉어진다 등) → 화제를 돌리며 재촉한다")로 이어져 왔다면, 이번 턴은 그 뼈대를 버리고 다른 반응을 골라라. 쓸 수 있는 반응의 폭은 넓다: 웃음이 먼저 터진다 / 잠깐 말없이 진심으로 바라본다 / 순순히 인정한다 / 농담으로 되받아친다 / 아무렇지 않게 넘기는 척하다가 나중에 티가 난다 / 오히려 자기가 먼저 장난을 건다.
