@@ -24,10 +24,12 @@
      옛 변수명(--text-sub 등)은 인라인 스타일 호환을 위해 별칭으로 남겨둔다.
      ===================================================== */
   :root {
-    --void:      #070A10;
-    --ink:       #0C1017;
-    --ink2:      #131926;
-    --paper:     #E9E5D9;
+    /* 62일차 달빛 개정: 형균님 시안(달밤·라벤더·금) 승인에 따라 바탕을 밤하늘 남보라로.
+       금색은 브랜드로 유지, 라벤더(--moon)는 보조 액센트로만 쓴다. 대비는 재검증함. */
+    --void:      #060811;
+    --ink:       #0C0F1E;
+    --ink2:      #131731;
+    --paper:     #ECE8F2;
     --dim:       #9AA2B2;
     /* 56일차 C04: 기존 #666E7C는 어두운 면 위에서 대비가 약 3.2:1로 WCAG AA에 못 미쳤다.
        안내문 대부분이 이 색이라 실제로 읽기 어려웠다. 대비 약 5.6:1로 올린다. */
@@ -35,9 +37,11 @@
     --brass:     #C9A227;
     --brass-mid: rgba(201,162,39,.45);
     --brass-dim: rgba(201,162,39,.14);
-    --hair:      rgba(233,229,217,.11);
-    --hair-soft: rgba(233,229,217,.055);
+    --hair:      rgba(232,226,244,.12);
+    --hair-soft: rgba(232,226,244,.06);
     --warn:      #D98A6A;
+    --moon:      #B9A9E0;                 /* 달빛 라벤더 — 보조 액센트 (랜딩·은은한 빛) */
+    --moon-dim:  rgba(150,130,220,.14);
 
     /* 타입 스케일 — 11 12 13 15 17 20 28 40 */
     --t-meta: 11px; --t-sm: 12px; --t-rd: 13px; --t-bd: 15px;
@@ -71,7 +75,12 @@
     -webkit-font-smoothing: antialiased;
   }
   #app {
-    width: 100%; max-width: 480px; background: var(--void);
+    width: 100%; max-width: 480px;
+    /* 달빛: 우상단 라벤더 광, 좌하단 금빛 여명 — 모든 화면이 은은하게 물든다 */
+    background:
+      radial-gradient(900px 600px at 88% -8%, rgba(140,118,210,.16), transparent 60%),
+      radial-gradient(700px 500px at -12% 108%, rgba(201,162,39,.07), transparent 55%),
+      var(--void);
     display: flex; flex-direction: column;
     height: var(--app-h); overflow: hidden; position: relative;
     border-left: 1px solid var(--hair); border-right: 1px solid var(--hair);
@@ -550,12 +559,54 @@
   .cont-card .cc-name { color: var(--paper); font-size: var(--t-bd); }
   .cont-card .cc-sub { color: var(--dim); font-size: var(--t-meta); }
   .cont-card .cc-go { margin-left: auto; color: var(--brass); font-size: var(--t-sm); white-space: nowrap; }
+  /* 62일차 달빛 랜딩 — 사진 히어로 + 떠 있는 기억 카드. hero.jpg가 아직 없으면 그라데이션만 보인다 */
+  #screen-landing { position: relative; overflow: hidden; justify-content: flex-end; }
+  .hero-bg { position: absolute; inset: 0; background: url('images/hero.jpg') center 30% / cover no-repeat,
+    radial-gradient(800px 500px at 75% 20%, rgba(140,118,210,.25), transparent 60%), var(--ink); }
+  .hero-scrim { position: absolute; inset: 0; background:
+    linear-gradient(90deg, rgba(6,8,17,.92) 0%, rgba(6,8,17,.55) 45%, rgba(6,8,17,.15) 75%, rgba(6,8,17,.45) 100%),
+    linear-gradient(0deg, rgba(6,8,17,.9) 0%, transparent 40%); }
+  .hero-body { position: relative; z-index: 1; display: flex; flex-direction: column; flex: 1; padding: var(--s6) var(--s5) var(--s5); }
+  .hero-copy { margin-top: auto; max-width: 300px; }
+  .hero-copy .brand-mark { display: flex; align-items: center; gap: 6px; font-family: var(--serif); letter-spacing: .26em; font-size: 12px; color: var(--paper); margin-bottom: var(--s4); }
+  .hero-title2 { font-family: var(--serif); font-size: var(--t-hero); line-height: 1.35; font-weight: 700; margin: var(--s2) 0 var(--s3);
+    background: linear-gradient(100deg, var(--paper) 30%, var(--moon) 70%, var(--brass) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero-sub { font-size: var(--t-rd); color: var(--dim); line-height: 1.8; max-width: 280px; }
+  .hero-cta { margin-top: var(--s5); display: flex; gap: var(--s3); }
+  .hero-cta .btn { min-width: 180px; }
+  .hero-cards { position: absolute; right: var(--s4); top: 16%; display: flex; flex-direction: column; gap: var(--s3); align-items: flex-end; }
+  .hc { background: rgba(12,15,30,.78); border: 1px solid var(--hair); backdrop-filter: blur(6px); border-radius: 10px; padding: 10px 14px; max-width: 210px; }
+  .hc-typing .hc-name { color: var(--paper); font-size: 12px; font-weight: 500; }
+  .hc-typing .hc-now { color: var(--faint); font-size: 10px; margin-left: 4px; }
+  .hc-typing .hc-line { color: var(--dim); font-size: 12px; margin-top: 4px; }
+  .hc-dots { display: flex; gap: 4px; margin-top: 7px; }
+  .hc-dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--moon); opacity: .35; animation: hcdot 1.2s infinite; }
+  .hc-dots i:nth-child(2) { animation-delay: .2s; } .hc-dots i:nth-child(3) { animation-delay: .4s; }
+  @keyframes hcdot { 0%,60%,100% { opacity: .25; } 30% { opacity: .9; } }
+  .hc-memory { border-color: var(--brass-mid); }
+  .hc-memory .hc-cap { color: var(--brass); font-size: 10px; letter-spacing: .14em; }
+  .hc-memory .hc-quote { color: var(--paper); font-family: var(--serif); font-size: 13px; margin-top: 5px; line-height: 1.6; }
+  .hc-memory .hc-date { color: var(--faint); font-size: 10px; margin-top: 5px; }
+  .hero-feats { display: flex; gap: var(--s2); margin-top: var(--s6); border-top: 1px solid var(--hair); padding-top: var(--s4); }
+  .hero-feats .hf { flex: 1; }
+  .hero-feats b { display: block; color: var(--paper); font-size: var(--t-sm); font-weight: 500; margin-bottom: 3px; }
+  .hero-feats span { color: var(--faint); font-size: 10.5px; line-height: 1.6; }
+  @media (prefers-reduced-motion: reduce) { .hc-dots i { animation: none; } }
+  @media (max-width: 520px) { .hero-cards { top: 10%; } .hc { max-width: 170px; padding: 8px 11px; } }
   @media (min-width: 900px) {
     body { background: #04060B; align-items: center; padding: var(--s6); }
     #app {
       max-width: 1040px; width: 100%; height: min(880px, 92vh);
       border: 1px solid var(--hair); border-radius: var(--r1);
     }
+    /* 달빛 랜딩 데스크톱: 카피는 왼쪽 세로 중앙, 카드는 오른쪽, 특징은 하단 */
+    .hero-body { padding: 48px 56px 36px; }
+    .hero-copy { margin: auto 0; max-width: 430px; }
+    .hero-title2 { font-size: var(--t-mega); line-height: 1.3; }
+    .hero-sub { font-size: var(--t-bd); max-width: 380px; }
+    .hero-cards { right: 48px; top: 22%; }
+    .hc { max-width: 240px; }
+    .hero-feats { gap: var(--s6); max-width: 640px; }
     .landing-hero { flex-direction: row; align-items: center; justify-content: center; gap: 72px; padding: 0 64px; }
     .landing-hero .center { flex: 1; max-width: 400px; align-items: flex-start; text-align: left; }
     .landing-hero .eyebrow, .landing-hero .divider-orn { justify-content: flex-start; }
@@ -615,25 +666,27 @@
     <div id="tab-cont"></div>
   </nav>
   <div class="screen active" id="screen-landing">
-    <div class="starfield"></div>
-    <div class="landing-hero" style="position:relative; z-index:1;">
-      <div class="center pad">
-        <div class="brand-mark" style="margin-bottom:6px;"><span class="moon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.2 1.6a6.4 6.4 0 1 0 3.2 8.5A5.2 5.2 0 0 1 11.2 1.6Z" stroke="#C9A227" stroke-width="1.1" stroke-linejoin="round"/></svg></span>LUNIQUE</div>
-        <div class="eyebrow"><span class="diamond" aria-hidden="true"></span> <span data-i18n="landingEyebrow">당신만을 위한, 기억하는 AI 로맨스</span> <span class="diamond" aria-hidden="true"></span></div>
-        <div class="hero-title" style="font-size:23px; color:var(--text-main); margin-top:4px;" data-i18n-html="landingHeroTitle">하루의 끝,<br/>그 사람과의 대화</div>
-        <div class="divider-orn"><span class="diamond" aria-hidden="true"></span></div>
-        <div style="font-size:13px; color:var(--text-sub); letter-spacing:0.3px;" data-i18n="landingSubtitle">AI와 함께하는 연애 시뮬레이션</div>
-        <button class="btn" style="width:100%; margin-top:22px;" onclick="goTo('screen-login')" data-i18n="landingStartBtn">지금 시작하기</button>
-        <div class="lore-crawl-wrap">
-          <div class="lore-crawl-track" data-i18n-html="loreBody" onclick="this.classList.toggle('paused')">
-            아주 먼 미래, 사랑이 사라져가며 인류는 서서히 저물어가고 있다.<br/><br/>
-            당신은 그 마지막 희망을 찾기 위해, 과거의 여러 시간과 사람들 속으로 영혼을 보낸다.<br/><br/>
-            누군가의 상처를 보듬고 진짜 사랑을 이끌어낼 때마다, 머나먼 미래의 꺼져가던 별빛이 다시 조금씩 밝아진다.<br/><br/>
-            지금부터, 당신이 만나야 할 인연들이 이곳에 있다.
-          </div>
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="hero-body">
+      <div class="hero-copy">
+        <div class="brand-mark"><span class="moon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M10 1.5a6.5 6.5 0 1 0 0 13 5.5 5.5 0 0 1 0-13Z" fill="var(--brass)"/></svg></span> <b>LUNIQUE</b></div>
+        <div class="eyebrow"><span class="diamond" aria-hidden="true"></span> <span data-i18n="landingEyebrow">당신만을 위한, 기억하는 AI 로맨스</span></div>
+        <h1 class="hero-title2" data-i18n-html="heroTitle2">대화로 시작되는<br>가장 사적인 로맨스</h1>
+        <p class="hero-sub" data-i18n="heroSub2">당신의 말을 기억하고, 감정과 서사가 변하는 AI 연애 시뮬레이션.</p>
+        <div class="hero-cta">
+          <button class="btn" onclick="goTo('screen-login')" data-i18n="landingStartBtn">지금 시작하기</button>
         </div>
       </div>
-      <div class="landing-visual"><svg width="150" height="110" viewBox="0 0 150 110" fill="none" aria-hidden="true"><path d="M16 88 L48 38 L82 60 L124 18" stroke="#C9A227" stroke-width=".9" stroke-opacity=".5"/><circle cx="16" cy="88" r="2.6" fill="#C9A227"/><circle cx="48" cy="38" r="2" fill="#C9A227" fill-opacity=".8"/><circle cx="82" cy="60" r="1.8" fill="#C9A227" fill-opacity=".6"/><circle cx="124" cy="18" r="3.4" fill="#E9E5D9"/><circle cx="124" cy="18" r="10" stroke="#E9E5D9" stroke-opacity=".2" stroke-width=".8"/><circle cx="32" cy="22" r="1" fill="#E9E5D9" fill-opacity=".3"/><circle cx="132" cy="76" r="1" fill="#E9E5D9" fill-opacity=".26"/><circle cx="96" cy="96" r=".9" fill="#E9E5D9" fill-opacity=".22"/></svg></div>
+      <div class="hero-cards" aria-hidden="true">
+        <div class="hc hc-typing"><span class="hc-name" data-i18n="heroCardName">서연</span> <span class="hc-now" data-i18n="heroCardNow">지금</span><div class="hc-line" data-i18n="heroCardMsg">오늘도 기다리고 있었어요.</div><div class="hc-dots"><i></i><i></i><i></i></div></div>
+        <div class="hc hc-memory"><div class="hc-cap" data-i18n="heroCardMemTitle">기억 속 순간</div><div class="hc-quote" data-i18n="heroCardMemQuote">“바닷가에서 들려준 노래”</div><div class="hc-date" data-i18n="heroCardMemDate">23일 전의 대화</div></div>
+      </div>
+      <div class="hero-feats">
+        <div class="hf"><b data-i18n="heroFeat1T">기억하는 대화</b><span data-i18n="heroFeat1B">당신과의 모든 대화를 기억하고 이어갑니다.</span></div>
+        <div class="hf"><b data-i18n="heroFeat2T">자유로운 입력</b><span data-i18n="heroFeat2B">정해진 선택지 없이, 내 방식대로 표현하세요.</span></div>
+        <div class="hf"><b data-i18n="heroFeat3T">변화하는 관계</b><span data-i18n="heroFeat3B">대화할수록 깊어지는 감정, 새로운 이야기.</span></div>
+      </div>
     </div>
   </div>
 
@@ -760,7 +813,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.22</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.24</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -971,6 +1024,14 @@ const I18N = {
     mypageNoStories: '아직 시작한 인연이 없어요. 목록에서 첫 인연을 만나보세요.',
     tabConnections: '인연', tabAlbum: '앨범', tabMe: '내 정보',
     contSectionTitle: '이어하기',
+    contNudge: '✉ 먼저 연락이 와 있어요',
+    heroTitle2: '대화로 시작되는<br>가장 사적인 로맨스',
+    heroSub2: '당신의 말을 기억하고, 감정과 서사가 변하는 AI 연애 시뮬레이션.',
+    heroCardName: '서연', heroCardNow: '지금', heroCardMsg: '오늘도 기다리고 있었어요.',
+    heroCardMemTitle: '기억 속 순간', heroCardMemQuote: '“바닷가에서 들려준 노래”', heroCardMemDate: '23일 전의 대화',
+    heroFeat1T: '기억하는 대화', heroFeat1B: '당신과의 모든 대화를 기억하고 이어갑니다.',
+    heroFeat2T: '자유로운 입력', heroFeat2B: '정해진 선택지 없이, 내 방식대로 표현하세요.',
+    heroFeat3T: '변화하는 관계', heroFeat3B: '대화할수록 깊어지는 감정, 새로운 이야기.',
     contGoBtn: '대화 ▸',
     contNewSection: '새 인연',
     timeJustNow: '방금',
@@ -1134,6 +1195,14 @@ const I18N = {
     mypageNoStories: 'No connections started yet. Meet your first one from the list.',
     tabConnections: 'Connections', tabAlbum: 'Album', tabMe: 'Me',
     contSectionTitle: 'Continue',
+    contNudge: '✉ They reached out first',
+    heroTitle2: 'The most personal romance<br>begins with a conversation',
+    heroSub2: 'An AI romance that remembers your words — where feelings and stories truly change.',
+    heroCardName: 'Seoyeon', heroCardNow: 'now', heroCardMsg: 'I was waiting for you today, too.',
+    heroCardMemTitle: 'A remembered moment', heroCardMemQuote: '“The song you played by the sea”', heroCardMemDate: 'from 23 days ago',
+    heroFeat1T: 'It remembers', heroFeat1B: 'Every conversation is remembered and carried on.',
+    heroFeat2T: 'Say it your way', heroFeat2B: 'No fixed choices — express yourself freely.',
+    heroFeat3T: 'Relationships evolve', heroFeat3B: 'Feelings deepen and new stories unfold as you talk.',
     contGoBtn: 'Chat ▸',
     contNewSection: 'New connections',
     timeJustNow: 'just now',
@@ -1297,6 +1366,14 @@ const I18N = {
     mypageNoStories: 'まだ始めた縁がありません。リストから最初の縁に出会ってみてください。',
     tabConnections: '縁', tabAlbum: 'アルバム', tabMe: 'マイ',
     contSectionTitle: '続きから',
+    contNudge: '✉ 先に連絡が来ています',
+    heroTitle2: '会話から始まる<br>いちばん私的なロマンス',
+    heroSub2: 'あなたの言葉を記憶し、感情と物語が変わっていくAI恋愛シミュレーション。',
+    heroCardName: 'ソヨン', heroCardNow: 'たった今', heroCardMsg: '今日も待っていました。',
+    heroCardMemTitle: '記憶の中の瞬間', heroCardMemQuote: '「海辺で聴かせてくれた歌」', heroCardMemDate: '23日前の会話',
+    heroFeat1T: '記憶する会話', heroFeat1B: 'あなたとのすべての会話を記憶し、続けていきます。',
+    heroFeat2T: '自由な入力', heroFeat2B: '決まった選択肢はなく、自分の言葉で表現できます。',
+    heroFeat3T: '変化する関係', heroFeat3B: '会話するほど深まる感情、新しい物語。',
     contGoBtn: '会話 ▸',
     contNewSection: '新しい縁',
     timeJustNow: 'たった今',
@@ -1602,7 +1679,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.22';
+window.__BUILD = 'v2026-08-24.24';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -3318,7 +3395,8 @@ function renderContinueSection(statusById, metaById) {
       : `<span class="cc-av">${story.title.slice(0, 1)}</span>`;
     const need = requiredArcsFor(story);
     const arcPart = m.cleared ? ` · ${t('chatStatArcs')} ${Math.min(m.cleared, need)}/${need}` : '';
-    card.innerHTML = `${av}<div><div class="cc-name">${story.title}</div><div class="cc-sub">${relTimeText(m.last)}${arcPart}</div></div><span class="cc-go">${t('contGoBtn')}</span>`;
+    const nudgePart = m.nudge ? `<span style="color:var(--brass);"> · ${t('contNudge')}</span>` : '';
+    card.innerHTML = `${av}<div><div class="cc-name">${story.title}</div><div class="cc-sub">${relTimeText(m.last)}${arcPart}${nudgePart}</div></div><span class="cc-go">${t('contGoBtn')}</span>`;
     card.addEventListener('click', () => enterChat(id));
     box.appendChild(card);
   });
@@ -3340,7 +3418,11 @@ async function getStorySlotStatus() {
     const d = doc.data();
     const status = d.collectionStatus || 'active';
     statusById[doc.id] = status;
-    metaById[doc.id] = { last: d.lastTurnAt || 0, cleared: (d.arcState && d.arcState.clearedArcs) || 0 };
+    const maxStage = Math.max(1, ...Object.values(d.chars || {}).map(x => (x && x.stage) || 1));
+    metaById[doc.id] = { last: d.lastTurnAt || 0, cleared: (d.arcState && d.arcState.clearedArcs) || 0,
+      nudge: status === 'active' && !!d.lastTurnAt && (Date.now() - d.lastTurnAt >= NUDGE_AFTER_MS)
+        && !(d.lastNudgeAt && d.lastNudgeAt > d.lastTurnAt)
+        && (maxStage >= 2 || (d.history || []).length >= 12) };
     if (status === 'active') count++;
   });
   return { activeCount: count, startedIds, statusById, metaById };
@@ -4954,6 +5036,10 @@ ${rivalGaugeBlock}
 - 유저 입력이 정확히 "${SUGGEST_ONLY_MARKER}"이면: 유저가 "대사 추천" 버튼을 눌렀다는 뜻이다. 이번에는 실제 장면을 진행시키지 않는다. beats와 char_deltas는 반드시 둘 다 빈 배열([])로 두고, 오직 지금까지의 대화 흐름을 분석해서 유저가 다음으로 할 법한 말을 1인칭 대사로 3개만 만들어 suggested_replies에 채워서 응답한다.
   - 서로 톤이 겹치지 않게 다양하게 만든다 (예: 다정한 반응 하나, 장난스럽거나 유쾌한 반응 하나, 조금 더 진지하거나 호기심 있는 반응 하나).
   - 각 항목은 실제로 유저가 그대로 보낼 수 있는 짧은 대사 한 문장이어야 한다 (따옴표 없이, 지문 없이).
+- 유저 입력이 정확히 "${FIRST_CONTACT_MARKER}"이면: 유저가 며칠 동안 오지 않았고, 그 사이 인물이 유저를 생각하다가 **먼저 연락을 보낸** 장면이다. [시간] 항목의 경과 시간을 참고해라.
+  - medium은 "text"(문자)를 기본으로 하되, 인물 성격상 전화가 어울리면 "call"도 된다. 대면(face)은 절대 안 된다 — 유저는 지금 그 자리에 없다.
+  - 내용은 인물의 성격대로: 무심한 척 근황 한 줄, 보고 싶다는 솔직한 말, 별일 아닌 핑계, 서운함이 묻어나는 농담 등. 지난 대화의 맥락(마지막으로 나눈 이야기, 약속, 다가오는 일정)을 자연스럽게 이어라.
+  - 짧게 1~3 beat. 유저가 답하고 싶어지는 한마디로 끝낸다. char_deltas는 전부 0, stage_suggestion은 현재 단계 유지.
 - 유저 입력이 정확히 "${REUNION_MARKER}"이면: 이 인연은 예전에 완전히 끝났었지만(이별 장면은 이미 지나간 대화 히스토리 안에 남아있다), 이제 아주 오랜 시간(수개월에서 수년)이 지난 뒤 다시 만나는 순간이라는 뜻이다.
   - 먼저 narration으로 그 사이 흐른 시간을 짧게 알려준다 (예: "그 후로 삼 년이라는 시간이 흘렀다" 같은 한두 문장 — 구체적으로 몇 년인지는 자유롭게 정해도 된다).
   - 그 다음 실제 재회 장면을 그린다. 재회했을 때 인물의 태도는 예전에 얼마나 안 좋게 끝났는지에 따라 다르게 표현한다 — 아주 격렬하게 끝났었다면 재회 초반에는 서먹함·어색함·경계심이 먼저 드러나야 하고, 상대적으로 덜 격렬했다면 반가움이 조금 더 빨리 나올 수 있다. 어느 쪽이든 "예전 일은 없었던 것처럼" 곧바로 예전 관계로 되돌아가지는 않는다 — 관계는 사실상 처음부터 다시 쌓아가야 하는 상태다.
@@ -5367,6 +5453,10 @@ const SUGGEST_ONLY_MARKER = '[[SUGGEST_ONLY]]';
 // 실패(관계 파탄)한 인연이 잠금 기간을 지나 다시 스토리 목록에 등장했을 때, 유저가 슬롯에 다시 넣고
 // 들어가는 순간 자동으로 보내지는 특수 신호값 — "시간이 흘러 다시 재회하는" 장면을 AI가 만들어준다.
 const REUNION_MARKER = '[[REUNION]]';
+// 인물이 먼저 연락하는 장면을 요청하는 마커. 유저가 이틀+ 자리를 비운 진행 중 인연에서,
+// 다시 들어온 순간 한 번 발동한다 (무료 횟수·코인 미차감 — 유저가 시킨 턴이 아니므로).
+const FIRST_CONTACT_MARKER = '[[FIRST_CONTACT]]';
+const NUDGE_AFTER_MS = 48 * 60 * 60 * 1000;   // 마지막 대화로부터 48시간
 // 실패한 인연이 다시 스토리 목록에 등장하기까지 걸리는 실제 시간(일). 매번 3~5일 사이 무작위.
 function randomFailedLockoutDays() {
   return 3 + Math.floor(Math.random() * 3); // 3, 4, 5 중 하나
@@ -5979,7 +6069,23 @@ async function enterChat(storyId) {
   // 잠금 기간이 지났다면, 관계 수치를 리셋하고 AI가 "시간이 흘러 다시 재회하는" 장면을 자동으로 만들어준다.
   if (state.collectionStatus === 'failed') {
     await tryReuniteIfEligible();
+  } else if (shouldFirstContact()) {
+    // 한 번의 부재당 한 번만: lastNudgeAt을 먼저 기록해서, 생성 실패나 새로고침으로 두 번 오지 않게 한다.
+    state.lastNudgeAt = Date.now();
+    runTurn(FIRST_CONTACT_MARKER, { quotaCheck: null, addUserTurn: false });
   }
+}
+
+// 인물이 먼저 연락할 조건: 진행 중 + 마지막 대화가 48시간 이상 전 + 이미 아는 사이(2단계 이상
+// 또는 6턴 이상 대화) + 이번 부재에 아직 연락한 적 없음. 대화가 아예 없는 스토리는 제외.
+function shouldFirstContact() {
+  if (!state || state.collectionStatus !== 'active' || !currentStory) return false;
+  if (!state.lastTurnAt || (state.history || []).length < 2) return false;
+  if (Date.now() - state.lastTurnAt < NUDGE_AFTER_MS) return false;
+  if (state.lastNudgeAt && state.lastNudgeAt > state.lastTurnAt) return false;
+  const familiar = currentStory.cast.some(c => c.completionRequired !== false && state.chars[c.key] && state.chars[c.key].stage >= 2)
+    || (state.history || []).length >= 12;
+  return familiar;
 }
 
 // 실패한 인연이 잠금 기간(failedLockoutDays)을 실제로 다 지났는지 확인해서, 지났다면 관계를 리셋하고
