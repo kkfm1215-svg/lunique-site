@@ -497,6 +497,25 @@
   .landing-hero { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .landing-visual { display: none; }
 
+  /* 62일차 UI 개편: 항상 떠 있는 길잡이. 모바일=하단 탭, 데스크톱=좌측 기둥 (같은 요소가 모습만 바꾼다) */
+  /* order:99 — 마크업상 첫 요소지만 모바일에서는 맨 아래로 보낸다 (데스크톱 미디어쿼리에서 order:-1로 왼쪽 기둥이 됨) */
+  #tabbar { display: none; flex: 0 0 auto; order: 99; border-top: 1px solid var(--hair); background: var(--ink2); z-index: 5; }
+  #tabbar.on { display: flex; }
+  #tabbar .tb { flex: 1; background: none; border: 0; color: var(--faint); font-family: var(--sans); font-size: 11px; padding: 7px 0 9px; cursor: pointer; letter-spacing: .05em; }
+  #tabbar .tb .ic { display: block; font-size: 14px; margin-bottom: 2px; }
+  #tabbar .tb.on { color: var(--brass); }
+  #tabbar .tb:focus-visible { outline: 1px solid var(--brass); outline-offset: -2px; }
+  #tabbar .tb-logo { display: none; }
+  .coin-chip { margin-left: auto; border: 1px solid var(--brass-mid); color: var(--brass); background: none; padding: 3px 10px; font-size: 11px; border-radius: var(--r1); cursor: pointer; font-family: var(--sans); white-space: nowrap; }
+  .coin-chip b { font-family: var(--serif); font-weight: 400; }
+  .sect-label { font-size: var(--t-meta); letter-spacing: .16em; color: var(--faint); margin: var(--s2) 0; }
+  .cont-card { display: flex; align-items: center; gap: var(--s3); border: 1px solid var(--brass-mid); background: var(--brass-dim); padding: var(--s3) var(--s4); margin-bottom: var(--s2); cursor: pointer; }
+  .cont-card:hover { border-color: var(--brass); }
+  .cont-card img, .cont-card .cc-av { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: center 20%; flex: 0 0 auto; }
+  .cont-card .cc-av { display: flex; align-items: center; justify-content: center; background: var(--ink2); color: var(--dim); font-family: var(--serif); }
+  .cont-card .cc-name { color: var(--paper); font-size: var(--t-bd); }
+  .cont-card .cc-sub { color: var(--dim); font-size: var(--t-meta); }
+  .cont-card .cc-go { margin-left: auto; color: var(--brass); font-size: var(--t-sm); white-space: nowrap; }
   @media (min-width: 900px) {
     body { background: #04060B; align-items: center; padding: var(--s6); }
     #app {
@@ -517,6 +536,13 @@
     #story-list .char-card { margin: 0; }
     .pad { padding-left: 8%; padding-right: 8%; }
     #chat, #inputbar, .format-hint, .hint, #stat-bar, .chat-toolbar, #suggest-row { padding-left: 12%; padding-right: 12%; }
+    /* 좌측 기둥: 탭바가 세로로 선다. order:-1로 화면들 왼쪽에 붙는다. */
+    #app { flex-direction: row; }
+    #tabbar.on { flex-direction: column; width: 186px; border-top: 0; border-right: 1px solid var(--hair); padding-top: 20px; justify-content: flex-start; gap: 2px; order: -1; }
+    #tabbar .tb { flex: 0 0 auto; text-align: left; padding: 10px 20px; font-size: 13px; display: flex; align-items: center; gap: 10px; border-left: 2px solid transparent; letter-spacing: .04em; }
+    #tabbar .tb .ic { display: inline; font-size: 13px; margin: 0; }
+    #tabbar .tb.on { border-left-color: var(--brass); background: var(--brass-dim); }
+    #tabbar .tb-logo { display: block; font-family: var(--serif); letter-spacing: .24em; font-size: 13px; color: var(--paper); padding: 0 20px 18px; }
   }
 </style>
 </head>
@@ -529,6 +555,12 @@
   </div>
 
   <!-- 화면 1: 첫 화면 (세계관 텍스트가 하단 영역에서 스타워즈 자막처럼 계속 위로 흘러감) -->
+  <nav id="tabbar" aria-label="주요 화면">
+    <span class="tb-logo">LUNIQUE</span>
+    <button type="button" class="tb" id="tab-conn" onclick="goTo('screen-charlist')"><span class="ic">◈</span><span data-i18n="tabConnections">인연</span></button>
+    <button type="button" class="tb" id="tab-album" onclick="goTo('screen-album')"><span class="ic">✦</span><span data-i18n="tabAlbum">앨범</span></button>
+    <button type="button" class="tb" id="tab-me" onclick="goTo('screen-mypage')"><span class="ic">◐</span><span data-i18n="tabMe">내 정보</span></button>
+  </nav>
   <div class="screen active" id="screen-landing">
     <div class="starfield"></div>
     <div class="landing-hero" style="position:relative; z-index:1;">
@@ -600,10 +632,12 @@
 
   <!-- 화면 4: 스토리 목록 -->
   <div class="screen" id="screen-charlist">
-    <header><h1 data-i18n="charlistHeader">스토리를 선택하세요</h1></header>
+    <header><h1 data-i18n="charlistHeader">스토리를 선택하세요</h1><button type="button" class="coin-chip" onclick="goTo('screen-coin')"><span data-i18n="mypageLabelCoins">코인</span> <b>—</b></button></header>
     <div class="pad" style="padding-top:0; padding-bottom:2px; font-size:11.5px; color:var(--text-faint);" id="charlist-slot-status"></div>
     <div class="pad" style="padding-top:0; padding-bottom:8px; font-size:10.5px; color:var(--text-faint);" id="charlist-billing-status"></div>
+    <div class="pad" style="padding-top:2px; padding-bottom:0;"><div id="story-continue"></div></div>
     <div class="pad" style="padding-top:4px; padding-bottom:0;">
+      <div class="sect-label" id="newlist-label" style="display:none;" data-i18n="contNewSection">새 인연</div>
       <input id="charlist-search" type="search" autocomplete="off" placeholder="이름이나 분위기로 찾기" data-i18n-placeholder="charlistSearchPlaceholder" aria-label="스토리 검색" />
       <div id="charlist-filters" class="filter-row"></div>
     </div>
@@ -612,9 +646,6 @@
       <div id="story-list-empty" class="list-empty" style="display:none;" data-i18n="charlistNoMatch">조건에 맞는 인연이 없어요. 검색어나 조건을 바꿔보세요.</div>
     </div>
     <div style="flex:1;"></div>
-    <div class="pad" style="padding-top:0;">
-      <button class="btn secondary" style="width:100%;" onclick="goTo('screen-mypage')" data-i18n="charlistMypageBtn">마이페이지</button>
-    </div>
   </div>
 
   <!-- 화면 5: 스토리 소개 (스토리/캐릭터 내용 자체는 아직 한국어 콘텐츠만 있음 — 별도 콘텐츠 번역 작업 필요) -->
@@ -658,14 +689,13 @@
 
   <!-- 화면 7: 마이페이지 -->
   <div class="screen" id="screen-mypage">
-    <header><button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-charlist')">←</button><h1 data-i18n="mypageHeader">마이페이지</h1></header>
+    <header><button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-charlist')">←</button><h1 data-i18n="mypageHeader">마이페이지</h1><button type="button" class="coin-chip" onclick="goTo('screen-coin')"><span data-i18n="mypageLabelCoins">코인</span> <b>—</b></button></header>
     <div class="mypage-row"><span data-i18n="mypageLabelName">이름</span><b id="my-name">-</b></div>
     <div class="mypage-row"><span data-i18n="mypageLabelCoins">코인 잔액</span><b id="my-coins">0개</b></div>
     <div class="mypage-row"><span data-i18n="mypageLabelSubscription">구독 상태</span><b id="my-subscription">-</b></div>
     <div class="mypage-row"><span data-i18n="mypageLabelFreeQuota">오늘 무료 대화</span><b id="my-free-quota">-</b></div>
     <div class="pad" style="padding-bottom:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-profile')" data-i18n="mypageEditProfileBtn">내 정보 수정</button>
-      <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="goTo('screen-album')" data-i18n="mypageAlbumBtn">인연 앨범 보기</button>
       <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="logout()" data-i18n="mypageLogoutBtn">로그아웃</button>
       <button type="button" onclick="deleteAccount()" style="display:block; width:100%; margin-top:14px; background:none; border:none; color:var(--faint); font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-decoration:underline; cursor:pointer;" data-i18n="mypageDeleteAccountBtn">회원탈퇴</button>
     </div>
@@ -676,7 +706,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.11</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.13</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -685,15 +715,12 @@
 
   <!-- 화면: 인연 앨범 (완성된 인연들 — 슬롯 제한과 무관하게 언제든 다시 들어가 대화할 수 있음) -->
   <div class="screen" id="screen-album">
-    <header><button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-mypage')">←</button><h1 data-i18n="albumHeader">인연 앨범</h1></header>
+    <header><button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-charlist')">←</button><h1 data-i18n="albumHeader">인연 앨범</h1><button type="button" class="coin-chip" onclick="goTo('screen-coin')"><span data-i18n="mypageLabelCoins">코인</span> <b>—</b></button></header>
     <div class="pad" style="padding-bottom:0;">
       <div id="album-list"></div>
       <div id="album-empty" style="font-size:12px; color:var(--text-faint); padding:12px 4px; display:none;" data-i18n="albumEmpty">아직 완성된 인연이 없어요. 진심을 다해 마음을 얻어보세요.</div>
     </div>
     <div style="flex:1;"></div>
-    <div class="pad" style="padding-top:0;">
-      <button class="btn secondary" style="width:100%;" onclick="goTo('screen-mypage')" data-i18n="albumBackBtn">마이페이지</button>
-    </div>
   </div>
 
   <!-- 화면 8: 코인 충전 -->
@@ -886,6 +913,14 @@ const I18N = {
     mypageStatusCompleted: '인연 완성 (인연 앨범)',
     mypageStatusFailed: '다시 만날 때를 기다리는 중',
     mypageResetBtn: '처음부터 다시 시작',
+    mypageNoStories: '아직 시작한 인연이 없어요. 목록에서 첫 인연을 만나보세요.',
+    tabConnections: '인연', tabAlbum: '앨범', tabMe: '내 정보',
+    contSectionTitle: '이어하기',
+    contGoBtn: '대화 ▸',
+    contNewSection: '새 인연',
+    timeJustNow: '방금',
+    timeHoursAgo: '{n}시간 전',
+    timeDaysAgo: '{n}일 전',
     mypageResetDoneAlert: '초기화됐어요. 다시 처음부터 대화할 수 있어요.',
     coinHeader: '코인 충전',
     coin100Label: '100코인', coin550Label: '550코인', coin1200Label: '1200코인',
@@ -1040,6 +1075,14 @@ const I18N = {
     mypageStatusCompleted: 'Completed (in Album)',
     mypageStatusFailed: 'Waiting to meet again',
     mypageResetBtn: 'Start over from the beginning',
+    mypageNoStories: 'No connections started yet. Meet your first one from the list.',
+    tabConnections: 'Connections', tabAlbum: 'Album', tabMe: 'Me',
+    contSectionTitle: 'Continue',
+    contGoBtn: 'Chat ▸',
+    contNewSection: 'New connections',
+    timeJustNow: 'just now',
+    timeHoursAgo: '{n}h ago',
+    timeDaysAgo: '{n}d ago',
     mypageResetDoneAlert: 'Reset complete. You can start over from the beginning.',
     coinHeader: 'Buy Coins',
     coin100Label: '100 coins', coin550Label: '550 coins', coin1200Label: '1200 coins',
@@ -1194,6 +1237,14 @@ const I18N = {
     mypageStatusCompleted: '縁が完成(縁アルバムへ)',
     mypageStatusFailed: 'また会える日を待っています',
     mypageResetBtn: '最初からやり直す',
+    mypageNoStories: 'まだ始めた縁がありません。リストから最初の縁に出会ってみてください。',
+    tabConnections: '縁', tabAlbum: 'アルバム', tabMe: 'マイ',
+    contSectionTitle: '続きから',
+    contGoBtn: '会話 ▸',
+    contNewSection: '新しい縁',
+    timeJustNow: 'たった今',
+    timeHoursAgo: '{n}時間前',
+    timeDaysAgo: '{n}日前',
     mypageResetDoneAlert: 'リセットしました。最初からもう一度お楽しみいただけます。',
     coinHeader: 'コインチャージ',
     coin100Label: '100コイン', coin550Label: '550コイン', coin1200Label: '1200コイン',
@@ -1322,6 +1373,25 @@ let currentUid = null;
 let screenHistory = [];
 const NON_HISTORY_SCREENS = new Set(['screen-travel']);
 
+// 탭바는 3개 화면(인연/앨범/내 정보)에서만 보인다. 대화·소개·결제 화면에서는 숨겨서 몰입을 지킨다.
+const TAB_SCREENS = { 'screen-charlist': 'tab-conn', 'screen-album': 'tab-album', 'screen-mypage': 'tab-me' };
+function updateTabbar(screenId) {
+  const bar = document.getElementById('tabbar');
+  if (!bar) return;
+  const active = TAB_SCREENS[screenId];
+  bar.classList.toggle('on', !!active);
+  bar.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.id === active));
+  if (active) updateCoinChips();
+}
+// 화면 상단 코인 칩들을 최신 잔액으로 채운다. 실패해도 화면 전환을 막지 않는다.
+async function updateCoinChips() {
+  try {
+    if (!currentUid) return;
+    const meta = await getBillingMeta();
+    document.querySelectorAll('.coin-chip b').forEach(el => { el.textContent = meta.coins; });
+  } catch (e) {}
+}
+
 function goTo(screenId, opts) {
   opts = opts || {};
   const current = document.querySelector('.screen.active');
@@ -1340,6 +1410,7 @@ function goTo(screenId, opts) {
     if (backEl) backEl.style.display = isProfileEditMode ? '' : 'none';
     if (isProfileEditMode) prefillProfileForm();
   }
+  updateTabbar(screenId);
   if (screenId === 'screen-coin') { renderCoinScreen(); markFunnel('viewedCoinScreen'); }
   if (screenId === 'screen-mypage') renderMypage();
   if (screenId === 'screen-charlist') renderStoryList();
@@ -1474,7 +1545,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.11';
+window.__BUILD = 'v2026-08-24.13';
 window.addEventListener('error', (e) => {
   const where = (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
   logClientError('error', where);
@@ -2976,6 +3047,46 @@ function tierClass(tier) {
 // 슬롯(동시 진행 5개 제한) 상태를 스토리 목록 화면에서도 미리 알 수 있도록, 진행 중인 인연 개수와
 // 이미 시작된 스토리 id 목록을 한 번의 Firestore 조회로 함께 구해온다. (형균님 UI/UX QA 32일차 —
 // 슬롯 상태가 마이페이지에만 작은 글씨로 있고 스토리 목록에는 전혀 안 보이던 문제를 여기서 해결한다.)
+// 62일차 UI 개편: 진행 중인 대화를 목록 맨 위에서 한 번에 이어간다 (소개 화면 생략).
+function relTimeText(ms) {
+  if (!ms) return '';
+  const diff = Date.now() - ms;
+  const h = Math.floor(diff / 3600000);
+  if (h < 1) return t('timeJustNow');
+  if (h < 24) return fill(t('timeHoursAgo'), { n: h });
+  return fill(t('timeDaysAgo'), { n: Math.floor(h / 24) });
+}
+function renderContinueSection(statusById, metaById) {
+  const box = document.getElementById('story-continue');
+  if (!box) return;
+  box.innerHTML = '';
+  const nl = document.getElementById('newlist-label');
+  const ids = Object.keys(statusById)
+    .filter(id => statusById[id] === 'active' && STORIES[id] && STORIES[id].playable)
+    .sort((a, b) => ((metaById[b] || {}).last || 0) - ((metaById[a] || {}).last || 0));
+  if (nl) nl.style.display = ids.length ? '' : 'none';
+  if (!ids.length) return;
+  const label = document.createElement('div');
+  label.className = 'sect-label';
+  label.textContent = t('contSectionTitle');
+  box.appendChild(label);
+  ids.forEach(id => {
+    const story = localizeStory(STORIES[id], id);
+    const m = metaById[id] || {};
+    const card = document.createElement('div');
+    card.className = 'cont-card';
+    const key = story.cast[0].key;
+    const av = AVATAR_IMAGE[key]
+      ? `<img src="${AVATAR_IMAGE[key]}" alt="" loading="lazy">`
+      : `<span class="cc-av">${story.title.slice(0, 1)}</span>`;
+    const need = requiredArcsFor(story);
+    const arcPart = m.cleared ? ` · ${t('chatStatArcs')} ${Math.min(m.cleared, need)}/${need}` : '';
+    card.innerHTML = `${av}<div><div class="cc-name">${story.title}</div><div class="cc-sub">${relTimeText(m.last)}${arcPart}</div></div><span class="cc-go">${t('contGoBtn')}</span>`;
+    card.addEventListener('click', () => enterChat(id));
+    box.appendChild(card);
+  });
+}
+
 async function getStorySlotStatus() {
   if (!currentUid) return { activeCount: 0, startedIds: new Set(), statusById: {} };
   const snap = await db.collection('players').doc(currentUid).collection('storyStates').get();
@@ -2984,15 +3095,18 @@ async function getStorySlotStatus() {
   // 46일차: 스토리 카드에 "진행중" 배지를 붙이려면 단순히 "시작했는지"뿐 아니라
   // "지금도 진행 중(active)인지, 이미 완료/실패로 끝났는지"까지 구분해야 해서 상태를 함께 담아둔다.
   const statusById = {};
+  const metaById = {};   // 이어하기 카드용: 마지막 대화 시각·함께 넘긴 아크 수
   snap.forEach(doc => {
     startedIds.add(doc.id);
     const story = STORIES[doc.id];
     if (story && story.isEventStory) return;
-    const status = doc.data().collectionStatus || 'active';
+    const d = doc.data();
+    const status = d.collectionStatus || 'active';
     statusById[doc.id] = status;
+    metaById[doc.id] = { last: d.lastTurnAt || 0, cleared: (d.arcState && d.arcState.clearedArcs) || 0 };
     if (status === 'active') count++;
   });
-  return { activeCount: count, startedIds, statusById };
+  return { activeCount: count, startedIds, statusById, metaById };
 }
 
 // 56일차 C03: 목록 검색·필터 상태. 화면을 벗어나면 초기화된다(저장하지 않는다).
@@ -3036,7 +3150,8 @@ async function renderStoryList() {
   // 원하는 쪽 캐릭터만 골라 볼 수 있다. "모두"를 고른 경우(또는 기존 유저처럼 아직
   // 선호값이 없는 경우)는 전체 스토리를 그대로 보여준다.
   const interest = (playerProfile && playerProfile.interest) || '모두';
-  const { activeCount, startedIds, statusById } = await getStorySlotStatus();
+  const { activeCount, startedIds, statusById, metaById } = await getStorySlotStatus();
+  renderContinueSection(statusById, metaById);
   if (myRun !== __storyListRun) return;   // 더 최신 렌더가 시작됐다면 이번 결과는 버린다
   container.innerHTML = '';
   const slotEl = $('charlist-slot-status');
@@ -3082,6 +3197,8 @@ async function renderStoryList() {
     // 46일차: 이미 시작했고(브랜드뉴가 아니고) 아직 완료/실패로 끝나지 않은(collectionStatus==='active')
     // 스토리에만 "진행중" 배지를 붙인다 — 완료/실패 스토리나 아직 시작 안 한 스토리에는 붙이지 않는다.
     const inProgress = !isBrandNew && statusById[id] === 'active';
+    // 62일차 UI 개편: 진행 중인 스토리는 위 '이어하기' 섹션에 있으므로 본 목록에서는 뺀다.
+    if (inProgress) return;
     // 55일차 B13: 실패한 인연은 예전엔 아무 표시가 없어서 유저가 버그로 오해할 여지가 있었다.
     // 정확한 카운트다운은 일부러 두지 않되(세계관상 "시간이 흐른 뒤"), 상태는 알아볼 수 있게 한다.
     const waiting = !isBrandNew && statusById[id] === 'failed';
@@ -5599,6 +5716,9 @@ async function renderMypage() {
     const saved = snap.exists ? snap.data() : null;
     const status = saved ? (saved.collectionStatus || 'active') : null;
     if (status === 'active' && !story.isEventStory) activeSlotCount++;
+    // 62일차 형균님 지적: 대화한 적 없는 스토리까지 30개 전부 나열할 필요가 없다.
+    // 진행 기록이 있는 스토리만 보여준다 (초기화 버튼도 어차피 저장이 있어야 뜬다).
+    if (!saved) continue;
     const block = document.createElement('div');
     block.className = 'mypage-story-block';
     let rows = '';
@@ -5629,6 +5749,12 @@ async function renderMypage() {
     blocks.push(block);
   }
   container.innerHTML = '';
+  if (!blocks.length) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'padding: 8px 16px 16px; font-size: 12.5px; color: var(--faint);';
+    empty.textContent = t('mypageNoStories');
+    container.appendChild(empty);
+  }
   blocks.forEach(b => container.appendChild(b));
   $('mypage-slot-status').textContent = `${t('mypageSlotStatusPrefix')}${activeSlotCount} / ${MAX_STORY_SLOTS}`;
 }
