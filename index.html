@@ -713,7 +713,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.18</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.19</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1552,7 +1552,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.18';
+window.__BUILD = 'v2026-08-24.19';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -1613,7 +1613,7 @@ async function qaPlayerMessage(persona) {
   const recent = qaTranscript(Math.max(0, state.history.length - 8));
   const cs = state.chars[currentStory.cast[0].key] || {};
   const out = await qaCallGemini(
-    QA_PERSONAS[persona] + ' 아래 연애 시뮬레이션 대화의 다음 플레이어 대사를 만들어라. 한두 문장, 자연스럽게. 필요하면 *별표*로 행동 묘사를 섞어도 된다. 직전에 했던 말을 되풀이하지 마라.',
+    QA_PERSONAS[persona] + ' 너의 최종 목표는 상대와 실제 연인이 되고 관계를 깊게 만드는 것이다. 분위기가 무르익었으면 마음을 표현하거나 고백하고, 연인이 된 뒤에는 함께 겪는 일들에 성실하게 반응해라. 아래 연애 시뮬레이션 대화의 다음 플레이어 대사를 만들어라. 한두 문장, 자연스럽게. 필요하면 *별표*로 행동 묘사를 섞어도 된다. 직전에 했던 말을 되풀이하지 마라.',
     '[지금까지 대화 끝부분]\n' + recent + '\n\n[현재 관계] 호감 ' + (cs.affection || 0) + ', 신뢰 ' + (cs.trust || 0) + ', 단계 ' + (cs.stage || 1),
     { type: 'OBJECT', properties: { message: { type: 'STRING' } }, required: ['message'] }, 200);
   return String(out.message || '').slice(0, 300);
@@ -4605,15 +4605,22 @@ ${factLedger.map(f => `- ${f}`).join('\n')}` : '';
       { re: /(붉어|빨개|달아오|귓불|귀 끝|귀가 빨)/, label: '얼굴·귀가 붉어지는 묘사' },
       { re: /(빨리|어서|얼른).{0,14}(하자|가자|타|해라|움직|와)/, label: '"빨리 ~하자"식 재촉으로 끝맺기' },
       { re: /(는 무슨|은 무슨)/, label: '"~는 무슨"식 일축 문형' },
-      { re: /(퉁명|톡 쏘|쏘아붙)/, label: '퉁명스럽게 쏘아붙이는 도입' }
+      { re: /(퉁명|톡 쏘|쏘아붙)/, label: '퉁명스럽게 쏘아붙이는 도입' },
+      { re: /입으로는/, label: '"입으로는 ~면서도" 문형' },
+      { re: /피식/, label: '"피식" 웃음 묘사' },
+      { re: /(옷깃|코트 깃|소매|머리칼).{0,8}(매만|만지작|쓸어넘)/, label: '옷깃·소매를 만지작거리는 묘사' }
     ];
     const hits = PATTERNS.filter(p => texts.filter(t => p.re.test(t)).length >= 2).map(p => p.label);
     if (!hits.length) return '';
     return `\n- **이번 턴 금지 표현**: 최근 턴에서 다음 표현·구조가 반복돼 유저가 지루함을 느끼는 상태다 — ${hits.join(' / ')}. 이번 턴에는 이것들을 전부 피하고 완전히 다른 결의 반응(순순히 인정, 웃음이 먼저 터짐, 잠깐의 진심 어린 침묵, 오히려 먼저 장난 걸기 등)을 골라라.`;
   })();
-  const turnVariableBlock = (factLedgerBlock || rivalTriggerNote || repetitionNote)
+  // 연인 직전 상태가 4턴 이상 이어지면, 이번 턴에 인물이 직접 관계를 확정하도록 지시한다.
+  const confessNote = (state && (state.ripeTurns || 0) >= 4)
+    ? `\n- **이번 턴 지시 (관계 확정)**: 호감과 신뢰가 이미 깊은데 ${state.ripeTurns}턴째 관계가 확정되지 않고 있다. 이번 턴에서 인물이 자기 성격대로 — 돌려 말하든, 정면으로 묻든 — 마음을 확인하거나 고백하는 흐름을 실제로 시작해라. 유저가 긍정하면 그 턴의 stage_suggestion을 3으로 올린다.`
+    : '';
+  const turnVariableBlock = (factLedgerBlock || rivalTriggerNote || repetitionNote || confessNote)
     ? `
-[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${factLedgerBlock}${rivalTriggerNote}${repetitionNote}`
+[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${factLedgerBlock}${rivalTriggerNote}${repetitionNote}${confessNote}`
     : '';
   const castBlock = story.cast.map(c => `
 [캐릭터: ${c.name} (speaker 값: "${c.key}")]
@@ -4776,6 +4783,9 @@ ${playerRelationRules}
 - 1단계 (처음 만난 사이): 가벼운 스몰토크, 자연스러운 호기심. 과도한 감정 개입 금지.
 - 2단계 (썸/친해지는 중): 점점 편해지고 장난과 다정함이 섞임.
 - 3단계 (연인/깊은 사랑): 깊은 위로와 애정 표현, 서로의 감정을 세심하게 챙김.
+- **매우 중요 (단계는 올라가야 한다 — stage_suggestion 기준)**: 서로 편해지고 사적인 이야기가 오가기 시작하면 1→2로 올린다. **서로의 마음을 확인하는 확정의 순간**(고백을 받아들이는 장면, "우리 사귀는 거야?"에 긍정하는 장면)이 실제로 일어난 턴에는 반드시 2→3으로 올린다. 그 순간이 지났는데도 계속 2로 두면 안 된다.
+- **매우 중요 (인물이 먼저 고백할 수도 있다)**: 호감과 신뢰가 이미 충분히 깊은데(대략 둘 다 45 이상) 유저가 고백하지 않은 채 여러 턴이 흐르고 있다면, 관계를 제자리에 맴돌게 두지 마라. 인물의 성격대로 — 돌려 말하든, 취한 김에 흘리든, 정면으로 묻든 — **인물 쪽에서 마음을 확인하려 하거나 고백하는 장면**을 만들어라.
+- **수치 관리**: 호감·신뢰가 이미 매우 높은 상태(80 이상)라면, 평범하게 좋은 대화에는 delta를 0으로 둔다. 수치는 특별한 순간에만 움직여야 의미가 있다.
 
 [성격(MBTI) 기반 반응 원칙 - 인물별로 각자의 MBTI에 맞게 적용, 절대 모든 인물을 똑같이 반응시키지 말 것]
 각 인물의 MBTI 첫 글자(E/I)와 세 번째 글자(T/F)를 참고해서, 아래 두 상황에서 인물마다 다르게 반응한다.
@@ -5562,6 +5572,12 @@ async function runTurn(text, opts) {
       }
     });
 
+    // 62일차 QA: 호감·신뢰 100까지 갔는데 100턴 내내 2단계(아크 0개)였던 문제.
+    // 연인 직전 조건이 이어진 턴 수를 세서, 오래 제자리면 다음 턴 프롬프트가 확정을 지시한다.
+    const ripe = currentStory.cast.some(c => c.completionRequired !== false
+      && state.chars[c.key] && state.chars[c.key].stage === 2
+      && state.chars[c.key].affection >= 45 && state.chars[c.key].trust >= 45);
+    state.ripeTurns = ripe ? (state.ripeTurns || 0) + 1 : 0;
     if (deltaNotes.length) addDeltaNote(deltaNotes);
     stageShifts.forEach(addStageShift);
 
