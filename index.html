@@ -561,7 +561,12 @@
   .cont-card .cc-go { margin-left: auto; color: var(--brass); font-size: var(--t-sm); white-space: nowrap; }
   /* 62일차 달빛 랜딩 — 사진 히어로 + 떠 있는 기억 카드. hero.jpg가 아직 없으면 그라데이션만 보인다 */
   #screen-landing { position: relative; overflow: hidden; justify-content: flex-end; }
-  .hero-bg { position: absolute; inset: 0; background: url('images/hero.jpg') center 30% / cover no-repeat,
+  /* 62일차: 히어로 이미지는 세 이름 중 무엇이든 받는다 — 형균님 업로드가 hero.jpg.png로 올라간 실사례.
+     여러 겹 배경이라 없는 파일은 투명하게 넘어가고 있는 것이 보인다. */
+  .hero-bg { position: absolute; inset: 0; background:
+    url('images/hero.jpg') center 30% / cover no-repeat,
+    url('images/hero.jpg.png') center 30% / cover no-repeat,
+    url('images/hero.png') center 30% / cover no-repeat,
     radial-gradient(800px 500px at 75% 20%, rgba(140,118,210,.25), transparent 60%), var(--ink); }
   .hero-scrim { position: absolute; inset: 0; background:
     linear-gradient(90deg, rgba(6,8,17,.92) 0%, rgba(6,8,17,.55) 45%, rgba(6,8,17,.15) 75%, rgba(6,8,17,.45) 100%),
@@ -813,7 +818,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.24</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.25</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1679,7 +1684,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.24';
+window.__BUILD = 'v2026-08-24.25';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
