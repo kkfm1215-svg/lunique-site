@@ -1458,12 +1458,28 @@ function logClientError(kind, message) {
 }
 
 window.addEventListener('error', (e) => {
-  logClientError('error', (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || ''));
+  const where = (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
+  logClientError('error', where);
+  releaseStuckTurn(e.message || 'error');
 });
 window.addEventListener('unhandledrejection', (e) => {
   const r = e.reason;
-  logClientError('promise', (r && (r.message || r.code)) || r || 'unknown');
+  const msg = (r && (r.message || r.code)) || r || 'unknown';
+  logClientError('promise', msg);
+  releaseStuckTurn(msg);
 });
+
+// 62일차: runTurn의 try 블록 '바깥'에서 예외가 터지면 catch도 finally도 돌지 않아서,
+// isSending이 true로 남고 입력·자동진행·대사추천이 전부 막힌 채 90초 뒤 감시 타이머만 떴다.
+// (실제로 result를 만들기 전에 result.blocked를 읽는 코드가 그 자리에 있어 매 턴 터졌다.)
+// 어떤 경로로 새어 나오든 즉시 풀어주고 이유를 화면에 보여준다 — 조용히 멈추는 것이 가장 나쁘다.
+function releaseStuckTurn(msg) {
+  if (typeof isSending === 'undefined' || !isSending) return;
+  try { clearTimeout(__turnWatchdog); } catch (e) {}
+  isSending = false;
+  try { setControlsDisabled(false); } catch (e) {}
+  try { addSys(t('chatErrorPrefix') + msg); } catch (e) {}
+}
 
 // B18 — [절대 규칙]을 알면서 우회하려는 시도가 반복되면 단계적으로 알린다.
 // 1~2회는 조용히 세기만 하고, 3회째에 한 번 알리고, 5회 이상이면 분명하게 경고한다.
@@ -4932,37 +4948,6 @@ async function runTurn(text, opts) {
     // 60일차에 다른 저장들은 noHang으로 감쌌는데 여기만 빠져 있었다. 이 저장이 안 끝나면
     // 유저 말풍선만 그려진 채로 AI 호출까지 가지 못하고, 90초 뒤 멈춤 안내만 뜬다.
     await noHang(persist());
-    // 62일차 B17: 안전 필터에 막혀 아무 내용도 못 받았으면, 유저에게 이유를 알리고
-    // 이번 턴은 없던 것으로 한다(횟수·코인을 차감하지 않는다 — 유저 잘못이 아닐 수도 있으므로).
-    if (result.blocked) {
-      typingBubble.remove();
-      addSys(t('chatBlockedNotice'));
-      logClientError('blocked', result.blocked);
-      return;
-    }
-    if (state) {
-      state.lastTurnAt = Date.now();   // 58일차: 다음 턴에 경과 시간을 계산하려면 필요
-      // 59일차: 이번 턴에 "지금 일어날 때"라고 알려준 일들은 실제로 다뤄졌으므로 목록에서 뺀다.
-      if (__dueThisTurn.length && Array.isArray(state.scheduledEvents)) {
-        state.scheduledEvents = state.scheduledEvents.filter(e => !__dueThisTurn.includes(e));
-        __dueThisTurn = [];
-      }
-      // 이번 턴에 새로 정해진 일정을 등록한다.
-      if (!Array.isArray(state.scheduledEvents)) state.scheduledEvents = [];
-      (result.scheduled_events || []).forEach(ev => {
-        const what = String((ev && ev.what) || '').trim().slice(0, 60);
-        if (!what) return;
-        if (state.scheduledEvents.some(x => x.what === what)) return;   // 같은 일을 두 번 담지 않는다
-        let days = parseInt(ev.in_days, 10);
-        if (!isFinite(days) || days < 0) days = 0;
-        if (days > 60) days = 60;   // 너무 먼 미래는 의미가 없다
-        state.scheduledEvents.push({ what, dueAt: Date.now() + days * 24 * 60 * 60 * 1000 });
-      });
-      while (state.scheduledEvents.length > 6) state.scheduledEvents.shift();
-    }
-    markFunnel('sentFirstMessage');
-    bumpMessageCount();
-    if (quotaCheck) { await noHang(consumeQuota(quotaCheck)); renderBillingSnippet('chat-billing-status'); } // 무료 횟수 차감 또는 코인 차감 (구독 중이면 아무 일도 안 함) 후 잔여량 표시 갱신
   }
 
   const typingBubble = addSys('...');
@@ -5002,6 +4987,42 @@ async function runTurn(text, opts) {
       renderBeat(sceneCard, beat, currentStory);
       $('chat').scrollTop = $('chat').scrollHeight;
     });
+
+    // 62일차 B17: 안전 필터에 막혀 아무 내용도 못 받았으면, 유저에게 이유를 알리고
+    // 이번 턴은 없던 것으로 한다(횟수·코인을 차감하지 않는다 — 유저 잘못이 아닐 수도 있으므로).
+    if (result.blocked) {
+      typingBubble.remove();
+      addSys(t('chatBlockedNotice'));
+      logClientError('blocked', result.blocked);
+      return;
+    }
+
+    // 아래는 이번 턴의 응답(result)을 반영하는 처리다. 재시도 턴에서는 이미 처리했으므로 건너뛴다.
+    if (!isRetry) {
+      if (state) {
+        state.lastTurnAt = Date.now();   // 58일차: 다음 턴에 경과 시간을 계산하려면 필요
+        // 59일차: 이번 턴에 "지금 일어날 때"라고 알려준 일들은 실제로 다뤄졌으므로 목록에서 뺀다.
+        if (__dueThisTurn.length && Array.isArray(state.scheduledEvents)) {
+          state.scheduledEvents = state.scheduledEvents.filter(e => !__dueThisTurn.includes(e));
+          __dueThisTurn = [];
+        }
+        // 이번 턴에 새로 정해진 일정을 등록한다.
+        if (!Array.isArray(state.scheduledEvents)) state.scheduledEvents = [];
+        (result.scheduled_events || []).forEach(ev => {
+          const what = String((ev && ev.what) || '').trim().slice(0, 60);
+          if (!what) return;
+          if (state.scheduledEvents.some(x => x.what === what)) return;   // 같은 일을 두 번 담지 않는다
+          let days = parseInt(ev.in_days, 10);
+          if (!isFinite(days) || days < 0) days = 0;
+          if (days > 60) days = 60;   // 너무 먼 미래는 의미가 없다
+          state.scheduledEvents.push({ what, dueAt: Date.now() + days * 24 * 60 * 60 * 1000 });
+        });
+        while (state.scheduledEvents.length > 6) state.scheduledEvents.shift();
+      }
+      markFunnel('sentFirstMessage');
+      bumpMessageCount();
+      if (quotaCheck) { await noHang(consumeQuota(quotaCheck)); renderBillingSnippet('chat-billing-status'); } // 무료 횟수 차감 또는 코인 차감 (구독 중이면 아무 일도 안 함) 후 잔여량 표시 갱신
+    }
 
     if (!charTurn) {
       // beat 콜백이 한 번도 안 불렸을 경우(아주 예외적인 상황) 최종 결과로 한 번에 렌더
