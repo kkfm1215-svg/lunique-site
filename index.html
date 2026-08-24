@@ -713,7 +713,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.17</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-24.18</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1552,7 +1552,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-24.17';
+window.__BUILD = 'v2026-08-24.18';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -1590,6 +1590,25 @@ function qaTranscript(fromIdx) {
   }).join('\n');
 }
 
+// Google 무료 등급은 분당 요청 수 제한이 있어서(429), QA처럼 빠르게 두드리면 걸린다.
+// 걸리면 오류로 처리하지 말고 기다렸다가 같은 요청을 다시 보낸다.
+const QA_RATE_WAIT_MS = 45000;
+const QA_TURN_DELAY_MS = 5000;   // 턴 사이 간격 — 무료 등급 한도(분당 15회) 아래로 유지
+async function qaCallWithRetry(fn, bar) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try { return await fn(); }
+    catch (e) {
+      const msg = String(e && e.message || e);
+      if (attempt < 2 && (msg.includes('429') || msg.includes('quota') || msg.includes('JSON'))) {
+        if (bar) bar.textContent += '  — 한도 대기 ' + (QA_RATE_WAIT_MS/1000) + '초';
+        await new Promise(r => setTimeout(r, QA_RATE_WAIT_MS));
+        continue;
+      }
+      throw e;
+    }
+  }
+}
+
 async function qaPlayerMessage(persona) {
   const recent = qaTranscript(Math.max(0, state.history.length - 8));
   const cs = state.chars[currentStory.cast[0].key] || {};
@@ -1611,9 +1630,18 @@ async function startAutoQA(turns, persona) {
   for (let i = 1; i <= turns; i++) {
     if (!__qaRunning) break;
     try {
-      const msg = await qaPlayerMessage(persona);
+      const msg = await qaCallWithRetry(() => qaPlayerMessage(persona), bar);
       if (!__qaRunning) break;
+      // runTurn은 오류를 스스로 삼키므로(화면에 표시), 성공 여부는 기록이 2줄(유저+응답)
+      // 늘었는지로 판단한다. 응답이 없으면 속도 제한으로 보고 기다렸다가 같은 턴을 재시도.
+      const h0 = state.history.length;
       await runTurn(msg, { quotaCheck: null });   // QA는 무료 횟수·코인을 소모하지 않는다
+      for (let retry = 0; retry < 2 && state.history.length < h0 + 2 && __qaRunning; retry++) {
+        if (bar) bar.textContent = i + ' / ' + turns + '  — 한도 대기 ' + (QA_RATE_WAIT_MS/1000) + '초 후 재시도';
+        await new Promise(r => setTimeout(r, QA_RATE_WAIT_MS));
+        await runTurn(msg, { isRetry: true, quotaCheck: null });
+      }
+      if (state.history.length < h0 + 2) { __qaLog.push({ turn: i, error: 'turn-failed' }); continue; }
       const cs = state.chars[currentStory.cast[0].key] || {};
       __qaLog.push({ turn: i, aff: cs.affection, trust: cs.trust, stage: cs.stage, arcs: (state.arcState && state.arcState.clearedArcs) || 0 });
       if (bar) bar.textContent = i + ' / ' + turns + '  (호감 ' + cs.affection + ' · 신뢰 ' + cs.trust + ' · 단계 ' + cs.stage + ')';
@@ -1622,7 +1650,7 @@ async function startAutoQA(turns, persona) {
       __qaLog.push({ turn: i, error: e.message });
       await new Promise(r => setTimeout(r, 3000));
     }
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, QA_TURN_DELAY_MS));
   }
   __qaRunning = false;
   if (btn) btn.textContent = '시작';
