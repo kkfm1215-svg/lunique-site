@@ -3226,8 +3226,30 @@ function noHang(promise, ms) {
   ]);
 }
 
+// 되돌리기용 스냅샷(beforeState)은 유저 턴마다 하나씩 쌓인다. 하나하나는 작지만
+// chars + factLedger(최대 40문장) + arcState가 통째로 들어있어서, 대화가 길어지면
+// 이게 저장 문서 크기의 대부분을 차지한다. Firestore는 문서 하나가 1MB를 넘으면 저장이 안 되고,
+// 그 저장을 기다리던 턴이 영영 끝나지 않아 대화가 멈춘다(62일차 지아 스토리에서 실제로 발생).
+// 수십 턴 전으로 되돌리는 경우는 없으므로 최근 것만 남기고 버린다.
+const REWIND_SNAPSHOT_KEEP = 10;
+function prunePersistState() {
+  const h = (state && state.history) || [];
+  let kept = 0;
+  for (let i = h.length - 1; i >= 0; i--) {
+    if (!h[i] || h[i].role !== 'user' || !h[i].beforeState) continue;
+    kept++;
+    if (kept > REWIND_SNAPSHOT_KEEP) delete h[i].beforeState;
+  }
+}
+
 async function persist() {
   if (!currentStoryId || !currentUid) return;
+  prunePersistState();
+  // 크기가 한계에 가까워지면 기록에 남긴다 — 다음에 같은 일이 생겼을 때 원인을 바로 알 수 있도록.
+  try {
+    const size = JSON.stringify(state).length;
+    if (size > 700000) logClientError('persist-size', currentStoryId + ' ' + size);
+  } catch (e) {}
   await storyDocRef(currentStoryId).set(state);
 }
 
@@ -3359,7 +3381,9 @@ function addTurn(text, role, historyIndex) {
   const turn = document.createElement('div');
   turn.className = 'turn ' + (role === 'user' ? 'turn-player' : 'turn-char');
   renderMixedText(turn, text);
-  if (role === 'user' && typeof historyIndex === 'number') {
+  // 스냅샷이 정리된 옛 턴은 되돌릴 수 없으므로 버튼도 달지 않는다(눌러도 아무 일이 안 일어나던 것).
+  const hasSnapshot = state && state.history && state.history[historyIndex] && state.history[historyIndex].beforeState;
+  if (role === 'user' && typeof historyIndex === 'number' && hasSnapshot) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'turn-rewind-btn';
@@ -3570,7 +3594,7 @@ async function rewindToTurn(historyIndex) {
   currentStory = localizeStory(Object.assign({}, baseStory, { cast: JSON.parse(JSON.stringify(baseStory.cast)).concat(state.dynamicCast) }), currentStoryId);
   state.history = state.history.slice(0, historyIndex);
   resetLastKnownSpeaker();
-  await persist();
+  await noHang(persist());
   renderStats();
   renderHistory();
   clearSuggestions();
@@ -4905,7 +4929,9 @@ async function runTurn(text, opts) {
       state.history.push({ role: 'user', text, beforeState: snapshotState() });
       addTurn(text, 'user', historyIndex);
     }
-    await persist();
+    // 60일차에 다른 저장들은 noHang으로 감쌌는데 여기만 빠져 있었다. 이 저장이 안 끝나면
+    // 유저 말풍선만 그려진 채로 AI 호출까지 가지 못하고, 90초 뒤 멈춤 안내만 뜬다.
+    await noHang(persist());
     // 62일차 B17: 안전 필터에 막혀 아무 내용도 못 받았으면, 유저에게 이유를 알리고
     // 이번 턴은 없던 것으로 한다(횟수·코인을 차감하지 않는다 — 유저 잘못이 아닐 수도 있으므로).
     if (result.blocked) {
@@ -5324,7 +5350,7 @@ async function enterChat(storyId) {
     const beats = currentStory.openingBeats(nameTag);
     addCharTurn(beats, currentStory, true);
     state.history.push({ role: 'model', beats, isOpening: true });
-    await persist();
+    await noHang(persist());
   } else {
     renderHistory();
   }
@@ -5357,7 +5383,7 @@ async function tryReuniteIfEligible() {
   state.failedAt = null;
   state.failedLockoutDays = null;
   setControlsDisabled(false);
-  await persist();
+  await noHang(persist());
   renderStats();
   runTurn(REUNION_MARKER, { quotaCheck: null, addUserTurn: false });
 }
