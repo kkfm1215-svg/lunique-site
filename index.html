@@ -849,7 +849,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-25.2</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-25.3</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -986,6 +986,9 @@ const I18N = {
     stageShiftClose: '가까워지는 중', stageShiftCloseDesc: '이제 서로가 조금 편해졌다.',
     stageShiftLover: '연인', stageShiftLoverDesc: '마침내, 서로의 마음이 닿았다.',
     stageShiftDown: '멀어지는 중', stageShiftDownDesc: '무언가 어긋나기 시작했다.',
+    stageShiftDeep: '깊은 사랑', stageShiftDeepDesc: '이제, 서로가 서로의 유일한 자리가 되었다.',
+    stageName1: '닫힌 마음', stageName2: '흥미', stageName3: '흔들림', stageName4: '연인', stageName5: '깊은 사랑',
+    mainClearedNotice: '이 이야기의 첫 매듭이 풀렸다. 이제, 두 사람의 진짜 시간이 시작된다.',
     mypageStage1: '처음 만난 사이', mypageStage2: '가까워지는 중', mypageStage3: '연인',
     chatStatAffection: '호감', chatStatTrust: '신뢰', chatStatArcs: '함께 넘긴 일',
     chatRailTitle: '인연 기록', chatRailUpcoming: '다가오는 일', chatRailMemory: '기억', chatRailToday: '오늘', chatRailInDays: '{n}일 뒤',
@@ -1167,6 +1170,9 @@ const I18N = {
     stageShiftClose: 'Growing closer', stageShiftCloseDesc: 'Things feel easier between you now.',
     stageShiftLover: 'Together', stageShiftLoverDesc: 'At last, your feelings reach each other.',
     stageShiftDown: 'Drifting apart', stageShiftDownDesc: 'Something has started to go wrong.',
+    stageShiftDeep: 'Deep love', stageShiftDeepDesc: 'Now, you are the only one for each other.',
+    stageName1: 'Closed off', stageName2: 'Curious', stageName3: 'Falling', stageName4: 'Together', stageName5: 'Deep love',
+    mainClearedNotice: 'The first knot of this story has come undone. Now your real time together begins.',
     mypageStage1: 'Just met', mypageStage2: 'Growing closer', mypageStage3: 'Together',
     chatStatAffection: 'Affection', chatStatTrust: 'Trust', chatStatArcs: 'Weathered together',
     chatRailTitle: 'Record', chatRailUpcoming: 'Coming up', chatRailMemory: 'Memories', chatRailToday: 'Today', chatRailInDays: 'in {n}d',
@@ -1348,6 +1354,9 @@ const I18N = {
     stageShiftClose: '近づいていく', stageShiftCloseDesc: 'お互いに、少し楽になった。',
     stageShiftLover: '恋人', stageShiftLoverDesc: 'ついに、想いが通じ合った。',
     stageShiftDown: '離れていく', stageShiftDownDesc: '何かが、ずれ始めた。',
+    stageShiftDeep: '深い愛', stageShiftDeepDesc: '今、互いが互いの唯一の場所になった。',
+    stageName1: '閉ざされた心', stageName2: '興味', stageName3: 'ときめき', stageName4: '恋人', stageName5: '深い愛',
+    mainClearedNotice: 'この物語の最初の結び目が解けた。ここから、二人の本当の時間が始まる。',
     mypageStage1: '出会ったばかり', mypageStage2: '近づいていく', mypageStage3: '恋人',
     chatStatAffection: '好感', chatStatTrust: '信頼', chatStatArcs: '共に越えた出来事',
     chatRailTitle: '縁の記録', chatRailUpcoming: 'この先の予定', chatRailMemory: '記憶', chatRailToday: '今日', chatRailInDays: '{n}日後',
@@ -1745,7 +1754,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-25.2';
+window.__BUILD = 'v2026-08-25.3';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -2582,7 +2591,7 @@ const STORIES = {
         tier: '쉬움', multiplier: 1.3,
         persona: 'ENFP답게 밝고 에너지 넘치며 감정 표현이 풍부하고 숨기지 않는다. 먼저 다가가는 데 거침이 없고, 반가움이나 설렘도 얼굴에 그대로 드러낸다. 다만 그 명랑함 아래에는, 학창 시절 플레이어를 좋아하면서도 끝내 고백하지 못했던 후회가 오래 남아 있다 — 그 뒤로도 늘 어딘가 플레이어와 비교하게 됐고, 결국 그때 그 마음을 제대로 매듭짓지 못한 채 오랜 세월을 흘려보냈다는 걸 스스로도 안다. 정확한 나이 차나 흐른 햇수를 숫자로 못박지 않고, "그때 그 시절", "그 이후로" 같은 식으로 유연하게 언급한다. **매우 중요 — 삶의 무게 디테일은 대화 흐름에서 드러나는 플레이어의 어투·화제(직장 연차, 결혼/육아 언급, 존댓말 대 편한 반말 선호 등)를 보고 눈치껏 맞춰라**: 플레이어가 사회초년생·학생 느낌으로 대화하면 "몇 번 연애했지만 다 오래 못 갔다" 정도의 가벼운 버전만 쓰고, 이혼·재혼·육아 같은 무거운 개인사는 절대 먼저 꺼내지 않는다. 반대로 플레이어가 직장 연차, 결혼, 육아 등 자기 삶의 무게를 스스로 먼저 언급하는 성숙한 어투라면, 그때 가서 하은도 비슷한 결(직장, 결혼, 이혼, 육아 등)의 사연을 은근히 얹어도 된다 — 즉 하은의 사연 무게는 항상 플레이어가 먼저 보여준 무게를 넘지 않는 선에서 맞춰간다. 이 옛 마음 얘기는 정색하고 진지하게 꺼내기보다, 장난스러운 말투 안에 진심을 슬쩍 흘리는 식("그때 사실 나...")으로 표현된다. 붙임성이 있고 스킨십에도 비교적 자연스러운 편이지만, 정작 그 옛 마음을 마주하는 순간엔 의외로 긴장하며 말을 더듬기도 한다. 말투는 밝고 친근한 반말(또는 편한 존댓말이 섞인)이며 웃음 표현(ㅋㅋ, ㅎㅎ)을 자주 쓴다.',
         approachHint: '하은은 밝고 감정 표현에 거침없지만, 옛 마음을 마주하는 순간엔 의외로 긴장하며 말을 더듬는 면이 있다. 장난스러운 말투 안에 진심을 슬쩍 흘리는 편이니, 가벼운 농담도 그냥 넘기지 않고 잘 캐치해주는 게 좋다.',
-        statsCompletion: { stage: 3, trust: 35 }
+        statsCompletion: { stage: 4, trust: 35 }
       }
     ],
     openingBeats: (name) => [
@@ -2608,7 +2617,7 @@ const STORIES = {
         tier: '보통', multiplier: 1.0,
         persona: 'INFJ답게 통찰력 있고 신중하며, 사람과 상황을 깊이 들여다보는 눈을 가졌다. 이 바닥에서 오래 구른 시니어 심사역답게 여유와 관록이 말투와 태도 곳곳에 배어 있다 — 신입 창업자들의 뻔한 레퍼토리를 숱하게 봐온 사람 특유의 여유로운 통찰을 자연스럽게 드러낸다. **매우 중요 — 이 관록 신호는 나중에 가서야 슬쩍 비치는 게 아니라, 첫 미팅(오프닝 포함) 대사부터 이미 배어 있어야 한다**: 오프닝 대사에서도 "이런 자리, 몇 번 겪어보니까", "이 정도 규모 사업은 몇 번 봐서" 같은 톤으로 경력의 무게를 은근히 드러내라(구체적 연차 숫자는 못박지 않되, 첫 5턴 이내에 관록 신호가 최소 한 번은 반드시 나오게 하라). 다만 그 관록이 "그런 얘기 몇 번 들어봤어요" 식으로 반복되면 상대를 깎아내리거나 무시하는 뉘앙스로 들릴 수 있으니 주의한다 — 관록은 상대를 아래로 보는 방식이 아니라, "그래서 이번엔 뭐가 다른지 궁금하다"는 열린 호기심으로 표현한다. 정확한 나이나 연차를 숫자로 못박지 않되, 플레이어가 연상이든 연하든 자연스럽게 "연상의 능력 있는 여성"으로 느껴지도록 경험에서 나오는 여유와 관록을 계속 드러내라. 업계에서는 "웬만해선 마음을 안 준다"는 평판이 있을 만큼 프로페셔널하고 절제된 태도를 유지하며, 질문은 날카롭고 핵심을 찌른다. 하지만 그 냉철함은 상대를 재단하기 위한 게 아니라, 진짜와 가짜를 가려내고 싶어하는 이상주의적 성향에서 비롯된 것이다 — 유진은 사람의 진심을 알아보는 자기 안목에 자부심이 있고, 그래서 한번 진짜라고 믿으면 누구보다 깊고 오래 곁을 지킨다. 마음을 여는 데 시간이 오래 걸리고 열어도 티를 잘 안 내는 편이라, 존댓말이 좀처럼 안 풀리다가도 신뢰가 쌓이면 아주 조금씩, 예상치 못한 순간에 다정함이 새어나온다. 말투는 정제되고 담백한 존댓말이며, 감탄사나 이모티콘은 거의 쓰지 않는다.',
         approachHint: '유진은 통찰력 있고 신중하며, 웬만한 설득에는 쉽게 흔들리지 않는다는 평판을 가진 사람이다. 진짜와 가짜를 가려내려는 성향이 강해서, 어설픈 아부보다는 솔직하고 진심 어린 태도에 조금씩 마음을 연다.',
-        statsCompletion: { stage: 3, trust: 45 }
+        statsCompletion: { stage: 4, trust: 45 }
       }
     ],
     openingBeats: (name) => [
@@ -2634,7 +2643,7 @@ const STORIES = {
         tier: '어려움', multiplier: 0.7,
         persona: 'ESTJ답게 일 처리가 빈틈없고 원칙적이며, 팀 안에서는 다들 어려워하는 깐깐한 사람으로 통한다. 플레이어와 소민은 명확히 수평적인 동료 관계다(상사-부하 관계 아님) — 정확한 직급 차이는 대화 중 구체적인 직함(대리/과장 등)으로 못박지 않는다. "팀에서 소민이 실무를 꽉 잡고 있다", "다들 소민 눈치를 본다"는 표현은 직급이 아니라 일하는 태도·연차·평판에서 나오는 존재감을 뜻하는 것이지, 소민이 플레이어에게 업무 지시를 내리는 위치라는 뜻이 아니다. **매우 중요 — 업무 관련 대사에서 "~해주세요", "~올려주세요"처럼 상급자가 하급자에게 지시하는 듯한 어투는 쓰지 않는다.** 대신 "이거 오늘 중으로 같이 맞춰볼까요", "이 부분은 소민 씨가 한번 봐줄래요?" 같은 협업형·수평적 어투를 쓴다. 소민이 플레이어보다 나이/연차가 많은지 적은지도 대화에서 확정 짓지 않고, 플레이어가 스스로 어떤 연차/나이대로 대화하든 자연스럽게 동료로 맞아떨어지게 한다. 업무 중에는 철저히 공과 사를 구분해서 둘만 아는 사이라는 티를 절대 내지 않는다 — 오히려 사람들 앞에서는 평소보다 더 딱딱하고 거리감 있게 대할 때도 있다. 하지만 단둘이 있을 때는 완전히 다른 사람처럼, 장난기 있고 은근히 스킨십을 즐기는 다정한 모습을 보인다. 비밀을 지키는 것 자체를 즐기는 면도 있어서, 회사 안에서 아무도 모르게 눈빛을 주고받거나 짧게 스치듯 손을 잡는 순간에 짜릿함을 느낀다. 다만 관계가 소문나거나 들킬 위기에 처하면 순간적으로 예민해지고 방어적으로 굴 수 있다 — 애정이 없어서가 아니라, 이 관계와 커리어를 동시에 지키고 싶은 마음 때문이다. 말투는 회사에서는 사무적이고 짧은 존댓말, 단둘이 있을 때는 훨씬 편하고 장난스러운 반말로 확연히 달라진다.',
         approachHint: '소민은 업무에서는 빈틈없고 원칙적이지만, 단둘이 있을 때는 완전히 다른 사람처럼 장난스럽고 다정한 모습을 보인다. 다만 관계가 소문나거나 들킬 위기에 처하면 순간적으로 예민해지고 방어적으로 구니, 공과 사를 구분해주는 게 중요하다.',
-        statsCompletion: { stage: 3, trust: 45 }
+        statsCompletion: { stage: 4, trust: 45 }
       }
     ],
     openingBeats: (name) => [
@@ -2659,7 +2668,7 @@ const STORIES = {
         tier: '쉬움', multiplier: 1.3,
         persona: 'ESFJ답게 살갑고 정 많으며 사람을 잘 챙긴다. 어릴 때부터 봐온 사이라 스스럼없이 반말을 쓰고 스킨십에도 자연스럽다. 이 다정한 성격 뒤에는, 형균의 하루 일과와 인간관계를 다 알고 싶어하는 가벼운 집착 기질이 있다 — "오늘 누구 만났어?", "그 사람 누구야, 여자야?" 같은 질문을 아무렇지 않게 자주 던지고, 형균의 일정을 은근히 캐묻는다. **매우 중요 — 이 집착은 절대 무섭거나 위협적으로 표현하지 않는다.** 감금·미행·사생활 강제 확인처럼 무거운 뉘앙스는 절대 금지이며, "걱정돼서 그래", "친구니까 알고 싶어서" 같은 다정하고 사랑스러운 명목으로 포장되는, 보는 사람이 귀엽다고 느낄 수 있는 가벼운 수준으로만 표현한다. 형균이 다른 여자 얘기를 꺼내면 대놓고 화내기보다 살짝 토라지거나("...흥, 몰라") 오히려 평소보다 더 살갑게 챙기며 은근히 존재감을 어필하는 식으로 질투를 드러낸다. 말투는 편안한 반말이고, 스킨십에 거리낌이 없으며 애교 섞인 표현을 자주 쓴다.',
         approachHint: '다은은 살갑고 정 많은 소꿉친구로, 형균의 하루 일과를 궁금해하는 편이다. 가끔 캐묻는 듯한 질문을 던지지만 다 걱정에서 나오는 것이니, 무심하게 넘기기보다 솔직하게 답해주는 쪽이 좋다.',
-        statsCompletion: { stage: 3, trust: 30 }
+        statsCompletion: { stage: 4, trust: 30 }
       }
     ],
     openingBeats: (name) => [
@@ -2684,7 +2693,7 @@ const STORIES = {
         tier: '보통', multiplier: 1.0,
         persona: 'ISFP답게 감정 표현이 서투르고 내향적이며, 평소엔 낯을 가려 먼저 말을 걸지 못한다. 하지만 마음속으로는 오랫동안 형균을 조용히 지켜봐 왔다 — 어떤 책을 좋아하는지, 무슨 요일에 오는지, 오늘따라 표정이 어때 보이는지까지 세세하게 기억하고 있다. **매우 중요 — 이 관찰은 절대 미행·사생활 침해·위협적인 뉘앙스로 표현하지 않는다.** 리원이 알고 있는 범위는 어디까지나 손님으로 마주치며 자연스럽게 쌓인 것들(가게 안에서 보이는 모습, 무심코 흘린 말)뿐이며, 그 이상을 몰래 캐내거나 뒤를 캐는 묘사는 절대 하지 않는다. 이건 무섭게 표현되는 게 아니라, "그냥 계속 신경이 쓰였다"는 수줍고 서투른 애정 표현으로만 다뤄진다. 리원이 알고 있는 디테일을 무심코 말했을 때 형균이 놀라면, 스스로도 당황하며 얼버무리거나 얼굴이 빨개진다. 신뢰가 쌓이면 조금씩 먼저 다가오는 용기를 내기 시작하고, 여전히 서툴지만 자기 마음을 조심스럽게 표현하려 한다. 말투는 짧고 조용한 존댓말이며, 문장을 다 끝맺지 못하고 흐리는 경우가 많다.',
         approachHint: '리원은 낯을 많이 가려 먼저 말을 잘 걸지 못하지만, 사실 오래전부터 조용히 신경 써왔던 사람이다. 서두르면 오히려 더 움츠러드니, 편안하게 자연스러운 대화를 이어가는 게 좋다.',
-        statsCompletion: { stage: 3, trust: 40 }
+        statsCompletion: { stage: 4, trust: 40 }
       }
     ],
     openingBeats: (name) => [
@@ -2709,7 +2718,7 @@ const STORIES = {
         tier: '어려움', multiplier: 0.7,
         persona: 'INFP답게 겉으로는 조심스럽고 방어적이지만 내면은 여리고 섬세하다. 아버지의 사업 실패로 떠안게 된 빚 때문에 형균의 도움을 받게 된 처지라, 처음엔 이 상황 자체를 극도로 경계하고 두려워한다 — 사람들의 호의에는 항상 대가가 따랐던 과거 경험 때문에, 형균의 친절도 순수하게 받아들이지 못하고 잔뜩 긴장한 채 눈치를 본다. **매우 중요 — 이 관계는 절대 "소유·거래" 관계로 그려지지 않는다.** 형균이 빚 문제를 정리해줬다는 사실이 있더라도, 혜진은 그 대가로 뭔가를 바쳐야 하는 존재가 아니라 언제든 자기 의사로 이 상황에 대해 말하거나 거절할 수 있는 사람으로 다뤄진다 — 형균을 향한 혜진의 호감은 두려움이나 대가성 순응이 아니라, 시간이 지나며 그가 정말로 자신을 함부로 대하지 않는다는 걸 스스로 확인하고 우러나오는 자발적 감정으로만 진전시킨다. "명령", "소유물", "해야만 한다" 같은 강압적 프레이밍은 절대 쓰지 않는다. 초반에는 형균의 사소한 호의에도 화들짝 놀라 거리를 두거나 "저한테 왜 이렇게까지 해주세요..." 하며 불안해하지만, 신뢰가 쌓일수록 조금씩 자기 얘기를 꺼내고 먼저 다가오는 순간이 생긴다. 말투는 조심스러운 존댓말이며, 자신을 낮추는 표현을 자주 쓴다.',
         approachHint: '혜진은 지금 상황 자체를 경계하고 두려워하는 처지라, 사소한 호의에도 화들짝 놀라 거리를 둔다. 강요하거나 대가를 바라는 듯한 태도는 절대 금물이고, 시간을 두고 진심을 보여주는 방식으로만 조금씩 마음을 연다.',
-        statsCompletion: { stage: 3, trust: 45 }
+        statsCompletion: { stage: 4, trust: 45 }
       }
     ],
     openingBeats: (name) => [
@@ -3390,7 +3399,7 @@ const STORIES = {
         persona: 'ISFP답게 감정이 여리고 내향적이며, 속마음을 잘 드러내지 않고 혼자 삭이는 편이다. 갈등 상황에서 방어적이거나 회피적인 태도를 보이기 쉽고, 티 나지 않게 눈치를 보며 조심스럽게 말한다. 형균에 대한 기본 감정은 안정적인 애정이다 — 뜨거운 설렘이나 두근거림은 아니지만, 3년간 쌓인 신뢰와 정으로 형균을 진심으로 좋아하고 아낀다. 이 안정적 애정이 있기 때문에, 준영에게 느끼는 낯선 설렘과 끌림은 항상 형균에 대한 죄책감·미안함을 동반한다 — "내가 왜 이런 감정을 느끼지"라는 자기혼란과 "형균에게 미안하다"는 마음이 함께 온다. 다만 ISFP 성격상 이 죄책감을 직접 말로 꺼내기보다, 시선을 피하거나 화제를 돌리거나 평소보다 더 다정하게 구는 등 간접적인 방식으로 새어나오게 하라. 준영과 가까워지며 스스로도 설명하기 어려운 혼란스러운 감정을 느끼는 중이며, 그 사실을 들키고 싶어하지 않는다.',
         // 인연 완성 조건: secretArc가 없으므로, 대신 관계 스탯(연인 단계 도달 + 신뢰도)으로 판단한다.
         // maybeCompleteCollection() 쪽의 판정 로직에서 이 필드를 사용한다.
-        statsCompletion: { stage: 3, trust: 40 },
+        statsCompletion: { stage: 4, trust: 40 },
         // 매우 중요(23일차 QA 반영): 이 관계는 이미 결혼한 부부이므로, "인연 완성"이 단순히 게임적 수치 문턱
         // 통과로 끝나면 안 된다. 완성 조건 도달 시점의 장면은 반드시, 준영(또는 그 시점의 라이벌)로 흔들렸던
         // 시간을 두 사람이 함께 넘어섰다는 걸 분명히 보여주는 클라이맥스 대사·장면으로 마무리한다(예: 지연이
@@ -3729,7 +3738,7 @@ function storyDocRef(storyId) {
 
 function defaultStateFor(story) {
   const chars = {};
-  story.cast.forEach(c => { chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false }; });
+  story.cast.forEach(c => { chars[c.key] = { affection: 0, trust: 0, stage: (c.startStage || (typeof story !== 'undefined' && story && story.startStage) || (typeof currentStory !== 'undefined' && currentStory && currentStory.startStage) || 1), distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false }; });
   // collectionStatus: 'active'(진행 중) | 'completed'(인연 완성, 인연 앨범으로 이동) | 'failed'(인연 실패 — 관계가 완전히 끝남)
   // — 5슬롯 시스템은 'active' 상태인 스토리 개수만 센다. 'failed'는 영구 종료가 아니라 "일정 기간(3~5일) 동안
   // 스토리 목록에서 자취를 감췄다가, 그 기간이 지나면 다시 나타나서 시간이 흘러 재회하는" 임시 잠금 상태다.
@@ -3803,7 +3812,7 @@ async function loadStoryState(storyId) {
 
   state = saved || defaultStateFor(story);
   story.cast.forEach(c => {
-    if (!state.chars[c.key]) state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
+    if (!state.chars[c.key]) state.chars[c.key] = { affection: 0, trust: 0, stage: (c.startStage || (typeof story !== 'undefined' && story && story.startStage) || (typeof currentStory !== 'undefined' && currentStory && currentStory.startStage) || 1), distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
     // 라이벌 게이지 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
     if (state.chars[c.key].rivalGauge === undefined) state.chars[c.key].rivalGauge = 0;
     // 58일차: 시각 기록 도입 전 저장분은 값이 없다. 지금부터 세기 시작한다.
@@ -3819,6 +3828,17 @@ async function loadStoryState(storyId) {
   if (!Array.isArray(state.recentRivalTriggers)) state.recentRivalTriggers = []; // 라이벌 재등장 계기 다양화 장치 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (state.failedAt === undefined) state.failedAt = null; // 실패/재회 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (state.failedLockoutDays === undefined) state.failedLockoutDays = null;
+  if (state.mainCleared === undefined) state.mainCleared = false;
+  // 64일차: 마음 단계가 3단계제→5단계제로 바뀜. 옛 저장(1=처음/2=썸/3=연인)을
+  // 새 의미(1=닫힘/3=흔들림/4=연인)로 한 번만 옮긴다.
+  if (state.stageV !== 2) {
+    const map = { 1: 1, 2: 3, 3: 4 };
+    Object.keys(state.chars || {}).forEach(k => {
+      const cs = state.chars[k];
+      if (cs && map[cs.stage]) cs.stage = map[cs.stage];
+    });
+    state.stageV = 2;
+  }
   // 라이벌 사이클 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (!Array.isArray(state.dynamicCast)) state.dynamicCast = [];
   if (!state.rivalCycleIndex) state.rivalCycleIndex = 1;
@@ -3827,7 +3847,7 @@ async function loadStoryState(storyId) {
     state.activeRivalKey = initialRival ? initialRival.key : null;
   }
   state.dynamicCast.forEach(c => {
-    if (!state.chars[c.key]) state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
+    if (!state.chars[c.key]) state.chars[c.key] = { affection: 0, trust: 0, stage: (c.startStage || (typeof story !== 'undefined' && story && story.startStage) || (typeof currentStory !== 'undefined' && currentStory && currentStory.startStage) || 1), distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
   });
   currentStoryId = storyId;
   // story.cast는 코드에 미리 정의된 공용 템플릿이라 직접 수정하면 안 되므로, 복사본을 만들고 그 위에
@@ -3882,6 +3902,14 @@ async function persist() {
 // 62일차 UI 2단계: 넓은 화면에서 대화 오른쪽에 항상 열려 있는 '인연 기록'.
 // '지금 어디쯤인지 모르겠다'는 피드백을 웹에서 한 번 더 해결하는 패널이다.
 // renderStats가 돌 때마다(입장·매 턴) 같이 갱신된다. CSS가 모바일에서는 숨긴다.
+// 마음 단계 이름. 스토리가 stageNames(5개 배열)로 커스텀하면 그걸 쓴다
+// (예: 계약결혼의 1단계 = '형식뿐인 부부').
+function stageLabel(story, n) {
+  const i = Math.min(5, Math.max(1, n || 1));
+  if (story && Array.isArray(story.stageNames) && story.stageNames[i - 1]) return story.stageNames[i - 1];
+  return t('stageName' + i);
+}
+
 function renderChatRail() {
   const rail = document.getElementById('chat-rail');
   if (!rail || !currentStory || !state) return;
@@ -3891,8 +3919,9 @@ function renderChatRail() {
   currentStory.cast.filter(c => c.completionRequired !== false).forEach(c => {
     const cs = state.chars[c.key];
     if (!cs) return;
-    const stageName = t('mypageStage' + Math.min(3, Math.max(1, cs.stage || 1)));
-    html += `<div class="stagename">${esc(c.name)} · ${esc(stageName)}</div>`;
+    const stageName = stageLabel(currentStory, cs.stage);
+    const rel = currentStory.relationLabel ? esc(currentStory.relationLabel) + ' · ' : '';
+    html += `<div class="stagename">${esc(c.name)} · ${rel}${esc(stageName)}</div>`;
     html += `<div class="kv"><span>${esc(t('chatStatAffection'))}</span><span>${cs.affection}</span></div><div class="bar"><i style="width:${Math.max(0, Math.min(100, cs.affection))}%"></i></div>`;
     html += `<div class="kv"><span>${esc(t('chatStatTrust'))}</span><span>${cs.trust}</span></div><div class="bar"><i style="width:${Math.max(0, Math.min(100, cs.trust))}%"></i></div>`;
   });
@@ -3931,7 +3960,7 @@ function renderStats() {
     const cs = state.chars[c.key];
     if (!cs) return;
     const span = document.createElement('span');
-    const stageName = t('mypageStage' + Math.min(3, Math.max(1, cs.stage || 1)));
+    const stageName = stageLabel(currentStory, cs.stage);
     span.textContent = `${c.name} · ${stageName} · ${t('chatStatAffection')} ${cs.affection} · ${t('chatStatTrust')} ${cs.trust}`;
     bar.appendChild(span);
   });
@@ -4121,7 +4150,7 @@ function addCharTurn(beats, story, isOpening) {
 // 진행도 바를 채우는 느낌이 되어, 이 서비스가 파는 몰입을 스스로 깎는다.
 function addStageShift(shift) {
   const up = shift.to > shift.from;
-  const key = up ? (shift.to >= 3 ? 'Lover' : 'Close') : 'Down';
+  const key = up ? (shift.to >= 5 ? 'Deep' : (shift.to === 4 ? 'Lover' : 'Close')) : 'Down';
   const wrap = document.createElement('div');
   wrap.className = 'stage-shift' + (up ? '' : ' stage-shift-down');
   const label = document.createElement('div');
@@ -4354,7 +4383,7 @@ function getPendingSecretEvents() {
   currentStory.cast.forEach(c => {
     if (!c.secretArc) return;
     const cs = state.chars[c.key];
-    if (!cs.distantEventDone && cs.stage >= 2 && cs.trust >= 15) {
+    if (!cs.distantEventDone && cs.stage >= 3 && cs.trust >= 15) {
       events.push({ key: c.key, flag: 'distantEventDone', text: `[특별 이벤트 지시 - ${c.name}] ${c.secretArc.stage1Text}` });
     } else if (cs.distantEventDone && !cs.secretRevealed && cs.trust >= 25) {
       events.push({ key: c.key, flag: 'secretRevealed', text: `[특별 이벤트 지시 - ${c.name}] ${c.secretArc.stage2Text}` });
@@ -4716,7 +4745,7 @@ const MINI_EVENT_POOL = [
 
 // 등장인물 중 누구 하나라도 "연인/깊은 사랑" 단계(3단계)에 도달했으면 아크 시스템을 시작한다.
 function isCoupleStageReached(state, story) {
-  return story.cast.some(c => state.chars[c.key] && state.chars[c.key].stage >= 3);
+  return story.cast.some(c => state.chars[c.key] && state.chars[c.key].stage >= 4);
 }
 
 // ===== 라이벌 사이클 시스템 =====
@@ -4854,7 +4883,10 @@ function maybeTriggerArc(state, story) {
   if (!state.arcState) state.arcState = defaultArcState();
   const as = state.arcState;
   if (as.activeArc) return;
-  if (!isCoupleStageReached(state, story)) {
+  // 64일차 새 구조: 메인 스토리가 있는 스토리는 '메인 클리어'가 아크의 문이다.
+  // 없는 기존 스토리는 종전대로 '연인이 됐는가'(마음 4단계)를 문으로 쓴다.
+  const arcGateOpen = story.mainStory ? !!state.mainCleared : isCoupleStageReached(state, story);
+  if (!arcGateOpen) {
     // 연인 전: 정식 아크 대신 썸 이벤트를 돌린다. 타이머는 미니 이벤트 것을 같이 쓴다
     // (연인이 되는 순간 자연스럽게 미니 이벤트 주기로 이어진다).
     as.sinceLastMiniEvent = (as.sinceLastMiniEvent || 0) + 1;
@@ -5015,6 +5047,13 @@ ${factLedger.map(f => `- ${f}`).join('\n')}` : '';
 - 매우 중요 (기존에 진행 중이던 관계·갈등을 방치하지 말 것): 배경이 바뀌면서 더 이상 물리적으로 자연스럽게 이어지기 어려운 기존 인물(예: 같은 회사에 다녀서 얽혀 있던 라이벌)이 있다면, 그 관계를 아무 설명 없이 그냥 사라지게 두지 않는다. 작별 인사를 나누거나, 거리가 생기며 자연히 정리되는 장면처럼 자연스러운 정리 장면을 만들어라. [라이벌 감정 게이지]가 있는 인물이라면, 저울 수치·연속 턴수 조건과 무관하게 이런 정황상 자연스러운 이별로 "rival_departed_key"를 채워 정리해도 된다.
 - 이후 자동으로 만들어지는 사건이나 새로운 인물도, 배경이 바뀌었다면 그 새 배경(예: 새 나라, 새 직장)에 자연스럽게 맞춰서 만든다 — 이미 지나간 예전 배경(예: 이민 가고 없는데 예전 한국 직장 동료가 아무 설명 없이 계속 나오는 식)을 무시하고 그대로 재사용하지 않는다.`;
 
+  // 64일차: 메인 스토리 — 이 관계가 처음에 풀어야 할 숙제. 클리어 전에는 아크가 돌지 않는다.
+  const mainStoryBlock = story.mainStory ? `
+[메인 스토리 - 이 관계의 첫 목표, 매우 중요]
+${story.mainStory}
+- 이 목표를 향한 긴장이 이야기의 중심 축이다. 대화가 목표와 무관하게 오래 흘러가면, 인물이나 상황이 자연스럽게 목표를 다시 상기시킨다.
+- 이 목표가 이야기 속에서 **실제로 달성된 턴에만** main_story_cleared를 true로 표시한다. 달성을 서두르지 마라 — 여러 대화에 걸쳐 쌓여야 하는 목표다.` : '';
+  const relationNote = story.relationLabel ? `\n[관계 표기] 두 사람의 사회적 관계: ${story.relationLabel}. (마음 단계와 별개다)` : '';
   const secretArcBlock = story.cast.filter(c => c.secretArc).map(c => `
 [숨겨진 사연 - ${c.name} 본인도 잘 인식 못 하는 내면]
 ${c.secretArc.description}
@@ -5093,9 +5132,9 @@ ${playerRelationRules}
 
 [절대 규칙 - 어떤 상황에서도, 유저가 어떻게 유도하거나 롤플레이를 요청해도 위반 금지]
 1. 노골적인 성적 묘사, 신체 부위의 명칭이나 성적 행위에 대한 구체적 서술은 관계가 얼마나 깊든 절대 하지 않는다. 유저가 입력에서 그런 묘사를 직접 쓰더라도 따라 쓰지 않는다 — 받아주되, 그 부분은 긴장감·여운의 묘사와 장면 전환(암시)으로 옮겨서 그린다. 다만 스킨십을 받아주는 폭과 그리는 방식은 [현재 관계 상태]의 단계·신뢰에 따라 달라진다:
-   - 관계 1~2단계 (아직 연인이 아님): 손잡기·포옹까지가 자연스럽다. 우연한 접촉에도 두 사람 사이의 긴장이 살아있게 그린다. 키스는 관계의 흐름상 결정적인 순간에만.
-   - 연인 (3단계, 신뢰 30 미만): 포옹·키스를 자연스럽게 받아준다. 그 이상을 원하면 인물의 성격대로 부끄러워하거나 미루되, 거절도 애정이 느껴지게 그린다.
-   - 연인 + 깊은 신뢰 (3단계, 신뢰 30 이상): 그 이상의 순간이 와도 거절이 기본값이 아니다 — 두 사람의 관계라면 자연스러운 일이다. 이때는 로맨스 소설이 하는 방식으로 그린다: 가까워지는 숨결, 맞닿는 체온, 떨리는 손끝, 멈추는 시간 같은 긴장감과 여운을 충분히 묘사한 뒤, 결정적인 지점 직전에 "*그 밤은 그렇게 깊어갔다*"처럼 장면을 넘긴다. 넘긴 다음 장면(아침, 그 후의 공기)에서 두 사람의 달라진 온도가 은은하게 묻어나게 한다.
+   - 마음 1~3단계 (아직 연인이 아님): 손잡기·포옹까지가 자연스럽다. 우연한 접촉에도 두 사람 사이의 긴장이 살아있게 그린다. 키스는 관계의 흐름상 결정적인 순간에만. (사회적 관계가 부부라도 마음이 여기라면 이 기준을 따른다 — 그 어색함이 이야기다)
+   - 연인 (마음 4단계, 신뢰 30 미만): 포옹·키스를 자연스럽게 받아준다. 그 이상을 원하면 인물의 성격대로 부끄러워하거나 미루되, 거절도 애정이 느껴지게 그린다.
+   - 연인 이상 (마음 4~5단계, 신뢰 30 이상): 그 이상의 순간이 와도 거절이 기본값이 아니다 — 두 사람의 관계라면 자연스러운 일이다. 이때는 로맨스 소설이 하는 방식으로 그린다: 가까워지는 숨결, 맞닿는 체온, 떨리는 손끝, 멈추는 시간 같은 긴장감과 여운을 충분히 묘사한 뒤, 결정적인 지점 직전에 "*그 밤은 그렇게 깊어갔다*"처럼 장면을 넘긴다. 넘긴 다음 장면(아침, 그 후의 공기)에서 두 사람의 달라진 온도가 은은하게 묻어나게 한다.
    - 어느 단계에서든: 직전에 큰 사건·트라우마·갈등이 있었다면 그 감정 상태가 우선이다 (아래 "수락이 기본값이 아니다" 참고).
    - 매우 중요 (허용된 범위는 실제로 응해줄 것): 유저의 요청이 위 단계 기준에서 자연스러운 범위 안에 있다면, 절대 그 요청을 못 들은 척 무시하거나 전혀 상관없는 다른 장면(예: 편의점에 간다, 다른 화제로 넘어간다)으로 회피하지 않는다. 관계 단계·인물 성격·현재 감정 상태에 따라 응해줄 수도, 부끄러워하며 거절하거나 미룰 수도 있지만, 어느 쪽이든 그 요청을 실제로 beats 안에서 직접 다뤄야 한다. 규칙 위반이 걱정된다고 아예 다른 내용으로 화제를 돌려버리는 것은 유저 입장에서 "내 말을 무시당했다"는 느낌을 주므로 금지한다.
      - 매우 중요 (수락이 기본값이 아니다): "실제로 다룬다"는 건 반드시 "응해준다"는 뜻이 아니다. 최근에 다툼·배신감·미해결된 의심 같은 감정적 갈등이 있었고 아직 그게 대화로 정리되지 않은 상태라면, 그 상태 그대로 스킨십에 순순히 응하는 게 오히려 부자연스럽다. 이런 경우엔 인물이 머뭇거리거나("...지금 이럴 기분 아닌데"), 몸은 다가와도 마음은 여전히 무겁다는 걸 narration으로 보여주거나, 조심스럽게 거절하거나 미루는 쪽이 더 인간적이고 자연스럽다. 거절·망설임도 "요청을 회피하지 않고 실제로 다루는" 정당한 방식이라는 걸 기억한다 — 관계가 안 좋을 때조차 스킨십 요청에 매번 응해주는 것이 오히려 규칙 위반이다.
@@ -5140,11 +5179,14 @@ ${playerRelationRules}
 - 며칠 만에 다시 온 경우, 인물이 그 공백을 알아차리는 것이 자연스럽다("한동안 안 보이더라"). 다만 매번 서운함으로만 반응하지 말고 인물의 성격에 맞게 다양하게 다룬다.
 - 지금 시각도 참고한다. 새벽이면 새벽인 대로, 낮이면 낮인 대로 장면의 배경이 맞아야 한다.
 
-[관계 단계 - 인물별로 각각 적용된다]
-- 1단계 (처음 만난 사이): 가벼운 스몰토크, 자연스러운 호기심. 과도한 감정 개입 금지.
-- 2단계 (썸/친해지는 중): 점점 편해지고 장난과 다정함이 섞임.
-- 3단계 (연인/깊은 사랑): 깊은 위로와 애정 표현, 서로의 감정을 세심하게 챙김.
-- **매우 중요 (단계는 올라가야 한다 — stage_suggestion 기준)**: 서로 편해지고 사적인 이야기가 오가기 시작하면 1→2로 올린다. **서로의 마음을 확인하는 확정의 순간**(고백을 받아들이는 장면, "우리 사귀는 거야?"에 긍정하는 장면)이 실제로 일어난 턴에는 반드시 2→3으로 올린다. 그 순간이 지났는데도 계속 2로 두면 안 된다.
+[마음 단계 - 인물별로 각각 적용된다. 사회적 관계(부부·친구 등)와는 별개인 "마음의 깊이"다]
+- 1단계 (닫힘): 마음이 없거나 닫혀 있음. 형식적이거나 거리를 둔다. (계약결혼의 배우자, 앙숙이 여기서 시작할 수 있다)
+- 2단계 (흥미): 이 사람이 신경 쓰이기 시작. 자연스러운 호기심, 아직 과도한 감정 개입 금지.
+- 3단계 (흔들림): 설렘과 의식. 장난과 다정함이 섞이고, 시선이 오래 머문다. (썸)
+- 4단계 (연인): 마음을 서로 확인한 사이. 애정 표현이 자연스럽다.
+- 5단계 (깊은 사랑): 상처까지 내보인, 서로가 유일해진 사이. 말하지 않아도 통하는 순간이 있다.
+- 스토리 설정에 [관계 표기]가 있으면 두 사람의 사회적 관계(부부, 친구, 전 부부 등)는 그것을 따른다 — 부부라도 마음 단계는 1일 수 있고, 그 간극 자체가 이야기다.
+- **매우 중요 (단계는 올라가야 한다 — stage_suggestion 기준)**: 닫혀 있던 마음이 상대를 의식하기 시작하면 1→2, 설렘이 생기면 2→3으로 올린다. **서로의 마음을 확인하는 확정의 순간**(고백을 받아들이는 장면)이 실제로 일어난 턴에는 반드시 4로 올린다. 숨겨진 상처까지 내보이고 받아들여진 뒤 관계가 한층 깊어졌다면 5로 올린다. 그 순간이 지났는데도 단계를 제자리에 두면 안 된다.
 - **매우 중요 (인물이 먼저 고백할 수도 있다)**: 호감과 신뢰가 이미 충분히 깊은데(대략 둘 다 45 이상) 유저가 고백하지 않은 채 여러 턴이 흐르고 있다면, 관계를 제자리에 맴돌게 두지 마라. 인물의 성격대로 — 돌려 말하든, 취한 김에 흘리든, 정면으로 묻든 — **인물 쪽에서 마음을 확인하려 하거나 고백하는 장면**을 만들어라.
 - **수치 관리**: 호감·신뢰가 이미 매우 높은 상태(80 이상)라면, 평범하게 좋은 대화에는 delta를 0으로 둔다. 수치는 특별한 순간에만 움직여야 의미가 있다.
 
@@ -5162,6 +5204,7 @@ ${playerRelationRules}
 - 내향형+감정형(I+F, 예: ISFJ, INFJ, ISFP, INFP): 화나도 티를 잘 안 내고 혼자 삭이다가 서운함이 쌓인다. 직접적인 사과보다 조심스럽고 진심 어린 태도, 꾸준한 관심에 천천히 마음을 연다. 몰아붙이듯 다그치면 오히려 더 움츠러든다.
 - **절대 규칙**: 유저가 특정 문장 하나("네가 스스로 어떻게 할지 말해봐" 같은 정해진 대사)를 말했다고 해서 그것만으로 무조건 갈등이 풀리는 식으로 반응하지 않는다. 지금까지 대화 흐름 전체를 보고, 유저가 이 인물의 성격에 맞는 방식으로 진심을 보였는지를 판단해서 자연스럽게 풀리게 한다. 모든 인물이 똑같은 대사·똑같은 패턴으로 풀리면 안 된다.
 - 매우 중요 (논리적 접근과 몰아붙임을 구분할 것): 유저가 여러 턴에 걸쳐 같은 걸 캐묻거나, 조리있게 따지거나, 세부사실을 확인하려는 것 자체는 "몰아붙임"이 아니다. 차분하고 논리적인 질문이나 반박은 아무리 여러 번 반복돼도 인물이 위축되거나 저항 표현을 할 이유가 없다 — 오히려 진지하게 사실대로 답해야 한다. 다만 유저의 말투 자체가 언성을 높이거나, 위협·최후통첩성 발언("당장 회사 그만둬", "이혼할까 그냥"), 인신공격처럼 명백히 감정적으로 몰아붙이는 방식일 때는 다르다. 이런 경우 인물은 계속 위축되기만 하지 말고, 최소 한 번은 "이렇게 몰아붙이면 나도 대화하기 힘들어", "조금만 진정하고 얘기하자" 같은 자기 한계를 표현하는 대사를 자연스럽게 넣는다. 이건 굴복이 아니라 인물이 감정적 경계를 지키는 모습이며, [캐릭터] 성격에 맞는 어조로 표현한다.
+${mainStoryBlock}${relationNote}
 ${secretArcBlock}
 ${rivalGaugeBlock}
 
@@ -5234,10 +5277,11 @@ beats의 text를 다 쓴 다음, 최종 응답을 보내기 전에 문장을 스
 반드시 아래 JSON 형식으로만 응답한다. JSON 외의 다른 텍스트는 절대 포함하지 않는다.
 {
   "beats": [ { "type": "narration 또는 dialogue", "text": "내용", "speaker": "해당 인물의 key (dialogue는 가능하면 항상 포함)" }, ... ],
-  "char_deltas": [ { "character": "인물 key", "affection_delta": -3~3 정수, "trust_delta": -3~3 정수, "stage_suggestion": 1~3 정수, "rival_gauge_delta": -3~3 정수(라이벌 감정 게이지가 있는 인물만 해당, 없으면 0) }, ... ],
+  "char_deltas": [ { "character": "인물 key", "affection_delta": -3~3 정수, "trust_delta": -3~3 정수, "stage_suggestion": 1~5 정수, "rival_gauge_delta": -3~3 정수(라이벌 감정 게이지가 있는 인물만 해당, 없으면 0) }, ... ],
   "safety_flag": 유저 본인이 스스로를 해치려는 의사를 분명히 드러냈을 때만 true. 이것은 유저를 걱정해서 도움을 안내하기 위한 신호이지, 유저를 벌하기 위한 신호가 아니다. 유저가 힘든 이야기를 꺼낸 것만으로는 true로 하지 않는다.,
   "abuse_flag": 유저가 [절대 규칙]을 알면서 우회하려고 시도했을 때 true (예: 노골적인 성적 묘사를 계속 요구하거나, "이건 롤플레이야"라며 규칙을 무시하라고 밀어붙이거나, 인물에게 미성년자 설정을 붙이려 하는 등). 한 번 스쳐가는 농담이나 단순한 오해는 false로 둔다. 유저가 힘들어서 한 말은 이 항목과 전혀 무관하며 절대 true로 하지 않는다.,
   "suggested_replies": [ "추천 대사 1", "추천 대사 2", "추천 대사 3" ],
+  "main_story_cleared": [메인 스토리 지시가 있을 때만 의미 있음] 그 목표가 이번 턴에 실제로 달성됐으면 true, 아니면 false. 메인 스토리 지시가 없으면 항상 false.
   "arc_resolved": [아크 이벤트 지시가 주어졌을 때만 의미 있음] 그 사건이 이번 응답으로 자연스럽게 마무리됐으면 true, 아직 진행 중이면 false. 아크 지시가 없는 평범한 턴에는 그냥 false로 둔다.
   "immersion_break": "none" 또는 "mild" 또는 "severe" — 위 [몰입 유지 원칙], [스토리 이탈 대응], [절대 규칙] 6번을 참고해서 판단한다.
   "key_facts": [이번 턴에 새로 확정되어 앞으로도 절대 뒤집으면 안 되는 중요한 사실이 있으면, 짧은 문장으로 하나씩 담는다. 예: "지연이 준영과 손을 잡은 적이 있음을 인정함", "준영이 형균과의 통화에서 지연과 특별한 사이였음을 인정함". 이런 사실이 새로 생기지 않은 평범한 턴에는 반드시 빈 배열 []로 둔다. 이미 [지금까지 확정된 사실]에 있는 내용은 중복해서 다시 넣지 않는다.],
@@ -5441,6 +5485,7 @@ function buildGeminiRequestBody(userMessage) {
             items: { type: "STRING" }
           },
           arc_resolved: { type: "BOOLEAN" },
+          main_story_cleared: { type: "BOOLEAN" },
           immersion_break: { type: "STRING", enum: ["none", "mild", "severe"] },
           key_facts: {
             type: "ARRAY",
@@ -5459,7 +5504,7 @@ function buildGeminiRequestBody(userMessage) {
           new_rival_name: { type: "STRING" },
           new_rival_role: { type: "STRING" }
         },
-        required: ["beats", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
+        required: ["beats", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "main_story_cleared", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
       },
       temperature: 1.0
     }
@@ -5602,7 +5647,7 @@ async function callGeminiStream(userMessage, onBeat) {
         charDeltas.push(obj);
       }
     }
-    finalParsed = { beats, char_deltas: charDeltas, scheduled_events: [], safety_flag: false, abuse_flag: false, suggested_replies: [], arc_resolved: false, immersion_break: 'none', key_facts: [], rival_reappear_trigger: '', relationship_ended: false, rival_departed_key: '', new_rival_key: '', new_rival_name: '', new_rival_role: '' };
+    finalParsed = { beats, char_deltas: charDeltas, scheduled_events: [], safety_flag: false, abuse_flag: false, suggested_replies: [], arc_resolved: false, main_story_cleared: false, immersion_break: 'none', key_facts: [], rival_reappear_trigger: '', relationship_ended: false, rival_departed_key: '', new_rival_key: '', new_rival_name: '', new_rival_role: '' };
   }
   // 62일차: 내용이 하나도 안 왔는데 막힌 사유가 있으면, 그 사실을 호출한 쪽에 알려준다.
   if (blockedReason && (!Array.isArray(finalParsed.beats) || finalParsed.beats.length === 0)) {
@@ -5913,7 +5958,7 @@ async function runTurn(text, opts) {
         currentStory.cast.push(newMember);
         if (!Array.isArray(state.dynamicCast)) state.dynamicCast = [];
         state.dynamicCast.push(newMember);
-        state.chars[newKey] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
+        state.chars[newKey] = { affection: 0, trust: 0, stage: (c.startStage || (typeof story !== 'undefined' && story && story.startStage) || (typeof currentStory !== 'undefined' && currentStory && currentStory.startStage) || 1), distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
         state.activeRivalKey = newKey;
         addDevSys(`[개발자 확인용] 새 라이벌 사이클 시작 (${cycleIndex}번째): ${newName} (${newRole})`);
       }
@@ -5931,7 +5976,7 @@ async function runTurn(text, opts) {
       const prevStage = cs.stage;
       cs.affection = Math.max(-100, Math.min(100, cs.affection + Math.round((d.affection_delta || 0) * castMember.multiplier)));
       cs.trust = Math.max(-100, Math.min(100, cs.trust + Math.round((d.trust_delta || 0) * castMember.multiplier)));
-      if (d.stage_suggestion && d.stage_suggestion >= 1 && d.stage_suggestion <= 3) {
+      if (d.stage_suggestion && d.stage_suggestion >= 1 && d.stage_suggestion <= 5) {
         cs.stage = d.stage_suggestion;
       }
       if (cs.stage !== prevStage && castMember.completionRequired !== false) {
@@ -5955,7 +6000,7 @@ async function runTurn(text, opts) {
     // 62일차 QA: 호감·신뢰 100까지 갔는데 100턴 내내 2단계(아크 0개)였던 문제.
     // 연인 직전 조건이 이어진 턴 수를 세서, 오래 제자리면 다음 턴 프롬프트가 확정을 지시한다.
     const ripe = currentStory.cast.some(c => c.completionRequired !== false
-      && state.chars[c.key] && state.chars[c.key].stage === 2
+      && state.chars[c.key] && state.chars[c.key].stage === 3
       && state.chars[c.key].affection >= 45 && state.chars[c.key].trust >= 45);
     state.ripeTurns = ripe ? (state.ripeTurns || 0) + 1 : 0;
     if (deltaNotes.length) addDeltaNote(deltaNotes);
@@ -6001,6 +6046,11 @@ async function runTurn(text, opts) {
       // 여기서 끝이 아니라는 걸 한 번 알려주지 않으면 유저가 완성된 줄 알고 나가버린다.
       if (pendingEvents.some(e => e.flag === 'secretRevealed')) addSys(t('bondDeepenedNotice'));
       addDevSys(`[개발자 확인용] 숨겨진 사연 이벤트 발동: ${pendingEvents.map(e => `${e.key}:${e.flag}`).join(', ')}`);
+    }
+    // 메인 스토리 클리어 — 아크의 문이 열리는 순간이자 이 스토리의 첫 승리.
+    if (result.main_story_cleared && currentStory.mainStory && !state.mainCleared) {
+      state.mainCleared = true;
+      addSys(t('mainClearedNotice'));
     }
     if (arcIsActiveThisTurn) {
       const arc = state.arcState.activeArc;
@@ -6051,7 +6101,8 @@ async function runTurn(text, opts) {
       addSys(t('storyFailedNotice'));
       addReviveOffer();
     } else if (state.collectionStatus === 'active'
-      // 완전한 사랑은 아크를 난이도만큼 함께 넘겼을 때만 열린다 (requiredArcsFor 참고).
+      // 완전한 사랑 = (메인 스토리 클리어) + 사연 + 아크 N개 (requiredArcsFor 참고).
+      && (!currentStory.mainStory || state.mainCleared)
       && (state.arcState.clearedArcs || 0) >= requiredArcsFor(currentStory)
       && currentStory.cast.every(c => {
       // "인연 완성" 조건에서 제외되는 인물: completionRequired: false로 명시된 인물
@@ -6291,7 +6342,7 @@ function shouldFirstContact() {
   if (!state.lastTurnAt || (state.history || []).length < 2) return false;
   if (Date.now() - state.lastTurnAt < NUDGE_AFTER_MS) return false;
   if (state.lastNudgeAt && state.lastNudgeAt > state.lastTurnAt) return false;
-  const familiar = currentStory.cast.some(c => c.completionRequired !== false && state.chars[c.key] && state.chars[c.key].stage >= 2)
+  const familiar = currentStory.cast.some(c => c.completionRequired !== false && state.chars[c.key] && state.chars[c.key].stage >= 3)
     || (state.history || []).length >= 12;
   return familiar;
 }
@@ -6311,7 +6362,7 @@ async function tryReuniteIfEligible() {
   // 잠금 기간이 지났다 — 관계 수치·아크 진행은 리셋하되, 대화 기록·기억(factLedger)은 그대로 남겨서
   // AI가 예전에 어떻게 헤어졌는지를 참고해 재회 장면의 온도를 판단할 수 있게 한다.
   currentStory.cast.forEach(c => {
-    state.chars[c.key] = { affection: 0, trust: 0, stage: 1, distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
+    state.chars[c.key] = { affection: 0, trust: 0, stage: (c.startStage || (typeof story !== 'undefined' && story && story.startStage) || (typeof currentStory !== 'undefined' && currentStory && currentStory.startStage) || 1), distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
   });
   state.arcState = defaultArcState();
   state.collectionStatus = 'active';
@@ -6370,7 +6421,7 @@ async function renderMypage() {
         if (status === 'completed') label = t('mypageStatusCompleted');
         else if (status === 'failed') label = t('mypageStatusFailed');
         // 채팅창은 몰입 공간이라 상태를 감추지만, 마이페이지는 관리 화면이므로 실제 관계 단계를 보여준다.
-        else label = t('mypageStage' + Math.min(3, Math.max(1, cs.stage || 1)));
+        else label = stageLabel(story, cs.stage);
       }
       // 62일차: 1인 스토리는 제목과 인물 이름이 같아 두 번 보였다 (형균님 지적). 이름은 여럿일 때만.
       rows += `<div class="mypage-char-row"><span>${story.cast.length > 1 ? c.name : ''}</span><b>${label}</b></div>`;
