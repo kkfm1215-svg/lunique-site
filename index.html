@@ -283,6 +283,28 @@
     color: var(--brass); opacity: .85;
   }
   .delta-note.down { color: var(--warn); }
+  /* 64일차 채팅 다이어트: 평소엔 헤더 한 줄만. 요약 칩을 탭하면 상세(수치·코인·아크)가 펼쳐진다 */
+  #chat-head-stat {
+    background: none; border: 1px solid var(--hair); border-radius: var(--r1); cursor: pointer;
+    color: var(--dim); font-family: var(--sans); font-size: 11px; padding: 3px 9px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; max-width: 55%;
+  }
+  #chat-head-stat[aria-expanded="true"] { color: var(--brass); border-color: var(--brass-mid); }
+  #screen-chat .chat-toolbar { display: none; }
+  #screen-chat .format-hint { display: none; }
+  #screen-chat #chat-billing-status, #screen-chat #stat-bar { display: none; }
+  #screen-chat.details-open #chat-billing-status, #screen-chat.details-open #stat-bar { display: flex; }
+  #screen-chat.details-open #chat-billing-status { display: block; }
+  /* ⑤ 입력줄 아이콘 버튼 (자동진행·대사추천) */
+  .inline-act {
+    flex: 0 0 auto; width: 40px; min-height: 44px; border: 1px solid var(--hair); border-radius: var(--r1);
+    background: none; color: var(--dim); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .inline-act:disabled { opacity: .4; }
+  .inline-act svg { display: block; }
+  /* ③ 되돌리기 버튼: 평소 숨김 — PC는 말풍선에 마우스를 올리면, 폰은 길게 누르면 */
+  .turn-rewind-btn { opacity: 0; pointer-events: none; transition: opacity .15s; }
+  .turn-player:hover .turn-rewind-btn, .turn-rewind-btn.show { opacity: 1; pointer-events: auto; }
   #legal-body h3 { font-family: var(--serif); color: var(--paper); font-size: var(--t-bd); margin: var(--s5) 0 var(--s2); }
   #legal-body p { color: var(--dim); font-size: var(--t-rd); line-height: 1.9; margin-bottom: var(--s2); }
   .legal-links { font-size: var(--t-meta); color: var(--faint); line-height: 1.8; }
@@ -324,8 +346,9 @@
   .chat-art::after {
     content: ''; position: absolute; inset: 0;
     background:
-      linear-gradient(180deg, rgba(7,10,16,.42) 0%, rgba(7,10,16,.66) 40%, rgba(7,10,16,.82) 100%),
-      radial-gradient(130% 78% at 50% 2%, rgba(7,10,16,0) 0%, rgba(7,10,16,.42) 100%);
+      /* 64일차: 폴리버즈 비교에서 아트가 눌려 보인다는 지적 — 위쪽은 얼굴이 숨 쉬게 걷어냄 */
+      linear-gradient(180deg, rgba(7,10,16,.16) 0%, rgba(7,10,16,.5) 45%, rgba(7,10,16,.78) 100%),
+      radial-gradient(130% 78% at 50% 2%, rgba(7,10,16,0) 0%, rgba(7,10,16,.3) 100%);
   }
   @media (prefers-reduced-motion: reduce) { .chat-art { transition: none; } }
 
@@ -808,8 +831,9 @@
     <div class="chat-art" id="chat-art" aria-hidden="true"></div>
     <header>
       <button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-charlist')">←</button>
-      <div style="flex:1;">
-        <h1 id="chat-title">스토리</h1>
+      <div style="flex:1; display:flex; align-items:center; gap:10px; min-width:0;">
+        <h1 id="chat-title" style="margin:0;">스토리</h1>
+        <button type="button" id="chat-head-stat" onclick="toggleChatDetails()" aria-expanded="false"></button>
       </div>
     </header>
     <div class="chat-toolbar">
@@ -821,6 +845,8 @@
     <div id="chat"></div>
     <div id="suggest-row"></div>
     <div id="inputbar">
+      <button type="button" class="inline-act" id="autoprogress-btn2" onclick="autoProgress()" aria-label="자동진행" data-i18n-aria="chatAutoprogressBtn" title="자동진행" data-i18n-title="chatAutoprogressTooltip"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 3l6 5-6 5V3Z" fill="currentColor"/><path d="M9 3l6 5-6 5V3Z" fill="currentColor" opacity=".55"/></svg></button>
+      <button type="button" class="inline-act" id="suggest-btn2" onclick="requestSuggestions()" aria-label="대사 추천" data-i18n-aria="chatSuggestBtn" title="대사 추천" data-i18n-title="chatSuggestTooltip"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5l1.6 4.3L14 7.4l-4.4 1.6L8 13.3 6.4 9 2 7.4l4.4-1.6L8 1.5Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg></button>
       <textarea id="msg-input" rows="1" maxlength="500" placeholder="대사를 입력하세요... (*이렇게 쓰면 행동/속마음*)" data-i18n-placeholder="chatInputPlaceholder"></textarea><span id="char-count" aria-hidden="true"></span>
       <button id="send-btn" data-i18n="chatSendBtn">전송</button>
     </div>
@@ -849,7 +875,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-25.3</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-25.4</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -989,6 +1015,7 @@ const I18N = {
     stageShiftDeep: '깊은 사랑', stageShiftDeepDesc: '이제, 서로가 서로의 유일한 자리가 되었다.',
     stageName1: '닫힌 마음', stageName2: '흥미', stageName3: '흔들림', stageName4: '연인', stageName5: '깊은 사랑',
     mainClearedNotice: '이 이야기의 첫 매듭이 풀렸다. 이제, 두 사람의 진짜 시간이 시작된다.',
+    chatInputNamed: '{name}에게...',
     mypageStage1: '처음 만난 사이', mypageStage2: '가까워지는 중', mypageStage3: '연인',
     chatStatAffection: '호감', chatStatTrust: '신뢰', chatStatArcs: '함께 넘긴 일',
     chatRailTitle: '인연 기록', chatRailUpcoming: '다가오는 일', chatRailMemory: '기억', chatRailToday: '오늘', chatRailInDays: '{n}일 뒤',
@@ -1173,6 +1200,7 @@ const I18N = {
     stageShiftDeep: 'Deep love', stageShiftDeepDesc: 'Now, you are the only one for each other.',
     stageName1: 'Closed off', stageName2: 'Curious', stageName3: 'Falling', stageName4: 'Together', stageName5: 'Deep love',
     mainClearedNotice: 'The first knot of this story has come undone. Now your real time together begins.',
+    chatInputNamed: 'To {name}...',
     mypageStage1: 'Just met', mypageStage2: 'Growing closer', mypageStage3: 'Together',
     chatStatAffection: 'Affection', chatStatTrust: 'Trust', chatStatArcs: 'Weathered together',
     chatRailTitle: 'Record', chatRailUpcoming: 'Coming up', chatRailMemory: 'Memories', chatRailToday: 'Today', chatRailInDays: 'in {n}d',
@@ -1357,6 +1385,7 @@ const I18N = {
     stageShiftDeep: '深い愛', stageShiftDeepDesc: '今、互いが互いの唯一の場所になった。',
     stageName1: '閉ざされた心', stageName2: '興味', stageName3: 'ときめき', stageName4: '恋人', stageName5: '深い愛',
     mainClearedNotice: 'この物語の最初の結び目が解けた。ここから、二人の本当の時間が始まる。',
+    chatInputNamed: '{name}へ...',
     mypageStage1: '出会ったばかり', mypageStage2: '近づいていく', mypageStage3: '恋人',
     chatStatAffection: '好感', chatStatTrust: '信頼', chatStatArcs: '共に越えた出来事',
     chatRailTitle: '縁の記録', chatRailUpcoming: 'この先の予定', chatRailMemory: '記憶', chatRailToday: '今日', chatRailInDays: '{n}日後',
@@ -1754,7 +1783,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-25.3';
+window.__BUILD = 'v2026-08-25.4';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -3948,6 +3977,22 @@ function renderChatRail() {
   rail.innerHTML = html;
 }
 
+// ① 상단 다이어트: 수치·코인 줄들은 평소 숨기고, 헤더의 요약 칩을 탭하면 펼친다.
+function toggleChatDetails() {
+  const scr = document.getElementById('screen-chat');
+  const open = scr.classList.toggle('details-open');
+  const btn = document.getElementById('chat-head-stat');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function renderChatHeadStat() {
+  const btn = document.getElementById('chat-head-stat');
+  if (!btn || !currentStory || !state) return;
+  const c = currentStory.cast.find(x => x.completionRequired !== false);
+  const cs = c && state.chars[c.key];
+  if (!cs) { btn.textContent = ''; return; }
+  btn.textContent = `${stageLabel(currentStory, cs.stage)} · ${cs.affection}/${cs.trust} ▾`;
+}
+
 function renderStats() {
   const bar = $('stat-bar');
   const devHint = $('chat-dev-hint');
@@ -3974,6 +4019,7 @@ function renderStats() {
     bar.appendChild(arcSpan);
   }
   renderChatRail();
+  renderChatHeadStat();
 }
 
 function speakerName(story, key) {
@@ -4110,6 +4156,16 @@ function addTurn(text, role, historyIndex) {
   // 스냅샷이 정리된 옛 턴은 되돌릴 수 없으므로 버튼도 달지 않는다(눌러도 아무 일이 안 일어나던 것).
   const hasSnapshot = state && state.history && state.history[historyIndex] && state.history[historyIndex].beforeState;
   if (role === 'user' && typeof historyIndex === 'number' && hasSnapshot) {
+    // ③ 폰에서는 말풍선을 길게(0.5초) 누르면 버튼이 나타난다. 4초 뒤 다시 숨는다.
+    let pressTimer = null;
+    turn.addEventListener('touchstart', () => {
+      pressTimer = setTimeout(() => {
+        const b = turn.querySelector('.turn-rewind-btn');
+        if (b) { b.classList.add('show'); setTimeout(() => b.classList.remove('show'), 4000); }
+      }, 500);
+    }, { passive: true });
+    turn.addEventListener('touchend', () => clearTimeout(pressTimer), { passive: true });
+    turn.addEventListener('touchmove', () => clearTimeout(pressTimer), { passive: true });
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'turn-rewind-btn';
@@ -5704,6 +5760,8 @@ function setControlsDisabled(disabled) {
   const send = $('send-btn');
   const autoBtn = $('autoprogress-btn'); if (autoBtn) autoBtn.disabled = disabled;
   const sugBtn = $('suggest-btn'); if (sugBtn) sugBtn.disabled = disabled;
+  const autoBtn2 = $('autoprogress-btn2'); if (autoBtn2) autoBtn2.disabled = disabled;
+  const sugBtn2 = $('suggest-btn2'); if (sugBtn2) sugBtn2.disabled = disabled;
   // 54일차 B11: 예전에는 응답이 올 때까지 40초 동안 아무것도 못 했다.
   // 기다리는 동안 전송 버튼을 "취소"로 바꿔서 언제든 멈출 수 있게 한다.
   if (disabled) {
@@ -6312,6 +6370,11 @@ async function enterChat(storyId) {
   applyChatArt(currentStory);
   renderStats();
   renderBillingSnippet('chat-billing-status');
+  // ④ 입력창을 인물 이름으로 개인화 ("지아에게...")
+  try {
+    const mainChar = story.cast.find(x => x.completionRequired !== false) || story.cast[0];
+    $('msg-input').placeholder = fill(t('chatInputNamed'), { name: mainChar.name });
+  } catch (e) {}
   clearSuggestions();
   if (state.history.length === 0) {
     $('chat').innerHTML = ''; // 화면에 이전 방문(또는 초기화 전) 대화가 남아있을 수 있으므로, 새로 시작하기 전 반드시 비운다.
