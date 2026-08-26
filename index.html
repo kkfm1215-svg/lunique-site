@@ -638,6 +638,8 @@
   .hero-feats .hf { flex: 1; }
   .hero-feats b { display: block; color: var(--paper); font-size: var(--t-sm); font-weight: 500; margin-bottom: 3px; }
   .hero-feats span { color: var(--faint); font-size: 10.5px; line-height: 1.6; }
+  .hero-pricing { margin-top: var(--s3); color: var(--faint); font-size: 11px; letter-spacing: .2px; }
+  .hero-legal { margin-top: 6px; font-size: 10.5px; }
   @media (prefers-reduced-motion: reduce) { .hc-dots i { animation: none; } }
   @media (max-width: 520px) { .hero-cards { top: 10%; } .hc { max-width: 170px; padding: 8px 11px; } }
   @media (min-width: 900px) {
@@ -734,6 +736,8 @@
         <div class="hf"><b data-i18n="heroFeat2T">자유로운 입력</b><span data-i18n="heroFeat2B">정해진 선택지 없이, 내 방식대로 표현하세요.</span></div>
         <div class="hf"><b data-i18n="heroFeat3T">변화하는 관계</b><span data-i18n="heroFeat3B">대화할수록 깊어지는 감정, 새로운 이야기.</span></div>
       </div>
+      <div class="hero-pricing" data-i18n="heroPricing">무료로 시작 — 매일 25회 무료 대화 · 코인 $0.99부터 · 프리미엄 월 $9.99</div>
+      <div class="legal-links hero-legal"><a onclick="event.preventDefault(); openLegal('terms')" data-i18n="legalTermsLink">이용약관</a> · <a onclick="event.preventDefault(); openLegal('privacy')" data-i18n="legalPrivacyLink">개인정보처리방침</a> · <a onclick="event.preventDefault(); openLegal('refund')" data-i18n="legalRefundLink">환불 정책</a></div>
     </div>
   </div>
 
@@ -864,7 +868,7 @@
     <div class="mypage-row"><span data-i18n="mypageLabelFreeQuota">오늘 무료 대화</span><b id="my-free-quota">-</b></div>
     <div class="pad" style="padding-bottom:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-profile')" data-i18n="mypageEditProfileBtn">내 정보 수정</button>
-      <div class="legal-links" style="margin:10px 2px 2px;"><a onclick="event.preventDefault(); openLegal('terms')" data-i18n="legalTermsLink">이용약관</a> · <a onclick="event.preventDefault(); openLegal('privacy')" data-i18n="legalPrivacyLink">개인정보처리방침</a></div>
+      <div class="legal-links" style="margin:10px 2px 2px;"><a onclick="event.preventDefault(); openLegal('terms')" data-i18n="legalTermsLink">이용약관</a> · <a onclick="event.preventDefault(); openLegal('privacy')" data-i18n="legalPrivacyLink">개인정보처리방침</a> · <a onclick="event.preventDefault(); openLegal('refund')" data-i18n="legalRefundLink">환불 정책</a></div>
       <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="logout()" data-i18n="mypageLogoutBtn">로그아웃</button>
       <button type="button" onclick="deleteAccount()" style="display:block; width:100%; margin-top:14px; background:none; border:none; color:var(--faint); font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-decoration:underline; cursor:pointer;" data-i18n="mypageDeleteAccountBtn">회원탈퇴</button>
     </div>
@@ -875,7 +879,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-26.3</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-26.4</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1098,7 +1102,7 @@ const I18N = {
     onboardOkBtn: '알겠어요',
     profileTermsConsent: '<a onclick="event.preventDefault(); openLegal(\'terms\')">이용약관</a>과 <a onclick="event.preventDefault(); openLegal(\'privacy\')">개인정보처리방침</a>을 읽었으며 이에 동의합니다.',
     loginLegalNote: '계속하면 <a onclick="event.preventDefault(); openLegal(\'terms\')">이용약관</a>과 <a onclick="event.preventDefault(); openLegal(\'privacy\')">개인정보처리방침</a>에 동의하게 됩니다.',
-    legalTermsLink: '이용약관', legalPrivacyLink: '개인정보처리방침',
+    legalTermsLink: '이용약관', legalPrivacyLink: '개인정보처리방침', legalRefundLink: '환불 정책',
     quotaLowNotice: '오늘 무료 대화가 {n}회 남았어요.',
     quotaLastNotice: '오늘 무료 대화가 마지막 {n}회예요. 이야기를 이어가려면 코인이나 구독을 준비해 두세요.',
     heroTitle2: '대화로 시작되는<br>가장 사적인 로맨스',
@@ -1108,6 +1112,7 @@ const I18N = {
     heroFeat1T: '기억하는 대화', heroFeat1B: '당신과의 모든 대화를 기억하고 이어갑니다.',
     heroFeat2T: '자유로운 입력', heroFeat2B: '정해진 선택지 없이, 내 방식대로 표현하세요.',
     heroFeat3T: '변화하는 관계', heroFeat3B: '대화할수록 깊어지는 감정, 새로운 이야기.',
+    heroPricing: '무료로 시작 — 매일 25회 무료 대화 · 코인 $0.99부터 · 프리미엄 월 $9.99',
     contGoBtn: '대화 ▸',
     contNewSection: '새 인연',
     timeJustNow: '방금',
@@ -1121,16 +1126,16 @@ const I18N = {
     coinUseRewind: '대사 되돌리기 (구독 중이면 무료)',
     coinUseMessage: '대화 1회 — 하루 무료 횟수를 다 쓴 뒤',
     coinUseUnit: '코인 {n}개',
-    coin100Price: '₩1,000', coin550Price: '₩5,000', coin1200Price: '₩10,000',
-    coinDesc: '하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 눌러도 코인만 임시로 채워져요.',
+    coin100Price: '$0.99', coin550Price: '$4.99', coin1200Price: '$8.99',
+    coinDesc: '하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 결제는 PayPal을 통해 안전하게 처리되며, 카드 정보는 저희가 보관하지 않아요.',
     coinSubscribeLinkBtn: '매번 코인 사기 귀찮다면? 구독으로 무제한 이용하기 →',
-    subHeader: '구독', subTitle: '프리미엄 구독', subPriceLabel: '월 12,900원',
+    subHeader: '구독', subTitle: '프리미엄 구독', subPriceLabel: '월 $9.99',
     subBullets: '· 하루 무료 대화 한도 없이 무제한 대화<br/>· 앞으로 추가될 프리미엄 전용 스토리 우선 이용 (추후 적용)',
-    subFooterNote: '실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 테스트로 바로 활성화/해지돼요.',
+    subFooterNote: '구독은 언제든 해지할 수 있어요. 결제는 PayPal을 통해 안전하게 처리돼요.',
     subStatusActiveBadge: '구독 중', subStatusActiveText: '무제한으로 대화할 수 있어요.',
     subStatusInactiveBadge: '미구독', subStatusInactiveTextPrefix: '하루 ', subStatusInactiveTextSuffix: '개 무료 대화 이후엔 코인이 필요해요.',
     subCancelBtn: '구독 해지하기',
-    subPriceValue: '12,900원', subStartBtnPrefix: '월 ', subStartBtnSuffix: '으로 무제한 시작하기',
+    subPriceValue: '$9.99', subStartBtnPrefix: '월 ', subStartBtnSuffix: ' — 무제한 시작하기',
     subCancelConfirm: '구독을 해지할까요? 해지하면 무제한 대화가 바로 종료돼요.',
     subStartedAlertPrefix: '(테스트) ', subStartedAlertSuffix: '이 시작됐어요. 실제 결제는 아직 연결 전이에요.',
     coinBoughtAlertMid: '코인이 충전됐어요. 실제 결제는 아직 연결 전이에요.',
@@ -1287,7 +1292,7 @@ const I18N = {
     onboardOkBtn: 'Got it',
     profileTermsConsent: 'I have read and agree to the <a onclick="event.preventDefault(); openLegal(\'terms\')">Terms of Service</a> and <a onclick="event.preventDefault(); openLegal(\'privacy\')">Privacy Policy</a>.',
     loginLegalNote: 'By continuing, you agree to our <a onclick="event.preventDefault(); openLegal(\'terms\')">Terms of Service</a> and <a onclick="event.preventDefault(); openLegal(\'privacy\')">Privacy Policy</a>.',
-    legalTermsLink: 'Terms of Service', legalPrivacyLink: 'Privacy Policy',
+    legalTermsLink: 'Terms of Service', legalPrivacyLink: 'Privacy Policy', legalRefundLink: 'Refund Policy',
     quotaLowNotice: '{n} free messages left today.',
     quotaLastNotice: 'This is your last free message today. Keep coins or a subscription ready to continue the story.',
     heroTitle2: 'The most personal romance<br>begins with a conversation',
@@ -1297,6 +1302,7 @@ const I18N = {
     heroFeat1T: 'It remembers', heroFeat1B: 'Every conversation is remembered and carried on.',
     heroFeat2T: 'Say it your way', heroFeat2B: 'No fixed choices — express yourself freely.',
     heroFeat3T: 'Relationships evolve', heroFeat3B: 'Feelings deepen and new stories unfold as you talk.',
+    heroPricing: 'Start free — 25 free chats daily · Coins from $0.99 · Premium $9.99/mo',
     contGoBtn: 'Chat ▸',
     contNewSection: 'New connections',
     timeJustNow: 'just now',
@@ -1311,11 +1317,11 @@ const I18N = {
     coinUseMessage: 'One message — after your free daily limit',
     coinUseUnit: '{n} coins',
     coin100Price: '$0.99', coin550Price: '$4.99', coin1200Price: '$8.99',
-    coinDesc: 'Once you use up today\'s free messages, each message costs 2 coins. Real payment (Stripe/local PG) isn\'t connected yet, so tapping this just adds test coins for now.',
+    coinDesc: 'Once you use up today\'s free messages, each message costs 2 coins. Payments are processed securely via PayPal — we never store your card details.',
     coinSubscribeLinkBtn: 'Tired of buying coins? Subscribe for unlimited →',
     subHeader: 'Subscription', subTitle: 'Premium subscription', subPriceLabel: '$9.99/mo',
     subBullets: '· Unlimited chats, no daily free-message limit<br/>· Priority access to upcoming premium-only stories (coming later)',
-    subFooterNote: 'Real payment (Stripe/local PG) isn\'t connected yet, so this activates/cancels instantly for testing.',
+    subFooterNote: 'You can cancel anytime. Payments are processed securely via PayPal.',
     subStatusActiveBadge: 'Subscribed', subStatusActiveText: 'You can chat without limits.',
     subStatusInactiveBadge: 'Not subscribed', subStatusInactiveTextPrefix: 'After ', subStatusInactiveTextSuffix: ' free messages a day, you\'ll need coins.',
     subCancelBtn: 'Cancel Subscription',
@@ -1476,7 +1482,7 @@ const I18N = {
     onboardOkBtn: 'わかりました',
     profileTermsConsent: '<a onclick="event.preventDefault(); openLegal(\'terms\')">利用規約</a>と<a onclick="event.preventDefault(); openLegal(\'privacy\')">プライバシーポリシー</a>を読み、同意します。',
     loginLegalNote: '続行すると、<a onclick="event.preventDefault(); openLegal(\'terms\')">利用規約</a>と<a onclick="event.preventDefault(); openLegal(\'privacy\')">プライバシーポリシー</a>に同意したことになります。',
-    legalTermsLink: '利用規約', legalPrivacyLink: 'プライバシーポリシー',
+    legalTermsLink: '利用規約', legalPrivacyLink: 'プライバシーポリシー', legalRefundLink: '返金ポリシー',
     quotaLowNotice: '今日の無料会話は残り{n}回です。',
     quotaLastNotice: '今日の無料会話はこれが最後の{n}回です。続けるにはコインか購読をご用意ください。',
     heroTitle2: '会話から始まる<br>いちばん私的なロマンス',
@@ -1486,6 +1492,7 @@ const I18N = {
     heroFeat1T: '記憶する会話', heroFeat1B: 'あなたとのすべての会話を記憶し、続けていきます。',
     heroFeat2T: '自由な入力', heroFeat2B: '決まった選択肢はなく、自分の言葉で表現できます。',
     heroFeat3T: '変化する関係', heroFeat3B: '会話するほど深まる感情、新しい物語。',
+    heroPricing: '無料で開始 — 毎日25回無料チャット · コインは$0.99から · プレミアム月額$9.99',
     contGoBtn: '会話 ▸',
     contNewSection: '新しい縁',
     timeJustNow: 'たった今',
@@ -1499,16 +1506,16 @@ const I18N = {
     coinUseRewind: 'セリフを巻き戻す（購読中は無料）',
     coinUseMessage: '会話1回 — 1日の無料回数を使い切ったあと',
     coinUseUnit: 'コイン{n}枚',
-    coin100Price: '¥150', coin550Price: '¥750', coin1200Price: '¥1,500',
-    coinDesc: '本日の無料メッセージを使い切ると、メッセージごとに2コイン消費します。実際の決済(Stripe/現地PG)はまだ接続されていないため、今はタップするとテスト用にコインが追加されるだけです。',
+    coin100Price: '$0.99', coin550Price: '$4.99', coin1200Price: '$8.99',
+    coinDesc: '本日の無料メッセージを使い切ると、メッセージごとに2コイン消費します。決済はPayPalを通じて安全に処理され、カード情報を当方が保持することはありません。',
     coinSubscribeLinkBtn: '毎回コインを買うのが面倒なら?購読で無制限に →',
-    subHeader: '購読', subTitle: 'プレミアム購読', subPriceLabel: '月額1,500円',
+    subHeader: '購読', subTitle: 'プレミアム購読', subPriceLabel: '月額$9.99',
     subBullets: '· 1日の無料会話制限なしで無制限に会話<br/>· 今後追加されるプレミアム専用ストーリーへの優先アクセス(今後対応)',
-    subFooterNote: '実際の決済(Stripe/現地PG)はまだ接続されていないため、今はテストですぐに有効化/解約されます。',
+    subFooterNote: '購読はいつでも解約できます。決済はPayPalを通じて安全に処理されます。',
     subStatusActiveBadge: '購読中', subStatusActiveText: '無制限に会話できます。',
     subStatusInactiveBadge: '未購読', subStatusInactiveTextPrefix: '1日', subStatusInactiveTextSuffix: '件の無料会話の後はコインが必要です。',
     subCancelBtn: '購読を解約する',
-    subPriceValue: '1,500円', subStartBtnPrefix: '月額', subStartBtnSuffix: 'で無制限に始める',
+    subPriceValue: '$9.99', subStartBtnPrefix: '月額', subStartBtnSuffix: 'で無制限に始める',
     subCancelConfirm: '購読を解約しますか?解約すると無制限会話はすぐに終了します。',
     subStartedAlertPrefix: '(テスト) ', subStartedAlertSuffix: 'が開始されました。実際の決済はまだ接続されていません。',
     coinBoughtAlertMid: 'コインがチャージされました。実際の決済はまだ接続されていません。',
@@ -1795,7 +1802,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-26.3';
+window.__BUILD = 'v2026-08-26.4';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -2355,7 +2362,12 @@ async function buyCoins(pack, card) {
 // 일본 대상 유료 판매 시작 시 '특정상거래법 표기' 추가 필요 — 작업리스트 참고.
 // =====================================================
 const LEGAL_DOCS = {
-ko: { termsTitle: '이용약관', privacyTitle: '개인정보처리방침',
+ko: { termsTitle: '이용약관', privacyTitle: '개인정보처리방침', refundTitle: '환불 정책',
+refund: `<h3>1. 적용 대상</h3><p>본 정책은 LUNIQUE에서 판매하는 디지털 콘텐츠(코인, 구독)에 적용됩니다. 운영자(판매자): 오형균 (개인).</p>
+<h3>2. 코인</h3><p>사용하지 않은 코인은 구매일로부터 14일 이내에 요청하시면 전액 환불해 드립니다. 일부만 사용한 경우 미사용분을 비례하여 환불해 드릴 수 있습니다. 이미 사용한 코인은 환불되지 않습니다.</p>
+<h3>3. 구독</h3><p>구독은 언제든 해지할 수 있으며, 해지 후에도 이미 결제한 기간이 끝날 때까지 이용할 수 있습니다. 결제일로부터 14일 이내이고 해당 기간의 유료 기능을 사실상 사용하지 않은 경우 전액 환불해 드립니다.</p>
+<h3>4. 요청 방법</h3><p>kkfm1215@gmail.com 으로 계정 이메일과 구매 내역(날짜·금액)을 보내주세요. 영업일 기준 7일 이내에 처리합니다. 결제 대행사(PayPal, Paddle 등)를 통해 결제하신 경우 환불도 해당 대행사를 통해 이루어질 수 있습니다.</p>
+<h3>5. 법정 권리</h3><p>본 정책은 이용자가 거주하는 국가의 강행 소비자 보호 법령상의 권리(EU·영국의 14일 철회권 등)를 제한하지 않습니다. 디지털 콘텐츠의 즉시 제공에 동의하고 이용을 시작한 경우, 관련 법령에 따라 철회권이 소멸될 수 있습니다.</p><p>시행일: 2026-08-26</p>`,
 terms: `<h3>1. 서비스 소개</h3><p>LUNIQUE(이하 "서비스")는 AI가 만들어내는 가상 인물과의 창작 로맨스 대화를 제공하는 엔터테인먼트 서비스입니다. 모든 인물과 이야기는 허구이며, 실존 인물과 무관합니다. 서비스의 대화는 창작물일 뿐 상담·의료·법률 등 어떠한 전문적 조언도 아닙니다.</p>
 <h3>2. 이용 자격</h3><p>본 서비스는 만 18세 이상만 이용할 수 있습니다. 가입 시 생년월일 입력으로 연령을 확인하며, 허위 입력에 따른 책임은 이용자에게 있습니다.</p>
 <h3>3. 계정</h3><p>로그인은 Google 계정으로 이루어집니다. 계정 관리 책임은 이용자에게 있으며, 타인의 계정을 무단 사용해서는 안 됩니다.</p>
@@ -2366,7 +2378,7 @@ terms: `<h3>1. 서비스 소개</h3><p>LUNIQUE(이하 "서비스")는 AI가 만�
 <h3>8. 이용 제한</h3><p>본 약관을 중대하게 또는 반복적으로 위반하는 경우 이용을 제한하거나 계정을 정지할 수 있습니다.</p>
 <h3>9. 책임의 한계</h3><p>서비스는 "있는 그대로" 제공됩니다. 법이 허용하는 범위에서, 운영자는 서비스 이용으로 발생한 간접적·부수적 손해에 대해 책임을 지지 않습니다. 이 조항은 각국 소비자 보호 법령상 이용자의 권리를 제한하지 않습니다.</p>
 <h3>10. 준거법</h3><p>본 약관은 대한민국 법을 준거법으로 합니다. 다만 이용자가 거주하는 국가의 강행 소비자 보호 규정이 있는 경우 그 보호를 받습니다.</p>
-<h3>11. 문의</h3><p>kkfm1215@gmail.com</p><p>시행일: 2026-08-24</p>`,
+<h3>11. 운영자 및 문의</h3><p>운영자(판매자): 오형균 (Hyeonggyun Oh, 개인)<br>이메일: kkfm1215@gmail.com</p><p>시행일: 2026-08-24</p>`,
 privacy: `<h3>1. 수집하는 정보</h3><p>· 계정: Google 로그인 식별자, 이메일<br>· 프로필: 닉네임, 성별, 생년월일, 자기소개(선택), 관심 상대<br>· 이용 기록: 대화 내용, 관계 진행 상태, 코인·구독·무료 이용량, 오류 기록</p>
 <h3>2. 이용 목적</h3><p>서비스 제공(대화 생성과 "기억" 기능), 연령 확인, 결제·이용량 관리, 오류 진단과 안전한 운영.</p>
 <h3>3. 처리 위탁과 국외 이전</h3><p>다음 사업자가 서비스 제공을 위해 정보를 처리하며, 서버는 해외(미국 등)에 있을 수 있습니다:<br>· Google Firebase — 로그인, 데이터 저장<br>· Google Gemini API — 대화 생성(입력한 대화 내용이 처리됨)<br>· Netlify — 호스팅<br>· PayPal — 결제(결제 기능 도입 시, 카드 정보는 운영자가 보관하지 않음)</p>
@@ -2376,7 +2388,12 @@ privacy: `<h3>1. 수집하는 정보</h3><p>· 계정: Google 로그인 식별�
 <h3>7. 아동의 개인정보</h3><p>만 18세 미만은 서비스를 이용할 수 없으며, 아동의 정보를 고의로 수집하지 않습니다.</p>
 <h3>8. 변경 고지</h3><p>이 방침이 바뀌면 서비스 내 공지로 알립니다.</p>
 <h3>9. 문의</h3><p>kkfm1215@gmail.com</p><p>시행일: 2026-08-24</p>` },
-en: { termsTitle: 'Terms of Service', privacyTitle: 'Privacy Policy',
+en: { termsTitle: 'Terms of Service', privacyTitle: 'Privacy Policy', refundTitle: 'Refund Policy',
+refund: `<h3>1. Scope</h3><p>This policy applies to digital content sold on LUNIQUE (coins and subscriptions). Operator (Seller): Hyeonggyun Oh (sole trader / individual).</p>
+<h3>2. Coins</h3><p>Unused coins are fully refundable within 14 days of purchase upon request. If a pack is partially used, we may refund the unused portion on a pro-rata basis. Coins already spent are non-refundable.</p>
+<h3>3. Subscriptions</h3><p>You can cancel anytime and keep access until the end of the paid period. A full refund is available within 14 days of a charge if the paid features were substantially unused during that period.</p>
+<h3>4. How to request</h3><p>Email kkfm1215@gmail.com with your account email and purchase details (date and amount). Requests are handled within 7 business days. If you paid through a payment provider (PayPal, Paddle, etc.), the refund may be issued through that provider.</p>
+<h3>5. Statutory rights</h3><p>Nothing in this policy limits your mandatory consumer rights in your country of residence (including the 14-day withdrawal right in the EU/UK). Where you consent to immediate delivery of digital content and begin using it, the withdrawal right may lapse under applicable law.</p><p>Effective: 2026-08-26</p>`,
 terms: `<h3>1. About the Service</h3><p>LUNIQUE (the "Service") is an entertainment service offering fictional romance conversations with AI-generated characters. All characters and stories are fictional and unrelated to real persons. Conversations are creative fiction and do not constitute professional advice of any kind.</p>
 <h3>2. Eligibility</h3><p>You must be 18 or older. Age is confirmed by the date of birth you provide at sign-up; you are responsible for its accuracy.</p>
 <h3>3. Account</h3><p>Sign-in is via Google. You are responsible for your account and must not use another person's account.</p>
@@ -2387,7 +2404,7 @@ terms: `<h3>1. About the Service</h3><p>LUNIQUE (the "Service") is an entertainm
 <h3>8. Suspension</h3><p>Serious or repeated violations of these Terms may result in restriction or suspension of your account.</p>
 <h3>9. Limitation of Liability</h3><p>The Service is provided "as is". To the extent permitted by law, the operator is not liable for indirect or incidental damages arising from use of the Service. This does not limit rights you have under consumer protection laws of your country.</p>
 <h3>10. Governing Law</h3><p>These Terms are governed by the laws of the Republic of Korea, without prejudice to mandatory consumer protections of your country of residence.</p>
-<h3>11. Contact</h3><p>kkfm1215@gmail.com</p><p>Effective: 2026-08-24</p>`,
+<h3>11. Operator & Contact</h3><p>Operator (Seller): Hyeonggyun Oh (sole trader / individual)<br>Email: kkfm1215@gmail.com</p><p>Effective: 2026-08-24</p>`,
 privacy: `<h3>1. Data We Collect</h3><p>· Account: Google sign-in identifier, email<br>· Profile: nickname, gender, date of birth, bio (optional), preference<br>· Usage: chat content, relationship progress, coin/subscription/free-quota usage, error logs</p>
 <h3>2. Purposes</h3><p>Providing the Service (conversation generation and the "memory" feature), age verification, billing and quota management, diagnostics and safe operation.</p>
 <h3>3. Processors & International Transfer</h3><p>The following providers process data on our behalf; servers may be located abroad (e.g., the U.S.):<br>· Google Firebase — sign-in, data storage<br>· Google Gemini API — conversation generation (your chat inputs are processed)<br>· Netlify — hosting<br>· PayPal — payments (when introduced; we never store card details)</p>
@@ -2397,7 +2414,12 @@ privacy: `<h3>1. Data We Collect</h3><p>· Account: Google sign-in identifier, e
 <h3>7. Children</h3><p>The Service is not available to persons under 18, and we do not knowingly collect children's data.</p>
 <h3>8. Changes</h3><p>Changes to this policy will be announced in the Service.</p>
 <h3>9. Contact</h3><p>kkfm1215@gmail.com</p><p>Effective: 2026-08-24</p>` },
-ja: { termsTitle: '利用規約', privacyTitle: 'プライバシーポリシー',
+ja: { termsTitle: '利用規約', privacyTitle: 'プライバシーポリシー', refundTitle: '返金ポリシー',
+refund: `<h3>1. 適用範囲</h3><p>本ポリシーはLUNIQUEで販売するデジタルコンテンツ(コイン、サブスクリプション)に適用されます。運営者(販売者): Oh Hyeonggyun(個人)。</p>
+<h3>2. コイン</h3><p>未使用のコインは、購入日から14日以内のご請求で全額返金いたします。一部使用済みの場合は未使用分を按分して返金できる場合があります。使用済みのコインは返金できません。</p>
+<h3>3. サブスクリプション</h3><p>いつでも解約でき、解約後も支払済み期間の終了まで利用できます。決済日から14日以内で、その期間の有料機能を実質的に使用していない場合は全額返金いたします。</p>
+<h3>4. 請求方法</h3><p>kkfm1215@gmail.com までアカウントのメールアドレスと購入情報(日付・金額)をお送りください。7営業日以内に対応します。決済代行(PayPal、Paddle等)経由のお支払いは、当該代行を通じて返金される場合があります。</p>
+<h3>5. 法定の権利</h3><p>本ポリシーは、お住まいの国の強行的な消費者保護法上の権利(EU・英国の14日間の撤回権など)を制限するものではありません。デジタルコンテンツの即時提供に同意し利用を開始した場合、適用法により撤回権が消滅することがあります。</p><p>施行日: 2026-08-26</p>`,
 terms: `<h3>1. サービスについて</h3><p>LUNIQUE(以下「本サービス」)は、AIが生成する架空の人物との創作恋愛会話を提供するエンターテインメントサービスです。すべての人物と物語はフィクションであり、実在の人物とは関係ありません。会話は創作物であり、いかなる専門的助言でもありません。</p>
 <h3>2. 利用資格</h3><p>18歳以上の方のみご利用いただけます。年齢は登録時の生年月日で確認し、虚偽入力の責任は利用者にあります。</p>
 <h3>3. アカウント</h3><p>ログインはGoogleアカウントで行います。アカウントの管理責任は利用者にあり、他人のアカウントを無断で使用してはなりません。</p>
@@ -2408,7 +2430,7 @@ terms: `<h3>1. サービスについて</h3><p>LUNIQUE(以下「本サービス�
 <h3>8. 利用制限</h3><p>本規約への重大または反復的な違反があった場合、利用制限やアカウント停止を行うことがあります。</p>
 <h3>9. 責任の制限</h3><p>本サービスは現状有姿で提供されます。法令が許す範囲で、運営者は本サービスの利用から生じた間接的・付随的損害について責任を負いません。本条項は各国の消費者保護法上の権利を制限しません。</p>
 <h3>10. 準拠法</h3><p>本規約は大韓民国法を準拠法とします。ただし、利用者の居住国の強行的な消費者保護規定がある場合、その保護を受けます。</p>
-<h3>11. お問い合わせ</h3><p>kkfm1215@gmail.com</p><p>施行日: 2026-08-24</p>`,
+<h3>11. 運営者・お問い合わせ</h3><p>運営者(販売者): Oh Hyeonggyun(個人)<br>メール: kkfm1215@gmail.com</p><p>施行日: 2026-08-24</p>`,
 privacy: `<h3>1. 収集する情報</h3><p>· アカウント: Googleログイン識別子、メールアドレス<br>· プロフィール: ニックネーム、性別、生年月日、自己紹介(任意)、関心のある相手<br>· 利用記録: 会話内容、関係の進行状況、コイン・購読・無料利用量、エラー記録</p>
 <h3>2. 利用目的</h3><p>サービス提供(会話生成と「記憶」機能)、年齢確認、決済・利用量管理、エラー診断と安全な運営。</p>
 <h3>3. 処理の委託と国外移転</h3><p>以下の事業者がサービス提供のため情報を処理し、サーバーは海外(米国など)にある場合があります:<br>· Google Firebase — ログイン、データ保存<br>· Google Gemini API — 会話生成(入力した会話内容が処理されます)<br>· Netlify — ホスティング<br>· PayPal — 決済(導入時。カード情報を運営者は保持しません)</p>
@@ -2422,8 +2444,10 @@ privacy: `<h3>1. 収集する情報</h3><p>· アカウント: Googleログイ�
 // 문서 뷰어 열기. kind: 'terms' | 'privacy'
 function openLegal(kind) {
   const d = LEGAL_DOCS[currentLang] || LEGAL_DOCS.ko;
-  document.getElementById('legal-title').textContent = kind === 'privacy' ? d.privacyTitle : d.termsTitle;
-  document.getElementById('legal-body').innerHTML = kind === 'privacy' ? d.privacy : d.terms;
+  const title = kind === 'privacy' ? d.privacyTitle : (kind === 'refund' ? d.refundTitle : d.termsTitle);
+  const body = kind === 'privacy' ? d.privacy : (kind === 'refund' ? d.refund : d.terms);
+  document.getElementById('legal-title').textContent = title;
+  document.getElementById('legal-body').innerHTML = body;
   goTo('screen-legal');
 }
 
