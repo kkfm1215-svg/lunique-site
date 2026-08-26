@@ -875,7 +875,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-25.7</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-26.1</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1131,9 +1131,13 @@ const I18N = {
     subStatusInactiveBadge: '미구독', subStatusInactiveTextPrefix: '하루 ', subStatusInactiveTextSuffix: '개 무료 대화 이후엔 코인이 필요해요.',
     subCancelBtn: '구독 해지하기',
     subPriceValue: '12,900원', subStartBtnPrefix: '월 ', subStartBtnSuffix: '으로 무제한 시작하기',
-    subCancelConfirm: '구독을 해지할까요? (테스트용 — 즉시 해지됨)',
+    subCancelConfirm: '구독을 해지할까요? 해지하면 무제한 대화가 바로 종료돼요.',
     subStartedAlertPrefix: '(테스트) ', subStartedAlertSuffix: '이 시작됐어요. 실제 결제는 아직 연결 전이에요.',
     coinBoughtAlertMid: '코인이 충전됐어요. 실제 결제는 아직 연결 전이에요.',
+    payProcessing: '결제 확인 중...',
+    payCoinsDone: '결제 완료! 코인 {n}개가 충전됐어요.',
+    paySubDone: '구독이 시작됐어요. 이제 대화가 무제한이에요.',
+    payFailed: '결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요. 문제가 계속되면 kkfm1215@gmail.com 으로 알려주세요.',
   },
   en: {
     landingEyebrow: 'Your own AI romance that remembers you',
@@ -1316,9 +1320,13 @@ const I18N = {
     subStatusInactiveBadge: 'Not subscribed', subStatusInactiveTextPrefix: 'After ', subStatusInactiveTextSuffix: ' free messages a day, you\'ll need coins.',
     subCancelBtn: 'Cancel Subscription',
     subPriceValue: '$9.99', subStartBtnPrefix: 'Start unlimited — ', subStartBtnSuffix: '/mo',
-    subCancelConfirm: 'Cancel your subscription? (test only — takes effect immediately)',
+    subCancelConfirm: 'Cancel your subscription? Unlimited chat ends right away.',
     subStartedAlertPrefix: '(Test) ', subStartedAlertSuffix: ' has started. Real payment isn\'t connected yet.',
     coinBoughtAlertMid: 'coins have been added. Real payment isn\'t connected yet.',
+    payProcessing: 'Confirming your payment...',
+    payCoinsDone: 'Payment complete! {n} coins have been added.',
+    paySubDone: 'Your subscription has started. Unlimited chat is now on.',
+    payFailed: 'We couldn\'t complete the payment. Please try again shortly. If it keeps failing, email kkfm1215@gmail.com.',
   },
   ja: {
     landingEyebrow: 'あなただけを覚えているAIロマンス',
@@ -1501,9 +1509,13 @@ const I18N = {
     subStatusInactiveBadge: '未購読', subStatusInactiveTextPrefix: '1日', subStatusInactiveTextSuffix: '件の無料会話の後はコインが必要です。',
     subCancelBtn: '購読を解約する',
     subPriceValue: '1,500円', subStartBtnPrefix: '月額', subStartBtnSuffix: 'で無制限に始める',
-    subCancelConfirm: '購読を解約しますか?(テスト用 — 即時解約されます)',
+    subCancelConfirm: '購読を解約しますか?解約すると無制限会話はすぐに終了します。',
     subStartedAlertPrefix: '(テスト) ', subStartedAlertSuffix: 'が開始されました。実際の決済はまだ接続されていません。',
     coinBoughtAlertMid: 'コインがチャージされました。実際の決済はまだ接続されていません。',
+    payProcessing: '決済を確認しています...',
+    payCoinsDone: '決済完了!コイン{n}枚がチャージされました。',
+    paySubDone: 'サブスクリプションが開始されました。会話が無制限になりました。',
+    payFailed: '決済を完了できませんでした。しばらくしてからもう一度お試しください。続く場合は kkfm1215@gmail.com までご連絡ください。',
   },
 };
 
@@ -1783,7 +1795,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-25.7';
+window.__BUILD = 'v2026-08-26.1';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -2171,6 +2183,64 @@ const COIN_PACKS = [
   { coins: 1200, usd: 8.99, labelKey: 'coin1200Label', priceKey: 'coin1200Price' }
 ];
 
+// ===== PayPal 결제 (66일차) =====
+// paypalClientId를 채우면 실결제 모드, 비워두면 테스트 지급 모드.
+// env를 'live'로 바꾸기 전까지는 페이팔 샌드박스(가짜 돈)로 동작한다.
+const PAYMENT = {
+  paypalClientId: '',   // ← PayPal 앱의 Client ID를 여기 붙여넣기
+  paypalPlanId: '',     // ← 구독 플랜 ID (P-로 시작)
+  env: 'sandbox'
+};
+const PAYMENT_READY = !!PAYMENT.paypalClientId;
+const __ppSdk = {};
+function loadPayPalSdk(kind) {
+  if (__ppSdk[kind]) return __ppSdk[kind];
+  __ppSdk[kind] = new Promise((resolve, reject) => {
+    const ns = kind === 'sub' ? 'paypal_sub' : 'paypal_order';
+    const qs = kind === 'sub'
+      ? 'client-id=' + encodeURIComponent(PAYMENT.paypalClientId) + '&vault=true&intent=subscription&components=buttons'
+      : 'client-id=' + encodeURIComponent(PAYMENT.paypalClientId) + '&currency=USD&intent=capture&components=buttons';
+    const sc = document.createElement('script');
+    sc.src = 'https://www.paypal.com/sdk/js?' + qs;
+    sc.setAttribute('data-namespace', ns);
+    sc.onload = () => resolve(window[ns]);
+    sc.onerror = () => { delete __ppSdk[kind]; reject(new Error('paypal sdk load failed')); };
+    document.head.appendChild(sc);
+  });
+  return __ppSdk[kind];
+}
+async function payApi(body) {
+  const tok = await auth.currentUser.getIdToken();
+  const res = await fetch('/api/pay', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
+    body: JSON.stringify(body)
+  });
+  let j = {};
+  try { j = await res.json(); } catch (e) {}
+  if (!res.ok) throw new Error(j.error || ('HTTP ' + res.status));
+  return j;
+}
+async function renderPaypalSubButton(holder) {
+  holder.textContent = t('payProcessing');
+  try {
+    const ppns = await loadPayPalSdk('sub');
+    holder.textContent = '';
+    ppns.Buttons({
+      style: { layout: 'vertical', height: 40 },
+      createSubscription: (data, actions) => actions.subscription.create({ plan_id: PAYMENT.paypalPlanId, custom_id: currentUid }),
+      onApprove: async (data) => {
+        try {
+          await payApi({ action: 'activate-sub', subscriptionID: data.subscriptionID });
+          alert(t('paySubDone'));
+        } catch (e) { alert(t('payFailed')); }
+        openSubscribeScreen();
+      },
+      onError: () => alert(t('payFailed'))
+    }).render(holder);
+  } catch (e) { holder.textContent = ''; alert(t('payFailed')); }
+}
+
 // 55일차 B10: 예전에는 "550코인 (+10%)"만 보여서 얼마나 대화할 수 있는지 알 수 없었다.
 // 대화 횟수로 환산해 보여주고, 어느 쪽이 이득인지도 표시한다.
 function renderCoinScreen() {
@@ -2207,7 +2277,7 @@ function renderCoinScreen() {
     price.textContent = t(p.priceKey);
     right.appendChild(price);
     card.appendChild(left); card.appendChild(right);
-    card.addEventListener('click', () => buyCoins(p.coins));
+    card.addEventListener('click', () => buyCoins(p, card));
     box.appendChild(card);
   });
   renderCoinUses();
@@ -2240,13 +2310,39 @@ function renderCoinUses() {
   });
 }
 
-async function buyCoins(amount) {
-  const cur = await getCoins();
-  await playerDocRef().set({ coins: cur + amount }, { merge: true });
-  alert(`${t('subStartedAlertPrefix')}${amount} ${t('coinBoughtAlertMid')}`);
-  // 54일차 B09: 예전에는 무조건 마이페이지로 보내서, 대화 도중 한도가 걸려 충전한 유저가
-  // 스스로 대화를 다시 찾아 들어가야 했다. 왔던 화면으로 돌려보낸다.
-  goBack('screen-mypage');
+async function buyCoins(pack, card) {
+  // 결제 키가 아직 없으면 예전처럼 테스트 지급 (실서비스 전 개발용)
+  if (!PAYMENT_READY) {
+    const cur = await getCoins();
+    await playerDocRef().set({ coins: cur + pack.coins }, { merge: true });
+    alert(`${t('subStartedAlertPrefix')}${pack.coins} ${t('coinBoughtAlertMid')}`);
+    goBack('screen-mypage');
+    return;
+  }
+  // 실결제: 누른 묶음 카드 바로 아래에 페이팔 버튼을 펼친다
+  document.querySelectorAll('.paypal-pack-holder').forEach(el => el.remove());
+  const holder = document.createElement('div');
+  holder.className = 'paypal-pack-holder';
+  holder.style.cssText = 'margin:10px 2px 16px;';
+  holder.textContent = t('payProcessing');
+  card.insertAdjacentElement('afterend', holder);
+  try {
+    const ppns = await loadPayPalSdk('order');
+    holder.textContent = '';
+    ppns.Buttons({
+      style: { layout: 'vertical', height: 40 },
+      createOrder: async () => (await payApi({ action: 'create-order', pack: pack.coins })).id,
+      onApprove: async (data) => {
+        holder.textContent = t('payProcessing');
+        try {
+          const r = await payApi({ action: 'capture-order', orderID: data.orderID });
+          alert(fill(t('payCoinsDone'), { n: r.coins }));
+          goBack('screen-mypage');
+        } catch (e) { holder.remove(); alert(t('payFailed')); }
+      },
+      onError: () => { alert(t('payFailed')); }
+    }).render(holder);
+  } catch (e) { holder.remove(); alert(t('payFailed')); }
 }
 
 // =====================================================
@@ -2436,7 +2532,14 @@ async function subscribeNow() {
 
 async function cancelSubscription() {
   if (!confirm(t('subCancelConfirm'))) return;
-  await playerDocRef().set({ subscription: { active: false } }, { merge: true });
+  const meta = await getBillingMeta();
+  const subId = meta.subscription && meta.subscription.paypalSubId;
+  if (PAYMENT_READY && subId) {
+    try { await payApi({ action: 'cancel-sub' }); }
+    catch (e) { alert(t('payFailed')); return; }
+  } else {
+    await playerDocRef().set({ subscription: { active: false } }, { merge: true });
+  }
   goTo('screen-mypage');
 }
 
@@ -2460,6 +2563,12 @@ function renderSubscribeScreen(meta) {
     btn.textContent = t('subCancelBtn');
     btn.classList.add('secondary');
     btn.onclick = cancelSubscription;
+  } else if (PAYMENT_READY && PAYMENT.paypalPlanId) {
+    const holder = document.createElement('div');
+    holder.id = 'paypal-sub-holder';
+    $('subscribe-action').appendChild(holder);
+    renderPaypalSubButton(holder);
+    return;
   } else {
     btn.textContent = `${t('subStartBtnPrefix')}${t('subPriceValue')}${t('subStartBtnSuffix')}`;
     btn.onclick = subscribeNow;

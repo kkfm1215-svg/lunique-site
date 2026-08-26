@@ -1,3 +1,9 @@
 [[edge_functions]]
   path = "/api/chat"
   function = "gemini-proxy"
+
+# 결제 서버 (66일차) — /api/pay 로 들어오는 요청을 paypal 함수로 넘긴다
+[[redirects]]
+  from = "/api/pay"
+  to = "/.netlify/functions/paypal"
+  status = 200
