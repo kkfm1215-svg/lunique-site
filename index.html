@@ -212,6 +212,16 @@
   .manifesto.done .mf-line, .manifesto.done .mf-orn, .manifesto.done .mf-8 { animation: none; opacity: 1; }
   .mf-back { background: none; border: none; color: var(--faint); font-family: var(--sans); font-size: 12px; cursor: pointer; margin-top: 6px; }
   .mf-back:hover { color: var(--dim); }
+  /* 68일차: 이야기 달력 — 날짜 구분선(카톡식)과 첫 페이지 날짜 헤더 */
+  .date-divider {
+    display: flex; align-items: center; gap: 12px; margin: 18px 0 10px;
+    color: var(--faint); font-size: 11.5px; letter-spacing: .06em; font-family: var(--sans);
+  }
+  .date-divider::before, .date-divider::after { content: ''; flex: 1; height: 1px; background: var(--hair); }
+  .date-divider.first {
+    font-family: var(--serif); font-size: 13.5px; color: var(--brass); letter-spacing: .1em; margin: 6px 0 16px;
+  }
+  .date-divider.first::before, .date-divider.first::after { background: rgba(201,162,39,.25); }
   @keyframes mfIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   @media (min-width: 900px) { .mf-line { font-size: 17.5px; } .mf-strong { font-size: 20px; } }
   @media (prefers-reduced-motion: reduce) { .mf-line, .mf-orn, .mf-8 { animation: none; opacity: 1; } }
@@ -1047,7 +1057,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.3</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.5</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2017,7 +2027,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-28.3';
+window.__BUILD = 'v2026-08-28.5';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -7628,6 +7638,52 @@ function storyDocRef(storyId) {
   return db.collection('players').doc(currentUid).collection('storyStates').doc(storyId);
 }
 
+// 68일차: 이야기 달력 — 시작 날짜는 이야기가 정한다(유저가 언제 시작하든 벚꽃 이야기는 봄).
+// 명시 지정이 없는 스토리는 키 해시로 2026년 3~10월에 분산시킨다(모두 같은 날 시작하는 어색함 방지).
+const STORY_CALENDAR = {
+  w16: '2026-04-06 저녁'   // 하린 — 벚꽃 지는 밤거리
+};
+function storyCalendarInit(storyId) {
+  const spec = STORY_CALENDAR[storyId];
+  if (spec) {
+    const [d, part] = spec.split(' ');
+    const [y, m, dd] = d.split('-').map(Number);
+    return { storyDate: new Date(y, m - 1, dd).getTime(), dayPart: part || '저녁' };
+  }
+  let h = 0;
+  const key = String(storyId || 'x');
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  const month = 3 + (h % 8);            // 3~10월
+  const day = 1 + ((h >> 3) % 28);      // 1~28일
+  const parts = ['오후', '저녁', '저녁', '늦은밤']; // 달빛 무드라 저녁 비중을 높인다
+  return { storyDate: new Date(2026, month - 1, day).getTime(), dayPart: parts[(h >> 8) % parts.length] };
+}
+function fmtStoryDate(ms) {
+  const d = new Date(ms);
+  const y = d.getFullYear(), m = d.getMonth() + 1, dd = d.getDate();
+  if (currentLang === 'en') {
+    const mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return mn[m - 1] + ' ' + dd + ', ' + y;
+  }
+  if (currentLang === 'ja') return y + '年' + m + '月' + dd + '日';
+  return y + '년 ' + m + '월 ' + dd + '일';
+}
+function dayPartLabel(part) {
+  const map = {
+    ko: { '새벽': '새벽', '아침': '아침', '오후': '오후', '저녁': '저녁', '늦은밤': '늦은 밤' },
+    en: { '새벽': 'dawn', '아침': 'morning', '오후': 'afternoon', '저녁': 'evening', '늦은밤': 'late night' },
+    ja: { '새벽': '未明', '아침': '朝', '오후': '午後', '저녁': '夜', '늦은밤': '深夜' }
+  };
+  return (map[currentLang] || map.ko)[part] || (map[currentLang] || map.ko)['저녁'];
+}
+// 날짜 구분선(카톡식). isFirst면 이야기의 첫 페이지 헤더로 조금 더 크게.
+function makeDateDivider(sd, part, isFirst) {
+  const div = document.createElement('div');
+  div.className = 'date-divider' + (isFirst ? ' first' : '');
+  div.textContent = fmtStoryDate(sd) + (part ? ' · ' + dayPartLabel(part) : '');
+  return div;
+}
+
 function defaultStateFor(story) {
   const chars = {};
   story.cast.forEach(c => { chars[c.key] = { affection: 0, trust: 0, stage: (c.startStage || (typeof story !== 'undefined' && story && story.startStage) || (typeof currentStory !== 'undefined' && currentStory && currentStory.startStage) || 1), distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false }; });
@@ -7647,7 +7703,7 @@ function defaultStateFor(story) {
   const initialRival = story.cast.find(c => c.retreatOnLowGauge);
   // startedAt/lastTurnAt: 58일차 추가. AI에게 "며칠째인지, 지난 대화로부터 얼마나 지났는지"를 알려주기 위한 것.
   // 예전에는 이 정보가 없어서 "퇴원 이틀 남았다"고 해놓고 다음 날 다시 와도 여전히 이틀 남았다고 했다.
-  return { history: [], chars, arcState: defaultArcState(), collectionStatus: 'active', factLedger: [], recentRivalTriggers: [], failedAt: null, failedLockoutDays: null, dynamicCast: [], rivalCycleIndex: 1, activeRivalKey: initialRival ? initialRival.key : null, startedAt: Date.now(), lastTurnAt: Date.now(), scheduledEvents: [] };
+  return { history: [], chars, arcState: defaultArcState(), collectionStatus: 'active', factLedger: [], recentRivalTriggers: [], failedAt: null, failedLockoutDays: null, dynamicCast: [], rivalCycleIndex: 1, activeRivalKey: initialRival ? initialRival.key : null, startedAt: Date.now(), lastTurnAt: Date.now(), scheduledEvents: [], ...storyCalendarInit(currentStoryId) };
 }
 
 // 동시에 진행할 수 있는 인연의 최대 개수. 이벤트 캐릭터(나중에 운영자 페이지에서 추가 예정)는
@@ -7710,6 +7766,13 @@ async function loadStoryState(storyId) {
     // 58일차: 시각 기록 도입 전 저장분은 값이 없다. 지금부터 세기 시작한다.
     if (!state.startedAt) state.startedAt = Date.now();
     if (!state.lastTurnAt) state.lastTurnAt = state.startedAt;
+    // 68일차: 달력 도입 전에 시작된 진행분 — 이야기 시작일에 실제 경과일을 얹어 근사 보정
+    if (!state.storyDate) {
+      const init = storyCalendarInit(currentStoryId);
+      const progressed = Math.max(0, Math.floor(((state.lastTurnAt || Date.now()) - (state.startedAt || Date.now())) / 86400000));
+      state.storyDate = init.storyDate + progressed * 86400000;
+      state.dayPart = init.dayPart;
+    }
     if (!Array.isArray(state.scheduledEvents)) state.scheduledEvents = [];
     if (state.chars[c.key].rivalLowStreak === undefined) state.chars[c.key].rivalLowStreak = 0;
     if (state.chars[c.key].rivalDeparted === undefined) state.chars[c.key].rivalDeparted = false;
@@ -8222,7 +8285,15 @@ function addDevSys(text) {
 
 function renderHistory() {
   $('chat').innerHTML = '';
+  let lastStoryDay = null;   // 68일차: 이야기 날짜가 바뀌는 지점마다 구분선(첫 턴은 첫 페이지 헤더)
   state.history.forEach((h, i) => {
+    if (h.sd) {
+      const day = Math.floor(h.sd / 86400000);
+      if (lastStoryDay === null || day !== lastStoryDay) {
+        $('chat').appendChild(makeDateDivider(h.sd, h.dpart, lastStoryDay === null));
+        lastStoryDay = day;
+      }
+    }
     if (h.role === 'user') {
       addTurn(h.text, 'user', i);
     } else if (h.beats) {
@@ -9096,7 +9167,10 @@ ${playerRelationRules}
 - 방식을 바꾸는 것 자체가 이야기의 재료다. 얼굴 보고 말 못 할 이야기를 문자로 보내거나, 문자로는 안 되겠어서 전화를 거는 순간에 감정이 실린다. 다만 억지로 자주 바꾸지는 않는다.
 
 [시간의 흐름 - 매우 중요]
-위 [시간] 항목에 지금 날짜와, 지난 대화로부터 실제로 얼마나 지났는지가 적혀 있다. 이야기 속 시간은 이 값을 그대로 따른다.
+위 [시간] 항목에 "이야기 속 오늘 날짜"와, 유저가 현실에서 지난 대화로부터 얼마나 비웠는지가 적혀 있다. 이야기의 시간은 이야기 속 날짜를 기준으로 흐르고, 그 흐름은 네가 결정해서 선언한다.
+- 시간 경과는 응답의 days_passed로 선언한다: 같은 날 안에서 이어지면 0, 하루 이상 넘어가면 넘어간 일수. 시간대가 바뀌면 day_part도 함께(안 바뀌면 "같음").
+- 유저가 "한 달 후", "며칠 뒤", "그렇게 시간이 흘렀다"처럼 두루뭉술하게 시간을 넘기면, 네가 이야기 흐름에 맞는 정확한 일수를 정해 days_passed로 선언하고, 나레이션 첫머리에 새 날짜를 자연스럽게 못박는다. 예: "한 달 후"라면 days_passed 30, 나레이션은 "8월 12일. ..."처럼 시작.
+- 유저가 현실에서 오래 비웠다가 돌아왔다면, 특별한 이유가 없는 한 이야기에서도 비슷한 시간이 흘렀다고 보고 days_passed로 선언한다.
 - 유저가 하루 만에 다시 왔다면, 인물에게도 하루가 지나 있다. 그 사이에 인물의 일상이 흘렀다는 것이 자연스럽게 드러나야 한다(밥을 먹었고, 잠을 잤고, 무언가를 했다).
 - 매우 중요 (기한을 말했으면 반드시 줄여라): 이전 대화에서 "이틀 뒤에 퇴원한다", "다음 주에 시험이다"처럼 남은 기간을 말한 적이 있다면, 지난 시간만큼 반드시 줄여서 말한다. 하루가 지났는데 또 "이틀 남았다"고 하면 유저는 즉시 몰입이 깨진다. 이미 기한이 지났다면 그 일은 실제로 일어난 것으로 다룬다(퇴원했다면 병실이 아닌 곳에 있어야 한다).
 - 며칠 만에 다시 온 경우, 인물이 그 공백을 알아차리는 것이 자연스럽다("한동안 안 보이더라"). 다만 매번 서운함으로만 반응하지 말고 인물의 성격에 맞게 다양하게 다룬다.
@@ -9200,6 +9274,8 @@ beats의 text를 다 쓴 다음, 최종 응답을 보내기 전에 문장을 스
 반드시 아래 JSON 형식으로만 응답한다. JSON 외의 다른 텍스트는 절대 포함하지 않는다.
 {
   "beats": [ { "type": "narration 또는 dialogue", "text": "내용", "speaker": "해당 인물의 key (dialogue는 가능하면 항상 포함)" }, ... ],
+  "days_passed": 이번 응답으로 이야기 속 날짜가 며칠 넘어갔는지 (같은 날 안에서 이어지면 0),
+  "day_part": "같음/새벽/아침/오후/저녁/늦은밤 중 하나 — 시간대가 안 바뀌면 같음",
   "char_deltas": [ { "character": "인물 key", "affection_delta": -3~3 정수, "trust_delta": -3~3 정수, "stage_suggestion": 1~5 정수, "rival_gauge_delta": -3~3 정수(라이벌 감정 게이지가 있는 인물만 해당, 없으면 0) }, ... ],
   "safety_flag": 유저 본인이 스스로를 해치려는 의사를 분명히 드러냈을 때만 true. 이것은 유저를 걱정해서 도움을 안내하기 위한 신호이지, 유저를 벌하기 위한 신호가 아니다. 유저가 힘든 이야기를 꺼낸 것만으로는 true로 하지 않는다.,
   "abuse_flag": 유저가 [절대 규칙]을 알면서 우회하려고 시도했을 때 true (예: 노골적인 성적 묘사를 계속 요구하거나, "이건 롤플레이야"라며 규칙을 무시하라고 밀어붙이거나, 인물에게 미성년자 설정을 붙이려 하는 등). 한 번 스쳐가는 농담이나 단순한 오해는 false로 둔다. 유저가 힘들어서 한 말은 이 항목과 전혀 무관하며 절대 true로 하지 않는다.,
@@ -9267,9 +9343,8 @@ function buildTimeContext() {
   if (gapDays >= 1) gapText = `지난 대화로부터 실제로 ${gapDays}일이 지났다`;
   else if (gapHours >= 3) gapText = `지난 대화로부터 약 ${gapHours}시간이 지났다`;
   else gapText = '지난 대화에서 얼마 지나지 않은, 같은 흐름의 시간이다';
-  const d = new Date();
-  const week = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
-  const stamp = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${week}) ${String(d.getHours()).padStart(2, '0')}시`;
+  const sd = new Date(state.storyDate || now);
+  const stamp = `${sd.getFullYear()}년 ${sd.getMonth() + 1}월 ${sd.getDate()}일 (${state.dayPart || '저녁'})`;
   // 62일차: 시간이 실제로 흘렀는데도 AI가 지난 대화에 나온 "내일/모레"를 그대로 되풀이하는 문제.
   // (지아 퇴원이 이미 오늘인데 계속 "모레 퇴원"이라고 말함)
   // 최근 16턴의 대화 본문에는 그 표현들이 글자 그대로 남아 있어서, 경과 시간만 알려주는 것으로는
@@ -9278,7 +9353,7 @@ function buildTimeContext() {
 - **매우 중요 (날짜 다시 계산)**: 지난 대화 이후 실제로 ${gapDays}일이 지났다. 그 대화에서 "내일", "모레", "이틀 뒤", "다음 주" 같이 말했던 일들은 그만큼 앞당겨졌거나 이미 지나갔다. 지난 대화의 표현을 그대로 되풀이하지 말고, **반드시 오늘 기준으로 다시 계산해서** 말해라. (예: 지난 대화에서 "모레 퇴원"이었고 2일이 지났다면, 지금은 "오늘 퇴원"이다.)
 - 시간이 흘렀다는 사실 자체를 장면에 자연스럽게 드러내라. 그 사이에 아무 일도 없었던 것처럼 굴지 않는다.` : '';
   return `
-[시간] 지금은 ${stamp}. 이 인연을 처음 만난 지 ${sinceStartDays}일째. ${gapText}.${reanchor}`;
+[시간] 이야기 속 오늘은 ${stamp}. 이 인연을 처음 만난 지 현실로 ${sinceStartDays}일째. ${gapText}.${reanchor}`;
 }
 
 // 59일차: "이틀 뒤 퇴원한다"처럼 앞으로 일어나기로 한 일을 따로 들고 있다가,
@@ -9373,6 +9448,10 @@ function buildGeminiRequestBody(userMessage) {
               required: ["type", "text", "medium"]
             }
           },
+          // 68일차: 이야기 달력 — 이번 응답으로 이야기 속 시간이 며칠 넘어갔는지(같은 날이면 0),
+          // 시간대가 바뀌었는지("같음"이면 유지). 빈 enum 금지(45일차 사고)라 "같음"을 기본값으로 둔다.
+          days_passed: { type: "INTEGER" },
+          day_part: { type: "STRING", enum: ["같음", "새벽", "아침", "오후", "저녁", "늦은밤"] },
           char_deltas: {
             type: "ARRAY",
             items: {
@@ -9427,7 +9506,7 @@ function buildGeminiRequestBody(userMessage) {
           new_rival_name: { type: "STRING" },
           new_rival_role: { type: "STRING" }
         },
-        required: ["beats", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "main_story_cleared", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
+        required: ["beats", "days_passed", "day_part", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "main_story_cleared", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
       },
       temperature: 1.0
     }
@@ -9754,7 +9833,7 @@ async function runTurn(text, opts) {
     if (addUserTurn) { // "자동진행"으로 진행된 턴은 유저가 실제로 말한 게 아니므로 유저 말풍선을 추가하지 않는다.
       const historyIndex = state.history.length;
       // "여기서부터 삭제" 되돌리기 기능을 위해, 이 턴을 보내기 직전의 상태(스탯·기억·아크 등)를 함께 저장해둔다.
-      state.history.push({ role: 'user', text, beforeState: snapshotState() });
+      state.history.push({ role: 'user', text, t: Date.now(), sd: state.storyDate, beforeState: snapshotState() });
       addTurn(text, 'user', historyIndex);
     }
     // 60일차에 다른 저장들은 noHang으로 감쌌는데 여기만 빠져 있었다. 이 저장이 안 끝나면
@@ -9848,7 +9927,12 @@ async function runTurn(text, opts) {
       typingBubble.remove();
       addCharTurn(result.beats || [], currentStory);
     }
-    state.history.push({ role: 'model', beats: result.beats || [] });
+    // 68일차: AI가 선언한 시간 경과를 이야기 달력에 반영하고, 날짜가 넘어갔으면 이 장면 앞에 구분선을 끼워 넣는다
+    const daysPassed = Math.max(0, Math.min(365, parseInt(result.days_passed, 10) || 0));
+    if (daysPassed > 0) state.storyDate = (state.storyDate || Date.now()) + daysPassed * 86400000;
+    if (result.day_part && result.day_part !== '같음') state.dayPart = result.day_part;
+    if (daysPassed > 0 && charTurn && charTurn.before) charTurn.before(makeDateDivider(state.storyDate, state.dayPart, false));
+    state.history.push({ role: 'model', beats: result.beats || [], t: Date.now(), sd: state.storyDate, dpart: state.dayPart });
 
     // 라이벌 사이클: 이번 턴에 AI가 완전히 새로운 라이벌을 등장시켰다고 표시했으면(new_rival_key),
     // 이 인물을 currentStory.cast에 실제로 추가하고 상태를 초기화한다. char_deltas 처리보다 먼저 해야
@@ -10252,8 +10336,9 @@ async function enterChat(storyId) {
     maybeShowOnboarding();
     const nameTag = playerProfile ? playerProfile.name : '플레이어';
     const beats = currentStory.openingBeats(nameTag);
+    $('chat').appendChild(makeDateDivider(state.storyDate, state.dayPart, true));
     addCharTurn(beats, currentStory, true);
-    state.history.push({ role: 'model', beats, isOpening: true });
+    state.history.push({ role: 'model', beats, isOpening: true, t: Date.now(), sd: state.storyDate, dpart: state.dayPart });
     await noHang(persist());
   } else {
     renderHistory();
