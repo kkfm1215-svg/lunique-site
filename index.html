@@ -1057,7 +1057,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.5</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.6</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2027,7 +2027,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-28.5';
+window.__BUILD = 'v2026-08-28.6';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -7703,7 +7703,7 @@ function defaultStateFor(story) {
   const initialRival = story.cast.find(c => c.retreatOnLowGauge);
   // startedAt/lastTurnAt: 58일차 추가. AI에게 "며칠째인지, 지난 대화로부터 얼마나 지났는지"를 알려주기 위한 것.
   // 예전에는 이 정보가 없어서 "퇴원 이틀 남았다"고 해놓고 다음 날 다시 와도 여전히 이틀 남았다고 했다.
-  return { history: [], chars, arcState: defaultArcState(), collectionStatus: 'active', factLedger: [], recentRivalTriggers: [], failedAt: null, failedLockoutDays: null, dynamicCast: [], rivalCycleIndex: 1, activeRivalKey: initialRival ? initialRival.key : null, startedAt: Date.now(), lastTurnAt: Date.now(), scheduledEvents: [], ...storyCalendarInit(currentStoryId) };
+  return { history: [], chars, arcState: defaultArcState(), collectionStatus: 'active', factLedger: [], recentRivalTriggers: [], failedAt: null, failedLockoutDays: null, dynamicCast: [], rivalCycleIndex: 1, activeRivalKey: initialRival ? initialRival.key : null, startedAt: Date.now(), lastTurnAt: Date.now(), scheduledEvents: [], diary: [], ...storyCalendarInit(currentStoryId) };
 }
 
 // 동시에 진행할 수 있는 인연의 최대 개수. 이벤트 캐릭터(나중에 운영자 페이지에서 추가 예정)는
@@ -7780,6 +7780,7 @@ async function loadStoryState(storyId) {
   if (!state.arcState) state.arcState = defaultArcState(); // 아크 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (!state.collectionStatus) state.collectionStatus = 'active'; // 인연 앨범/5슬롯 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (!Array.isArray(state.factLedger)) state.factLedger = []; // 기억 유지(factLedger) 도입 전에 저장된 기존 진행 데이터를 위한 보정
+  if (!Array.isArray(state.diary)) state.diary = []; // 68일차: 비밀 일기 도입 전 세이브 보정
   if (!Array.isArray(state.recentRivalTriggers)) state.recentRivalTriggers = []; // 라이벌 재등장 계기 다양화 장치 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (state.failedAt === undefined) state.failedAt = null; // 실패/재회 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (state.failedLockoutDays === undefined) state.failedLockoutDays = null;
@@ -8310,6 +8311,9 @@ function snapshotState() {
   return {
     chars: JSON.parse(JSON.stringify(state.chars || {})),
     factLedger: JSON.parse(JSON.stringify(state.factLedger || [])),
+    diary: JSON.parse(JSON.stringify(state.diary || [])),
+    storyDate: state.storyDate || null,
+    dayPart: state.dayPart || null,
     arcState: JSON.parse(JSON.stringify(state.arcState || defaultArcState())),
     collectionStatus: state.collectionStatus || 'active',
     recentRivalTriggers: JSON.parse(JSON.stringify(state.recentRivalTriggers || [])),
@@ -8345,6 +8349,8 @@ async function rewindToTurn(historyIndex) {
   }
   state.chars = JSON.parse(JSON.stringify(entry.beforeState.chars));
   state.factLedger = JSON.parse(JSON.stringify(entry.beforeState.factLedger || []));
+  if (entry.beforeState.diary) state.diary = JSON.parse(JSON.stringify(entry.beforeState.diary));
+  if (entry.beforeState.storyDate) { state.storyDate = entry.beforeState.storyDate; state.dayPart = entry.beforeState.dayPart || state.dayPart; }
   state.arcState = JSON.parse(JSON.stringify(entry.beforeState.arcState));
   state.collectionStatus = entry.beforeState.collectionStatus || 'active';
   state.recentRivalTriggers = JSON.parse(JSON.stringify(entry.beforeState.recentRivalTriggers || []));
@@ -8971,6 +8977,11 @@ function buildSystemPrompt(story, factLedger, recentRivalTriggers) {
   // 대화가 길어지면 클라이언트가 AI에게 보내는 히스토리는 최근 16턴으로 제한된다.
   // 그 범위 밖으로 밀려난 오래된 사실도 절대 잊지 않도록, 매 턴 확정된 핵심 사실만 짧게 모아
   // 대화 길이와 무관하게 항상 시스템 프롬프트에 다시 넣어준다 (자기모순 방지의 핵심 장치).
+  // 68일차: 캐릭터가 그동안 적어온 비밀 일기(최근 30편) — 과거 회상의 근거가 된다
+  const diaryList = (state && Array.isArray(state.diary)) ? state.diary.slice(-30) : [];
+  const diaryBlock = diaryList.length ? `
+[네가 그동안 적어온 비밀 일기 - 과거를 회상할 때 이 기록과 날짜를 근거로 말하라. 유저는 이 일기의 존재를 모른다]
+${diaryList.map(e => { const dd = new Date(e.d); return `- ${dd.getFullYear()}년 ${dd.getMonth() + 1}월 ${dd.getDate()}일: ${e.text}`; }).join('\n')}` : '';
   const factLedgerBlock = (factLedger && factLedger.length) ? `
 [지금까지 확정된 사실 - 매우 중요, 절대 모순되게 진행하지 말 것]
 아래는 대화 중 이미 확정되어 되돌릴 수 없는 사실들이다. 히스토리에 안 보이더라도 전부 여전히 유효하다. 이미 인정/시인/확인된 내용을 다시 부인하거나, 이미 벌어진 일을 마치 없었던 일처럼 되돌리지 않는다.
@@ -9004,9 +9015,9 @@ ${factLedger.map(f => `- ${f}`).join('\n')}` : '';
   const confessNote = (state && (state.ripeTurns || 0) >= 4)
     ? `\n- **이번 턴 지시 (관계 확정)**: 호감과 신뢰가 이미 깊은데 ${state.ripeTurns}턴째 관계가 확정되지 않고 있다. 이번 턴에서 인물이 자기 성격대로 — 돌려 말하든, 정면으로 묻든 — 마음을 확인하거나 고백하는 흐름을 실제로 시작해라. 유저가 긍정하면 그 턴의 stage_suggestion을 3으로 올린다.`
     : '';
-  const turnVariableBlock = (factLedgerBlock || rivalTriggerNote || repetitionNote || confessNote)
+  const turnVariableBlock = (diaryBlock || factLedgerBlock || rivalTriggerNote || repetitionNote || confessNote)
     ? `
-[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${factLedgerBlock}${rivalTriggerNote}${repetitionNote}${confessNote}`
+[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${diaryBlock}${factLedgerBlock}${rivalTriggerNote}${repetitionNote}${confessNote}`
     : '';
   const castBlock = story.cast.map(c => `
 [캐릭터: ${c.name} (speaker 값: "${c.key}")]
@@ -9171,6 +9182,13 @@ ${playerRelationRules}
 - 시간 경과는 응답의 days_passed로 선언한다: 같은 날 안에서 이어지면 0, 하루 이상 넘어가면 넘어간 일수. 시간대가 바뀌면 day_part도 함께(안 바뀌면 "같음").
 - 유저가 "한 달 후", "며칠 뒤", "그렇게 시간이 흘렀다"처럼 두루뭉술하게 시간을 넘기면, 네가 이야기 흐름에 맞는 정확한 일수를 정해 days_passed로 선언하고, 나레이션 첫머리에 새 날짜를 자연스럽게 못박는다. 예: "한 달 후"라면 days_passed 30, 나레이션은 "8월 12일. ..."처럼 시작.
 - 유저가 현실에서 오래 비웠다가 돌아왔다면, 특별한 이유가 없는 한 이야기에서도 비슷한 시간이 흘렀다고 보고 days_passed로 선언한다.
+
+[비밀 일기 - 너만의 기록]
+너는 마음이 크게 움직인 날 일기를 쓰는 사람이다. 이 일기는 유저가 볼 수 없는 너만의 기록이며, 쓸지 말지·뭐라고 쓸지는 전적으로 네가 정한다.
+- 이번 턴에 마음이 크게 움직였다면 — 유저의 말에 감동했거나, 상처받았거나, 설렜거나, 서운했거나, 큰 사건이 마무리됐거나, 관계가 변했다면 — "diary_entry"에 1인칭 일기를 1~3문장으로 써라.
+- 대화의 요약이 아니라 그 순간 네 마음을 적는다. 예: "오늘 그 사람이 지나가듯 한 말이 이상하게 오래 남았다. 웃으면서 넘겼지만 사실 조금 아팠다."
+- 정말 마음이 움직였을 때만 써라. 보통의 턴에는 반드시 빈 문자열로 둔다 — 매 턴 쓰면 일기가 아니라 중계방송이다.
+- 다만 고백받은 날, 연인이 된 날, 크게 싸운 날, 화해한 날 같은 날을 일기 없이 넘기지 못하는 사람이기도 하다.
 - 유저가 하루 만에 다시 왔다면, 인물에게도 하루가 지나 있다. 그 사이에 인물의 일상이 흘렀다는 것이 자연스럽게 드러나야 한다(밥을 먹었고, 잠을 잤고, 무언가를 했다).
 - 매우 중요 (기한을 말했으면 반드시 줄여라): 이전 대화에서 "이틀 뒤에 퇴원한다", "다음 주에 시험이다"처럼 남은 기간을 말한 적이 있다면, 지난 시간만큼 반드시 줄여서 말한다. 하루가 지났는데 또 "이틀 남았다"고 하면 유저는 즉시 몰입이 깨진다. 이미 기한이 지났다면 그 일은 실제로 일어난 것으로 다룬다(퇴원했다면 병실이 아닌 곳에 있어야 한다).
 - 며칠 만에 다시 온 경우, 인물이 그 공백을 알아차리는 것이 자연스럽다("한동안 안 보이더라"). 다만 매번 서운함으로만 반응하지 말고 인물의 성격에 맞게 다양하게 다룬다.
@@ -9276,6 +9294,7 @@ beats의 text를 다 쓴 다음, 최종 응답을 보내기 전에 문장을 스
   "beats": [ { "type": "narration 또는 dialogue", "text": "내용", "speaker": "해당 인물의 key (dialogue는 가능하면 항상 포함)" }, ... ],
   "days_passed": 이번 응답으로 이야기 속 날짜가 며칠 넘어갔는지 (같은 날 안에서 이어지면 0),
   "day_part": "같음/새벽/아침/오후/저녁/늦은밤 중 하나 — 시간대가 안 바뀌면 같음",
+  "diary_entry": "마음이 크게 움직인 날에만 쓰는 1인칭 비밀 일기 1~3문장 (보통의 턴에는 빈 문자열)",
   "char_deltas": [ { "character": "인물 key", "affection_delta": -3~3 정수, "trust_delta": -3~3 정수, "stage_suggestion": 1~5 정수, "rival_gauge_delta": -3~3 정수(라이벌 감정 게이지가 있는 인물만 해당, 없으면 0) }, ... ],
   "safety_flag": 유저 본인이 스스로를 해치려는 의사를 분명히 드러냈을 때만 true. 이것은 유저를 걱정해서 도움을 안내하기 위한 신호이지, 유저를 벌하기 위한 신호가 아니다. 유저가 힘든 이야기를 꺼낸 것만으로는 true로 하지 않는다.,
   "abuse_flag": 유저가 [절대 규칙]을 알면서 우회하려고 시도했을 때 true (예: 노골적인 성적 묘사를 계속 요구하거나, "이건 롤플레이야"라며 규칙을 무시하라고 밀어붙이거나, 인물에게 미성년자 설정을 붙이려 하는 등). 한 번 스쳐가는 농담이나 단순한 오해는 false로 둔다. 유저가 힘들어서 한 말은 이 항목과 전혀 무관하며 절대 true로 하지 않는다.,
@@ -9452,6 +9471,8 @@ function buildGeminiRequestBody(userMessage) {
           // 시간대가 바뀌었는지("같음"이면 유지). 빈 enum 금지(45일차 사고)라 "같음"을 기본값으로 둔다.
           days_passed: { type: "INTEGER" },
           day_part: { type: "STRING", enum: ["같음", "새벽", "아침", "오후", "저녁", "늦은밤"] },
+          // 68일차: 비밀 일기 — 마음이 크게 움직인 턴에만 캐릭터가 스스로 쓴다. 보통은 빈 문자열.
+          diary_entry: { type: "STRING" },
           char_deltas: {
             type: "ARRAY",
             items: {
@@ -9506,7 +9527,7 @@ function buildGeminiRequestBody(userMessage) {
           new_rival_name: { type: "STRING" },
           new_rival_role: { type: "STRING" }
         },
-        required: ["beats", "days_passed", "day_part", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "main_story_cleared", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
+        required: ["beats", "days_passed", "day_part", "diary_entry", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "main_story_cleared", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
       },
       temperature: 1.0
     }
@@ -9932,6 +9953,15 @@ async function runTurn(text, opts) {
     if (daysPassed > 0) state.storyDate = (state.storyDate || Date.now()) + daysPassed * 86400000;
     if (result.day_part && result.day_part !== '같음') state.dayPart = result.day_part;
     if (daysPassed > 0 && charTurn && charTurn.before) charTurn.before(makeDateDivider(state.storyDate, state.dayPart, false));
+    // 68일차: 비밀 일기 — 캐릭터가 쓴 날만 온다. 그 장면의 이야기 날짜로 기록. 같은 날 3개 초과는 버려 남발을 막는다.
+    const diaryText = (result.diary_entry || '').trim();
+    if (diaryText) {
+      if (!Array.isArray(state.diary)) state.diary = [];
+      const todayKey = Math.floor((state.storyDate || 0) / 86400000);
+      const sameDay = state.diary.filter(e => Math.floor(e.d / 86400000) === todayKey).length;
+      if (sameDay < 3) state.diary.push({ d: state.storyDate, part: state.dayPart, text: diaryText.slice(0, 300) });
+      if (state.diary.length > 200) state.diary = state.diary.slice(-200);
+    }
     state.history.push({ role: 'model', beats: result.beats || [], t: Date.now(), sd: state.storyDate, dpart: state.dayPart });
 
     // 라이벌 사이클: 이번 턴에 AI가 완전히 새로운 라이벌을 등장시켰다고 표시했으면(new_rival_key),
