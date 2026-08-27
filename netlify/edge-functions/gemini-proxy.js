@@ -26,8 +26,9 @@ export default async (request, context) => {
   // 아무것도 안 붙이면 지금까지와 똑같이 3.5로 동작한다(기존 동작 그대로).
   // 아래 목록에 없는 값은 전부 무시되므로, 남이 임의의 모델을 쓰게 만들 수는 없다.
   const ALLOWED = {
-    "3.5": "gemini-3.5-flash-lite",
-    "2.5": "gemini-2.5-flash-lite"
+    "3.5": "gemini-3.5-flash-lite",   // 현재 사용 중 (입력 $0.30 / 출력 $2.50)
+    "3.1": "gemini-3.1-flash-lite",   // 더 저렴 (입력 $0.25 / 출력 $1.50) — 약 24% 절감
+    "3.6": "gemini-3.6-flash"         // 더 비싸고 더 똑똑함 (입력 $0.75 / 출력 $3.75) — 품질 비교용
   };
   const asked = new URL(request.url).searchParams.get("model") || "3.5";
   const model = ALLOWED[asked] || ALLOWED["3.5"];
