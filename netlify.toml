@@ -1,3 +1,8 @@
+# 비밀값 검사 예외 (68일차) — 아래 두 개는 설계상 브라우저에 공개되는 키라서
+# 페이지 안에 적혀 있는 게 정상이다. 진짜 비밀(FIREBASE_SA_B64, PAYPAL_SECRET 등)은 계속 검사된다.
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "FIREBASE_WEB_API_KEY,PAYPAL_CLIENT_ID"
+
 [[edge_functions]]
   path = "/api/chat"
   function = "gemini-proxy"
