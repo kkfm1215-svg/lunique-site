@@ -1057,7 +1057,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.6</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.7</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2027,7 +2027,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-28.6';
+window.__BUILD = 'v2026-08-28.7';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -9404,6 +9404,68 @@ function buildScheduleContext() {
 ${lines.join('\n')}`;
 }
 
+// 68일차: 기억 검색 — "기억해?"라는 물음이 온 턴에만 발동한다(비용 0: 유저 기기에서 훑는다).
+// 최근 16턴은 이미 대화창에 있으니 그 밖의 과거만 대상으로, 키워드 일치 + 이야기 날짜 근접으로 점수를 매겨
+// 상위 2대목(앞뒤 문맥 포함)을 실제 원문 그대로 캐릭터에게 준다. 진짜 기록만 근거가 되므로
+// 유저가 거짓 인용으로 낚아도("나 싫다고 했잖아") 기록에 없으면 자연스럽게 부정된다.
+function buildRecallBlock(userMessage) {
+  const msg = String(userMessage || '');
+  if (!/기억|말했었|얘기했었|뭐라고 했|remember|覚えて|憶えて/i.test(msg)) return '';
+  const old = state.history.slice(0, -16);
+  if (!old.length) return '';
+  const dayMs = 86400000;
+
+  // 날짜 단서: "3일 전", "2주 전", "한 달 전", "일주일 전", "어제", "그저께" — 이야기 날짜 기준
+  let targetDay = null;
+  const rel = msg.match(/(\d+)\s*(일|주|달|개월)\s*전/);
+  if (rel) {
+    const n = parseInt(rel[1], 10);
+    const unit = rel[2] === '일' ? 1 : (rel[2] === '주' ? 7 : 30);
+    targetDay = Math.floor(((state.storyDate || 0) - n * unit * dayMs) / dayMs);
+  }
+  else if (/일주일\s*전/.test(msg)) targetDay = Math.floor(((state.storyDate || 0) - 7 * dayMs) / dayMs);
+  else if (/한\s*달\s*전/.test(msg)) targetDay = Math.floor(((state.storyDate || 0) - 30 * dayMs) / dayMs);
+  else if (/그저께|그제/.test(msg)) targetDay = Math.floor(((state.storyDate || 0) - 2 * dayMs) / dayMs);
+  else if (/어제/.test(msg)) targetDay = Math.floor(((state.storyDate || 0) - dayMs) / dayMs);
+
+  // 키워드: 물음 자체에 흔히 쓰이는 말은 검색어에서 뺀다
+  const stop = new Set(['기억','기억해','기억나','기억안','그때','저번','지난번','전에','내가','네가','당신','우리','뭐라고','했잖아','했었','말했','말했잖아','그거','그날','있잖아','혹시','근데','그런데','remember']);
+  const words = (msg.match(/[가-힣a-zA-Z0-9]{2,}/g) || []).filter(w => !stop.has(w) && !/^기억/.test(w));
+
+  const turnText = (h) => h.beats ? beatsToPlainText(h.beats) : (h.text || '');
+  const scored = [];
+  old.forEach((h, i) => {
+    const text = turnText(h);
+    if (!text) return;
+    let score = 0;
+    words.forEach(w => { if (text.includes(w)) score += 2; });
+    if (targetDay !== null && h.sd) {
+      const diff = Math.abs(Math.floor(h.sd / dayMs) - targetDay);
+      if (diff === 0) score += 4; else if (diff === 1) score += 2;
+    }
+    if (score > 0) scored.push({ i, score });
+  });
+  scored.sort((a, b) => b.score - a.score);
+  const picks = scored.slice(0, 2);
+
+  const header = '\n[기억 검색 - 유저가 과거를 물었다]';
+  if (!picks.length) {
+    return header + '\n지난 기록에서 관련 대목을 찾지 못했다. 아는 척 지어내지 말고, 자연스럽게 가물가물해하며 "언제쯤 얘기였지?"처럼 되물어라.';
+  }
+  const parts = picks.map(p => {
+    const from = Math.max(0, p.i - 1), to = Math.min(old.length - 1, p.i + 1);
+    const chunk = [];
+    for (let k = from; k <= to; k++) {
+      const h = old[k];
+      chunk.push((h.role === 'user' ? '유저' : '너') + ': ' + turnText(h).slice(0, 200));
+    }
+    let when = '날짜 미상';
+    if (old[p.i].sd) { const d = new Date(old[p.i].sd); when = d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일'; }
+    return '(' + when + ')\n' + chunk.join('\n');
+  });
+  return header + '\n아래는 실제 과거 대화 기록에서 찾은 대목이다. 이 기록과 날짜를 근거로 구체적으로 답하라. 기록에 없는 내용은 지어내지 않는다.\n' + parts.join('\n---\n');
+}
+
 function buildGeminiRequestBody(userMessage) {
   const recentHistory = state.history.slice(-16);
   const playerInfo = playerProfile
@@ -9422,7 +9484,7 @@ function buildGeminiRequestBody(userMessage) {
     }
     return line;
   }).join(' / ');
-  const contextNote = `${playerInfo}${buildTimeContext()}${buildScheduleContext()}\n[현재 관계 상태] ${statsLines}${eventNote}${arcNote}`;
+  const contextNote = `${playerInfo}${buildTimeContext()}${buildScheduleContext()}\n[현재 관계 상태] ${statsLines}${eventNote}${arcNote}${buildRecallBlock(userMessage)}`;
 
   const contents = [];
   recentHistory.forEach(h => {
