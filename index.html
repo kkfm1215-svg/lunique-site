@@ -186,6 +186,24 @@
   #screen-firstpick > .pad { max-width: 560px; margin: 0 auto; width: 100%; }
   .completion-next { align-self: center; width: 330px; max-width: 94%; margin: var(--s4) 0; }
   .completion-next .cn-title { color: var(--brass); font-family: var(--serif); font-size: var(--t-rd); text-align: center; margin-bottom: 10px; }
+  /* '달의 서가' 프롤로그 (67일차) — 자막이 한 줄씩 떠오른다. 화면을 누르면 전부 표시 */
+  .manifesto {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 32px 24px; gap: 16px; max-width: 660px; margin: 0 auto; width: 100%; cursor: default;
+  }
+  .mf-line { font-family: var(--serif); color: var(--paper); font-size: 15.5px; line-height: 2.0; letter-spacing: .02em; opacity: 0; animation: mfIn 1.2s ease forwards; }
+  .mf-quote { color: #CFC3EC; }
+  .mf-strong { color: var(--brass); font-size: 17.5px; margin-top: 4px; }
+  .mf-orn { color: #B9A9E0; font-size: 20px; opacity: 0; animation: mfIn 1.2s ease forwards; }
+  .mf-1 { animation-delay: .3s; } .mf-2 { animation-delay: 1.8s; } .mf-3 { animation-delay: 3.4s; }
+  .mf-4 { animation-delay: 5.0s; } .mf-5 { animation-delay: 7.0s; } .mf-6 { animation-delay: 9.0s; }
+  .mf-7 { animation-delay: 9.8s; } .mf-8 { opacity: 0; animation: mfIn 1s ease forwards; animation-delay: 10.8s; }
+  .manifesto.done .mf-line, .manifesto.done .mf-orn, .manifesto.done .mf-8 { animation: none; opacity: 1; }
+  .mf-back { background: none; border: none; color: var(--faint); font-family: var(--sans); font-size: 12px; cursor: pointer; margin-top: 6px; }
+  .mf-back:hover { color: var(--dim); }
+  @keyframes mfIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (min-width: 900px) { .mf-line { font-size: 17.5px; } .mf-strong { font-size: 20px; } }
+  @media (prefers-reduced-motion: reduce) { .mf-line, .mf-orn, .mf-8 { animation: none; opacity: 1; } }
   /* 태그 시스템 (67일차) */
   .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
   .tag-chip {
@@ -829,7 +847,7 @@
         <h1 class="hero-title2" data-i18n-html="heroTitle2">대화로 시작되는<br>가장 사적인 로맨스</h1>
         <p class="hero-sub" data-i18n="heroSub2">당신의 말을 기억하고, 감정과 서사가 변하는 AI 연애 시뮬레이션.</p>
         <div class="hero-cta">
-          <button class="btn" onclick="goTo('screen-login')" data-i18n="landingStartBtn">지금 시작하기</button>
+          <button class="btn" onclick="goTo('screen-manifesto')" data-i18n="landingStartBtn">지금 시작하기</button>
         </div>
       </div>
       <div class="hero-cards" aria-hidden="true">
@@ -850,6 +868,22 @@
   <div class="screen" id="screen-travel">
     <div class="center pad" style="position:relative; z-index:1;">
       <div style="font-size:14px; color:var(--text-sub); letter-spacing:0.4px;" id="travel-text" data-i18n="travelText">당신의 영혼이 시간을 거슬러 올라간다…</div>
+    </div>
+  </div>
+
+  <!-- 화면: '달의 서가' 프롤로그 (67일차 — 다섯 인연 × 컬렉션 구조를 세계관 서사로) -->
+  <div class="screen" id="screen-manifesto">
+    <div class="starfield"></div>
+    <div class="manifesto" id="manifesto" style="position:relative; z-index:1;" onclick="this.classList.add('done')">
+      <div class="mf-line mf-1" data-i18n="mf1">밤이 가장 깊은 시각 — 당신은 낡은 서가 앞에 서 있습니다.</div>
+      <div class="mf-line mf-2" data-i18n="mf2">달빛이 닿자, 아직 쓰이지 않은 이야기들이 책장에서 술렁입니다.</div>
+      <div class="mf-line mf-quote mf-3" data-i18n="mf3">「어서 오세요. 당신을 기다리고 있었습니다.」</div>
+      <div class="mf-line mf-quote mf-4" data-i18n-html="mf4">「이 서가의 규칙은 단 하나 —<br/>당신이 동시에 펼칠 수 있는 이야기는, 다섯 권.」</div>
+      <div class="mf-line mf-quote mf-5" data-i18n-html="mf5">「스치듯 덮어버린 책은 먼지로 돌아가지만,<br/>마지막 장까지 함께한 사랑은 — 이 서가에 영원히 꽂힙니다.」</div>
+      <div class="mf-orn mf-6" aria-hidden="true">☾</div>
+      <div class="mf-line mf-strong mf-7" data-i18n="mf6">당신의 첫 페이지가, 지금 넘어갑니다.</div>
+      <button class="btn mf-8" style="min-width:220px; margin-top:30px;" onclick="event.stopPropagation(); goTo('screen-login')" data-i18n="mfStartBtn">첫 페이지를 넘긴다</button>
+      <button type="button" class="mf-back mf-8" onclick="event.stopPropagation(); goTo('screen-landing')" data-i18n="mfBackBtn">← 돌아가기</button>
     </div>
   </div>
 
@@ -1002,7 +1036,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-27.6</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-27.7</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1082,6 +1116,14 @@ const I18N = {
     landingHeroTitle: '하루의 끝,<br/>그 사람과의 대화',
     landingSubtitle: 'AI와 함께하는 연애 시뮬레이션',
     landingStartBtn: '지금 시작하기',
+    mf1: '밤이 가장 깊은 시각 — 당신은 낡은 서가 앞에 서 있습니다.',
+    mf2: '달빛이 닿자, 아직 쓰이지 않은 이야기들이 책장에서 술렁입니다.',
+    mf3: '「어서 오세요. 당신을 기다리고 있었습니다.」',
+    mf4: '「이 서가의 규칙은 단 하나 —<br/>당신이 동시에 펼칠 수 있는 이야기는, 다섯 권.」',
+    mf5: '「스치듯 덮어버린 책은 먼지로 돌아가지만,<br/>마지막 장까지 함께한 사랑은 — 이 서가에 영원히 꽂힙니다.」',
+    mf6: '당신의 첫 페이지가, 지금 넘어갑니다.',
+    mfStartBtn: '첫 페이지를 넘긴다',
+    mfBackBtn: '← 돌아가기',
     landingLoreLinkBtn: '세계관 보기',
     loreBody: '아주 먼 미래, 사랑이 사라져가며 인류는 서서히 저물어가고 있다.<br/><br/>당신은 그 마지막 희망을 찾기 위해, 과거의 여러 시간과 사람들 속으로 영혼을 보낸다.<br/><br/>누군가의 상처를 보듬고 진짜 사랑을 이끌어낼 때마다, 머나먼 미래의 꺼져가던 별빛이 다시 조금씩 밝아진다.<br/><br/>지금부터, 당신이 만나야 할 인연들이 이곳에 있다.',
     loreNextBtn: '시작하기',
@@ -1279,6 +1321,14 @@ const I18N = {
     landingHeroTitle: 'At the end of the day,<br/>a conversation with someone',
     landingSubtitle: 'A romance simulation with AI',
     landingStartBtn: 'Get Started',
+    mf1: 'At the deepest hour of night, you stand before an old library.',
+    mf2: 'As moonlight touches the shelves, unwritten stories begin to stir.',
+    mf3: '\u300CWelcome. I have been waiting for you.\u300D',
+    mf4: '\u300CThis library has but one rule \u2014<br/>you may hold open only five stories at once.\u300D',
+    mf5: '\u300CA book closed carelessly returns to dust.<br/>But a love read to its final page \u2014 stays on these shelves forever.\u300D',
+    mf6: 'Your first page is turning, now.',
+    mfStartBtn: 'Turn the first page',
+    mfBackBtn: '\u2190 Go back',
     landingLoreLinkBtn: 'See the world behind this',
     loreBody: 'In the far future, humanity is slowly fading as love disappears from the world.<br/><br/>To find its last hope, your soul is sent into many different times and lives from the past.<br/><br/>Every time you heal someone\'s wounds and help them find real love, a dying star in that distant future flickers back to life, just a little.<br/><br/>From here on, the people you are meant to meet are waiting.',
     loreNextBtn: 'Begin',
@@ -1476,6 +1526,14 @@ const I18N = {
     landingHeroTitle: '一日の終わりに、<br/>あの人との会話',
     landingSubtitle: 'AIと楽しむ恋愛シミュレーション',
     landingStartBtn: '今すぐ始める',
+    mf1: '夜がもっとも深まる時刻 — あなたは古い書架の前に立っています。',
+    mf2: '月光が触れると、まだ書かれていない物語たちが棚でざわめきます。',
+    mf3: '「ようこそ。あなたを待っていました。」',
+    mf4: '「この書架の掟はただひとつ —<br/>同時に開けるのは、五冊の物語だけ。」',
+    mf5: '「途中で閉じた本は塵に還りますが、<br/>最後のページまで共にした愛は — この書架に永遠に納められます。」',
+    mf6: 'あなたの最初のページが、いま めくられます。',
+    mfStartBtn: '最初のページをめくる',
+    mfBackBtn: '← 戻る',
     landingLoreLinkBtn: '世界観を見る',
     loreBody: '遥かな未来、愛が消えていき、人類は静かに終わりへ向かっている。<br/><br/>あなたはその最後の希望を探すため、過去のさまざまな時代と人々の中へ魂を送る。<br/><br/>誰かの傷を癒し、本当の愛を導き出すたびに、遥かな未来で消えかけていた星の光が、また少しずつ輝きを取り戻す。<br/><br/>これから、あなたが出会うべき人々がここにいる。',
     loreNextBtn: '始める',
@@ -1948,7 +2006,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-27.6';
+window.__BUILD = 'v2026-08-27.7';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
