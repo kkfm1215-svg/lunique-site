@@ -1047,7 +1047,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.2</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.3</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2017,7 +2017,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-28.2';
+window.__BUILD = 'v2026-08-28.3';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -2847,6 +2847,59 @@ const AVATAR_IMAGE = {
   // GitHub 웹 편집기로 열 수 없게 됐고, 첫 화면이 뜨기 전에 사진을 전부
   // 내려받아야 해서 로딩도 느렸다. 이제 images/ 폴더의 파일을 가리킨다.
   // (사진을 추가할 때는 images/ 에 넣고 여기에 한 줄 적으면 된다.)
+  // 68일차: 스토리 100 표지 — 여성 50 전원 + 남성 간판 2 (달빛 시네마틱)
+  w01: "images/w01.jpg",
+  w02: "images/w02.jpg",
+  w03: "images/w03.jpg",
+  w04: "images/w04.jpg",
+  w05: "images/w05.jpg",
+  w06: "images/w06.jpg",
+  w07: "images/w07.jpg",
+  w08: "images/w08.jpg",
+  w09: "images/w09.jpg",
+  w10: "images/w10.jpg",
+  w11: "images/w11.jpg",
+  w12: "images/w12.jpg",
+  w13: "images/w13.jpg",
+  w14: "images/w14.jpg",
+  w15: "images/w15.jpg",
+  w16: "images/w16.jpg",
+  w17: "images/w17.jpg",
+  w18: "images/w18.jpg",
+  w19: "images/w19.jpg",
+  w20: "images/w20.jpg",
+  w21: "images/w21.jpg",
+  w22: "images/w22.jpg",
+  w23: "images/w23.jpg",
+  w24: "images/w24.jpg",
+  w25: "images/w25.jpg",
+  w26: "images/w26.jpg",
+  w27: "images/w27.jpg",
+  w28: "images/w28.jpg",
+  w29: "images/w29.jpg",
+  w30: "images/w30.jpg",
+  w31: "images/w31.jpg",
+  w32: "images/w32.jpg",
+  w33: "images/w33.jpg",
+  w34: "images/w34.jpg",
+  w35: "images/w35.jpg",
+  w36: "images/w36.jpg",
+  w37: "images/w37.jpg",
+  w38: "images/w38.jpg",
+  w39: "images/w39.jpg",
+  w40: "images/w40.jpg",
+  w41: "images/w41.jpg",
+  w42: "images/w42.jpg",
+  w43: "images/w43.jpg",
+  w44: "images/w44.jpg",
+  w45: "images/w45.jpg",
+  w46: "images/w46.jpg",
+  w47: "images/w47.jpg",
+  w48: "images/w48.jpg",
+  w49: "images/w49.jpg",
+  w50: "images/w50.jpg",
+  m09: "images/m09.jpg",
+  m12: "images/m12.jpg",
   yoona: "images/yoona.jpg",
   eunbi: "images/eunbi.jpg",
   harin: "images/harin.jpg",
