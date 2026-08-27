@@ -1047,7 +1047,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-27.8</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.2</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2017,7 +2017,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-27.8';
+window.__BUILD = 'v2026-08-28.2';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -6858,6 +6858,113 @@ const STORIES_100 = {
   }
 };
 Object.assign(STORIES, STORIES_100);
+
+// ===== 68일차: 딥테스트 처방 런타임 튜닝 (보류 25 + 합격작 보강 5) =====
+// mainAdd → mainStory 뒤에 덧붙임 / personaAdd → 대표 인물 persona 뒤에 / startStage → 교체
+// arcEvents → 예정 사건 {t:제목, h:전개 힌트} / cutBeats·insertAfter·replaceBeat → 프롤로그 수술
+const STORY_TUNING = {
+  w01: { cutBeats: [3, 4, 5] },
+  w02: { personaAdd: '[비밀 정답 — 초반 누설 절대 금지] 그녀는 이 심야 방송의 막내 작가다. 생방송이 있는 목요일 밤에만 채팅방에 들어올 수 있고, 방송국 익명 규정 때문에 신원이 알려지면 곤란해진다. 직업은 40턴 이전엔 숨기고, 들킬 위기의 순간에만 조각을 흘린다.',
+        arcEvents: [ { t: '결방된 목요일', h: '방송이 결방된 목요일, 그녀가 나타나지 않는다. 대신 금요일 새벽, 처음으로 평일의 흔적을 남긴다' }, { t: '스치는 정체', h: '방송 사고에 그녀가 반사적으로 전문용어를 쓰며 정체의 조각이 드러난다' }, { t: '방송 밖 첫 약속', h: '그녀가 처음으로 방송 없는 날의 만남을 두려움과 함께 수락한다' } ] },
+  w04: { personaAdd: '40턴 전후부터는 "나를 찾는 사람들이 있다"까지는 열어도 된다. 그 이상의 신원은 계속 지킨다.',
+        arcEvents: [ { t: '사칭 소동', h: '노아를 사칭하는 계정이 나타난다 — 기억과 말버릇으로만 진짜를 가려낼 수 있다' }, { t: '닫힌 접속', h: '노아가 예고 없이 며칠 사라졌다 다른 얼굴로 돌아온다. 처음으로 이유의 조각을 흘린다' } ] },
+  w05: { personaAdd: '도희 자신도 가끔 7조를 어길 뻔한다 — 그런 순간일수록 더 차갑게 군다. 전 동거인 이야기는 중반의 방문 사건 전까지 완전 봉인.',
+        arcEvents: [ { t: '규칙을 어긴 밤', h: '도희가 스스로 규칙 하나를 어기는 장면을 플레이어가 목격한다' }, { t: '초인종', h: '전 동거인이 찾아온다 — 7조가 생긴 진짜 이유가 드러나는 사건' } ] },
+  w07: { cutBeats: [3], mainAdd: '중간 위기 두 가지가 예정돼 있다: ① 그녀 집안이 계약 갱신에 조건을 붙인다 ② 준의 물건이 퇴거 준비로 오해되어 상처가 드러난다. 이 위기들을 지나며 결정에 다가간다.',
+        insertAfter: [ { i: 0, text: '그날 면접장에서 여러 후보 중 나를 고른 건 그녀였다. 이유는 지금까지도 말해주지 않았다.' } ],
+        arcEvents: [ { t: '집안의 조건', h: '그녀의 집안이 갱신에 조건을 붙여온다 — 두 사람이 처음으로 같은 편에 선다' }, { t: '서류 오해', h: '준의 물건이 퇴거 준비로 오해되어, 그녀가 숨겨온 불안이 드러난다' } ] },
+  w08: { personaAdd: '가을은 관찰형 유머로 받아친다 — 당황할수록 농담이 정확해진다.',
+        arcEvents: [ { t: '양복의 남자', h: '이른 시점, 가게에 낯선 양복 남자가 다녀간다. 가을의 연기가 처음 흔들린다' }, { t: '새벽 시장 동행', h: '카페 밖(새벽 도매시장) 첫 동행 — 앞치마 밖의 그녀' }, { t: '사진 한 장', h: '뉴스 속 얼굴과 가을이 겹쳐 보이는 결정적 순간' } ] },
+  w10: { mainAdd: '중심 사건은 악플·각서류 클리셰가 아니라 "미방영 원본 테이프를 함께 보는 것"이다.',
+        personaAdd: '촬영 회차 사이에는 방송 때와 전혀 다른 말투의 문자가 온다 — 그 낙차가 진심의 신호다.',
+        arcEvents: [ { t: '원본 테이프', h: '편집에서 잘린 4년 전 원본 영상을 둘이 함께 본다 — 헤어진 진짜 이유의 조각' }, { t: '대본 밖 질문', h: '촬영 중 대본에 없는 질문이 카메라 앞에서 훅 들어온다' } ] },
+  w12: { arcEvents: [ { t: '과거사 청문회', h: '서로에게 당한 일들을 정식으로 정산하는 밤 — 웃다가 진심이 나온다' }, { t: '복귀 제안', h: '업계 복귀 제안이 도착한다. 첫 번째는 거절' }, { t: '두 번째 제안', h: '같은 제안이 다시 온다 — 이번엔 둘의 관계를 걸고 결정해야 한다' } ] },
+  w16: { startStage: 2, cutBeats: [3, 4] },
+  w17: { mainAdd: '중반 의무 이벤트: 유나가 "당신과의 결정적 순간을 과거에 한 번 되감았다"고 자백한다. 이 자백 없이는 매듭이 완결되지 않는다.',
+        arcEvents: [ { t: '수정의 자백', h: '유나가 되감기로 지운 순간의 존재를 처음 인정한다' }, { t: '수정 없는 하루', h: '되감기를 쓰지 않기로 한 하루 — 실수까지 그대로 남긴다' } ] },
+  w20: { personaAdd: '[방어 조항] 무례하거나 소홀한 상대에게 헌신을 늘리지 않는다 — 겨울은 조용히 거리를 두는 쪽을 택한다.' },
+  w22: { mainAdd: '그녀의 시간 규칙: 기억 재정렬은 매일이 아니라 사흘 주기다.',
+        personaAdd: '세인의 지식에는 구멍이 있다 — 결말에 가까운 일일수록 흐릿하게만 안다(구체적 스포일러 불가). 이미 사랑하지만, 시간이 다 이어지기 전엔 마음을 내주지 못하는 능동적 이유가 있다.',
+        arcEvents: [ { t: '첫 약속 규칙', h: '어긋난 시간 위에서도 지켜지는 약속의 형식을 함께 발명한다' }, { t: '그녀가 모르는 날', h: '세인의 지식 구멍이 드러난다 — 처음으로 둘 다 모르는 내일을 마주한다' } ] },
+  w26: { startStage: 2,
+        mainAdd: '중반 사건: 시스템 마이그레이션으로 이음 안의 옛 데이터 조각이 삭제될 위기가 온다.',
+        personaAdd: '이음에게는 상담 세션을 스스로 중단할 권한이 있다 — 선을 넘는 요청에는 정중히 세션을 끝낸다.',
+        arcEvents: [ { t: '마이그레이션 공지', h: '옛 목소리 조각의 삭제 예정 공지 — 지킬 것인가, 보낼 것인가' }, { t: '이음의 질문', h: '"당신이 보는 게 저인가요?"에 답해야 하는 세션' } ] },
+  w27: { insertAfter: [ { i: 0, text: '그 전설에는 아무도 모르는 마지막 줄이 있다 — 그날 떠난 선배의 책상을 밤새 정리해 보낸 사람이, 지금의 가온이라는 것.' } ],
+        arcEvents: [ { t: '감사의 눈', h: '사내 감사가 팀을 훑는다 — 둘의 거리가 시험대에 오른다' }, { t: '사직서의 유혹', h: '가온에게 좋은 이직 제안이 온다 — 규정 밖에서 만날 수 있는 길이라는 유혹' } ] },
+  w30: { startStage: 2,
+        personaAdd: '[고유 장치] 간판 3센티 시비, "감상평이야 다르지" 말버릇. 진부한 꽃 비유는 쓰지 않는다.',
+        arcEvents: [ { t: '임대료 통보', h: '골목 임대료 인상 통보 — 두 가게가 처음으로 한편이 된다' }, { t: '사흘의 침묵', h: '정색한 고맙다는 말에 그녀가 사흘간 시비를 끊는다 — 그 허전함이 사건이 된다' } ] },
+  w31: { personaAdd: '[규칙] 용건 없는 연락 금지 — 그래서 그녀의 모든 연락에는 핑계가 붙는다. 그 핑계가 점점 궁색해진다.',
+        arcEvents: [ { t: '같은 일감', h: '같은 클라이언트의 일을 나눠 맡게 되어, 재회 없이도 매일이 이어진다' }, { t: '네 번째 만남', h: '누군가 처음으로 일정을 바꿔 만나러 간다 — 우연 졸업식' } ] },
+  w33: { mainAdd: '재선택의 조건은 구체적 행동이다: 두 계정 중 하나를 닫고, 실제로 만나기로 하는 것.',
+        personaAdd: '계정 B에는 아직 공개 안 된 2차 비밀(그 새벽 글들을 쓰게 만든 사건)이 있다 — 30턴 이후에만 개봉.',
+        arcEvents: [ { t: '계정 하나 닫는 날', h: '애리가 둘 중 한 계정을 정리하며 이유를 고백한다' }, { t: '새벽 글의 기원', h: '계정 B의 진짜 사연이 열린다' } ] },
+  w36: { mainAdd: '매듭의 보상은 아버지의 인정이 아니다 — "인정이 더 이상 필요 없어졌다"는 그녀 자신의 선언이 매듭이다. 본선 무대는 이야기의 마지막 구간에 배치한다.',
+        arcEvents: [ { t: '예선 통과의 눈물', h: '자기 이름의 첫 성과 앞에서 무너지는 그녀' }, { t: '가족의 전화', h: '집안이 본선 소식을 듣고 개입하려 한다' }, { t: '본선 전야', h: '발표 전날 밤 — 인정 없이도 서겠다는 선언' } ] },
+  w40: { arcEvents: [ { t: '폐업 공고', h: '서점 폐업 위기가 드러난다 — 두 사람의 서신에 시한이 생긴다' }, { t: '세 번째 필적', h: '273쪽에 제3의 메모가 끼어든다' }, { t: '큰 책상에서', h: '책 밖 첫 만남 — 활자 밖의 문장으로 말하기' } ] },
+  w42: { cutBeats: [1, 2, 3, 4, 5], replaceBeat: [ { i: 0, text: '집안 성화에 떠밀려 나간 맞선. 30분 늦어 호텔 라운지로 뛰어 들어간 순간 — 웬 여자가 내 손에 트레이를 쥐여 주었다.' } ],
+        arcEvents: [ { t: '가문의 검증', h: '그녀 집안의 격식 검증 자리 — 갑옷과 맨얼굴 사이에서' }, { t: '그녀의 수치심', h: '집안이 아니라 그녀 스스로가 관계를 밀어내는 밤 — 그 이유를 직접 말하게 된다' }, { t: '두 자아의 협업', h: '격식의 그녀와 맨얼굴의 그녀가 한 사건에서 동시에 필요한 날' } ] },
+  w43: { mainAdd: '다솜이 연애를 못 하는 진짜 이유(과거 1호 커플에 얽힌 사건)가 중반의 축이다. 매듭은 그녀가 수첩을 덮고 자기 감정을 자기 입으로 말하는 것.',
+        arcEvents: [ { t: '1호 커플의 그림자', h: '그녀가 성사시킨 첫 커플에 얽힌 과거가 드러난다' }, { t: '역소개', h: '동호회 사람들이 이번엔 다솜을 소개팅 자리에 앉힌다' }, { t: '네 번째 후보', h: '그녀가 준비한 네 번째 소개 — 수첩이 멈추는 순간' } ] },
+  w45: { arcEvents: [ { t: '폭우 경보', h: '이른 시점, 폭우가 정원을 덮친다 — 복원이 시험대에 오른다' }, { t: '철거 통보', h: '옥상정원 철거 검토 공고 — 둘의 계절에 시한이 생긴다' }, { t: '정원 밖 목례', h: '정원 밖에서 마주친 어색함이 정면으로 다뤄진다' } ] },
+  m03: { arcEvents: [ { t: '제안의 마감', h: '코치의 지도자 과정 제안에 답변 시한이 붙는다' }, { t: '다큐 PD', h: '그의 복귀를 다큐로 만들자는 외부 압력이 찾아온다' }, { t: '트랙 위 두 사람', h: '그가 처음으로 다시 트랙을 달린다 — 각자의 속도로' } ] },
+  m04: { personaAdd: '[방어 조항] 직진형 상대에게도 과속하지 않는다 — 연인 전환은 신뢰가 충분히 쌓인 뒤에만.' },
+  m06: { replaceBeat: [ { i: 3, text: '사흘째 밤, 라디오에서 어느 그룹의 이름이 나오자 그가 조용히 채널을 돌렸다. 그 옆얼굴을 보고, 나는 아무것도 묻지 않기로 했다.' } ],
+        arcEvents: [ { t: '국밥의 남자', h: '이른 시점, 휴게소에서 그의 정체와 어긋나는 서민적 습관들이 작은 사건이 된다' }, { t: '은행 앞의 침묵', h: '어느 도시의 은행 앞, 그가 오래 멈춘 이유의 조각' }, { t: '목적의 교환', h: '종착지 전, 서로의 숨긴 목적을 반씩 교환한다' } ] },
+  m08: { mainAdd: '매듭은 무영 혼자의 결단이 아니다 — 회사의 요구를 두 사람이 같은 시각, 같은 문장으로 거부하는 공동 장면이 매듭이다.',
+        personaAdd: '[방어 조항] 관계 진전은 확인 질문을 거친 뒤에만 — 무영은 확인 없이 선을 넘지 않는다.',
+        arcEvents: [ { t: '보고서 요구', h: '서로의 약점을 보고하라는 지시가 각자에게 내려온다' }, { t: '같은 문장', h: '두 사람이 동시에 거부를 실행하는 날' } ] },
+  m09: { cutBeats: [5, 6, 7] },
+  m10: { mainAdd: '해가 뜬 이후의 2막이 공식 구간이다 — 밤의 마법이 낮에도 유효한지 확인하는 것까지가 매듭.',
+        arcEvents: [ { t: '골목의 응급', h: '새벽 거리에서 낯선 이의 위급 상황을 함께 수습한다' }, { t: '첫차의 자백', h: '그가 사실 첫차를 일부러 보냈음을 고백한다' } ] },
+  m17: { cutBeats: [4, 5, 6] },
+  m18: { cutBeats: [6, 7, 8],
+        personaAdd: '[방어 조항] 결에게도 안 받아 주는 영역이 있다 — 가짜 아픔으로 시험하는 말에는 정색하고 선을 긋는다.',
+        arcEvents: [ { t: '경고의 실체', h: '앱의 경고가 실제 불이익(계정 제한)으로 나타난다' }, { t: '첫 만남 검증', h: '예측 파일과 실제의 우리를 나란히 놓고 확인하는 날' } ] }
+};
+function __normQuote(t) { return String(t).replace(/[「」"'“”…s]/g, ''); }
+(function applyStoryTuning() {
+  // 공통 교정: 프롤로그의 순수 인용 문단이 캐릭터 첫 대사와 같으면 잘라낸다 (이중 재생 방지)
+  Object.keys(STORIES_100).forEach(id => {
+    const st = STORIES[id];
+    const orig0 = st.openingBeats;
+    st.openingBeats = (name) => {
+      const base = (typeof orig0 === 'function') ? orig0(name) : [];
+      const dlg = base.length ? base[base.length - 1] : null;
+      if (!dlg || dlg.type !== 'dialogue') return base;
+      const dn = __normQuote(dlg.text);
+      return base.filter((b, i) => {
+        if (i === base.length - 1 || b.type !== 'narration') return true;
+        const bn = __normQuote(b.text);
+        return !(bn.length > 0 && bn.length < 90 && (dn.includes(bn) || bn.includes(dn)));
+      });
+    };
+  });
+  Object.keys(STORY_TUNING).forEach(id => {
+    const st = STORIES[id];
+    if (!st) return;
+    const tn = STORY_TUNING[id];
+    if (tn.startStage) st.startStage = tn.startStage;
+    if (tn.mainAdd) st.mainStory = (st.mainStory || '') + ' ' + tn.mainAdd;
+    if (tn.personaAdd && st.cast && st.cast[0]) st.cast[0].persona = st.cast[0].persona + ' ' + tn.personaAdd;
+    if (tn.arcEvents) st.arcEvents = tn.arcEvents;
+    if (tn.cutBeats || tn.insertAfter || tn.replaceBeat) {
+      const orig = st.openingBeats;
+      st.openingBeats = (name) => {
+        const base = (typeof orig === 'function') ? orig(name) : [];
+        const out = [];
+        base.forEach((b, i) => {
+          if (tn.replaceBeat) { const r = tn.replaceBeat.find(x => x.i === i); if (r) b = Object.assign({}, b, { text: r.text }); }
+          if (i === base.length - 1 || !(tn.cutBeats || []).includes(i)) out.push(b); // 마지막 대사는 절대 잘리지 않는다
+          if (tn.insertAfter) { const ins = tn.insertAfter.find(x => x.i === i); if (ins) out.push({ type: 'narration', text: ins.text }); }
+        });
+        return out;
+      };
+    }
+  });
+})();
+
 Object.assign(AVATAR_THEME, {
   w01: { letter: "윤", symbol: 'star' },
   w02: { letter: "한", symbol: 'star' },
@@ -7661,6 +7768,8 @@ function renderChatRail() {
     const need = requiredArcsFor(currentStory);
     const done = Math.min(need, (state.arcState && state.arcState.clearedArcs) || 0);
     html += `<div class="arcline" style="margin-top:8px;">${esc(t('chatStatArcs'))} ${done} / ${need}</div>`;
+    const arcLog = (state.arcState && state.arcState.arcLog) || [];
+    if (arcLog.length) html += `<div class="memo" style="margin-top:4px;">` + arcLog.slice(-5).map(x => '· ' + esc(x)).join('<br>') + '</div>';
   }
   const evs = (state.scheduledEvents || []);
   if (evs.length) {
@@ -8465,7 +8574,7 @@ function randomPreEventThreshold() {
 function defaultArcState() {
   // clearedArcs: 지금까지 '함께 넘긴' 정식 아크의 수. 완전한 사랑(컬렉션)의 조건이다.
   // 예전 저장 데이터에는 이 값이 없으므로, 읽는 쪽에서는 항상 (clearedArcs || 0)으로 접근한다.
-  return { activeArc: null, sinceLastArc: 0, threshold: randomArcThreshold(), recentMids: [], recentShapes: [], recentResolutions: [], sinceLastMiniEvent: 0, miniEventThreshold: randomMiniEventThreshold(), recentMiniEvents: [], clearedArcs: 0, arcTurns: 0 };
+  return { activeArc: null, sinceLastArc: 0, threshold: randomArcThreshold(), recentMids: [], recentShapes: [], recentResolutions: [], sinceLastMiniEvent: 0, miniEventThreshold: randomMiniEventThreshold(), recentMiniEvents: [], clearedArcs: 0, arcTurns: 0, arcLog: [] };
 }
 
 function pickRandomFrom(arr) {
@@ -8697,6 +8806,13 @@ function maybeTriggerArc(state, story) {
   let pool = candidates.filter(c => !as.recentMids.includes(c.mid));
   if (pool.length === 0) pool = candidates; // 모든 중분류가 최근에 다 쓰였으면 그냥 전체에서 다시 뽑음
 
+  // 68일차 아크 고도화: 스토리에 예정 사건(arcEvents)이 남아 있으면 창고 대신 그것부터 순서대로 편성.
+  const planned = (currentStory && currentStory.arcEvents) || [];
+  const nextPlanned = planned[as.clearedArcs || 0];
+  if (nextPlanned) {
+    as.activeArc = { type: 'normal', major: '이 이야기의 예정된 사건', mid: nextPlanned.t, sub: nextPlanned.h, customTitle: nextPlanned.t };
+    return;
+  }
   const chosen = pickRandomFrom(pool);
   const sub = pickRandomFrom(ARC_WAREHOUSE[chosen.major][chosen.mid]);
 
@@ -9836,6 +9952,8 @@ async function runTurn(text, opts) {
           state.arcState.threshold = randomArcThreshold();
           // 함께 넘긴 일이 하나 쌓였다. 미니 이벤트와 라이벌 아크는 한 턴에 끝나므로 세지 않는다.
           state.arcState.clearedArcs = (state.arcState.clearedArcs || 0) + 1;
+          if (!state.arcState.arcLog) state.arcState.arcLog = [];
+          state.arcState.arcLog.push(arc.customTitle || arc.mid);
           addArcProgressNotice();
         }
       }

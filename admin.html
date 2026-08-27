@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>LUNIQUE 운영실</title>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<style>
+  :root { --bg:#0E0B1A; --card:#181329; --line:#2A2342; --paper:#EDE8F7; --dim:#9C93B8; --faint:#6B6288; --brass:#D4AF6A; --violet:#8B7BC7; --good:#7FC98F; --bad:#D97E7E; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--paper); font-family:'Segoe UI','Malgun Gothic',sans-serif; min-height:100vh; padding:28px 16px 60px; }
+  .wrap { max-width:1080px; margin:0 auto; }
+  h1 { font-size:20px; letter-spacing:.06em; color:var(--brass); font-weight:600; }
+  h1 small { color:var(--faint); font-size:12px; font-weight:400; margin-left:10px; letter-spacing:0; }
+  .top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; flex-wrap:wrap; }
+  button { background:linear-gradient(180deg,#9B8BD7,#7A6ABE); color:#fff; border:0; border-radius:10px; padding:10px 22px; font-size:14px; cursor:pointer; font-family:inherit; }
+  button.ghost { background:none; border:1px solid var(--line); color:var(--dim); padding:7px 14px; font-size:12px; }
+  #gate { text-align:center; padding:80px 0; }
+  #gate p { color:var(--dim); margin:14px 0 24px; font-size:14px; line-height:1.7; }
+  #msg { color:var(--bad); font-size:13px; margin-top:16px; min-height:18px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .card .k { color:var(--faint); font-size:12px; margin-bottom:8px; }
+  .card .v { font-size:26px; font-variant-numeric:tabular-nums; color:var(--paper); }
+  .card .v small { font-size:13px; color:var(--dim); margin-left:4px; }
+  .sect { color:var(--brass); font-size:13px; letter-spacing:.08em; margin:26px 0 10px; }
+  .tbl-wrap { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:14px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; min-width:640px; }
+  th { text-align:right; color:var(--faint); font-weight:400; font-size:11.5px; padding:12px 14px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th:first-child { text-align:left; }
+  td { text-align:right; padding:9px 14px; border-bottom:1px solid rgba(42,35,66,.5); font-variant-numeric:tabular-nums; color:var(--dim); white-space:nowrap; }
+  td:first-child { text-align:left; color:var(--paper); }
+  td .nm { color:var(--faint); font-size:11.5px; margin-left:7px; }
+  tr:last-child td { border-bottom:0; }
+  td.hot { color:var(--brass); }
+  td.done { color:var(--good); }
+  td.fail { color:var(--bad); }
+  .note { color:var(--faint); font-size:11.5px; margin-top:10px; line-height:1.7; }
+  #loading { color:var(--dim); text-align:center; padding:60px 0; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>☾ LUNIQUE 운영실 <small id="stamp"></small></h1>
+    <div id="who" style="display:none;">
+      <button class="ghost" onclick="load()">새로고침</button>
+      <button class="ghost" onclick="firebase.auth().signOut().then(()=>location.reload())">로그아웃</button>
+    </div>
+  </div>
+
+  <div id="gate">
+    <p>운영자 전용 페이지입니다.<br>kkfm1215@gmail.com 구글 계정으로만 열립니다.</p>
+    <button onclick="login()">구글로 로그인</button>
+    <div id="msg"></div>
+  </div>
+
+  <div id="loading" style="display:none;">서가를 펼치는 중…</div>
+
+  <div id="board" style="display:none;">
+    <div class="cards">
+      <div class="card"><div class="k">전체 가입</div><div class="v" id="c-players">–<small>명</small></div></div>
+      <div class="card"><div class="k">오늘 대화한 유저</div><div class="v" id="c-today">–<small>명</small></div></div>
+      <div class="card"><div class="k">최근 7일 신규 가입</div><div class="v" id="c-new">–<small>명</small></div></div>
+      <div class="card"><div class="k">시작된 이야기(누적)</div><div class="v" id="c-started">–<small>건</small></div></div>
+      <div class="card"><div class="k">완주된 사랑</div><div class="v" id="c-completed">–<small>건</small></div></div>
+    </div>
+    <div class="card" style="margin-bottom:4px;"><div class="k">가입자 성별</div><div style="color:var(--dim); font-size:13px; margin-top:6px;" id="c-gender">–</div></div>
+
+    <div class="sect">이야기별 성적표 <span style="color:var(--faint); letter-spacing:0;">— 시작 많은 순</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>이야기</th><th>시작</th><th>진행 중</th><th>완료</th><th>실패</th><th>최근 7일 활동</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="note">
+      · "시작"은 그 이야기를 연 유저 수, "최근 7일 활동"은 일주일 안에 대화가 오간 수입니다.<br>
+      · 시작은 많은데 완료·활동이 적은 이야기가 손봐야 할 후보입니다. 한 번도 시작되지 않은 이야기는 표에 나오지 않습니다.
+    </div>
+  </div>
+</div>
+
+<script>
+const TITLES = {"w01":{"t":"두 개의 시간","s":"윤세라"},"w02":{"t":"주파수가 맞는 밤","s":"한밤"},"w03":{"t":"첫사랑 찾아드립니다","s":"서문영"},"w04":{"t":"어제와 다른 얼굴","s":"노아"},"w05":{"t":"연애 금지 조항","s":"백도희"},"w06":{"t":"실연 동맹","s":"차수인"},"w07":{"t":"계약 만료일","s":"주해원"},"w08":{"t":"앞치마 뒤의 사람","s":"임가을"},"w09":{"t":"이 동네의 방식","s":"봉소정"},"w10":{"t":"후속편 촬영 중","s":"유다해"},"w11":{"t":"하루 한 가지 진심","s":"편지수"},"w12":{"t":"휴전의 계절","s":"진서"},"w13":{"t":"위기의 결혼기념일","s":"오는서"},"w14":{"t":"이번 회차의 너","s":"리원"},"w15":{"t":"목소리의 주인","s":"담이"},"w16":{"t":"삭제된 계절","s":"하린"},"w17":{"t":"오늘의 수정본","s":"채유나"},"w18":{"t":"반복되는 축가","s":"문별"},"w19":{"t":"스무 해 건너의 안부","s":"남우주"},"w20":{"t":"말하지 않아도 아는 사이라는 거짓말","s":"정겨울"},"w21":{"t":"수신인이 다른 편지","s":"은솔"},"w22":{"t":"거꾸로 오는 사람","s":"세인"},"w23":{"t":"10분간의 재회","s":"모래"},"w24":{"t":"두 개의 로그","s":"강주아"},"w25":{"t":"보이지 않는 숫자","s":"백지호"},"w26":{"t":"복원된 목소리","s":"이음"},"w27":{"t":"사규 제12조","s":"도가온"},"w28":{"t":"천 개의 조각","s":"루미"},"w29":{"t":"심야 상영관","s":"무화"},"w30":{"t":"옆 공방의 소란","s":"함초록"},"w31":{"t":"겹치는 노선","s":"파랑"},"w32":{"t":"협상 테이블의 맞은편","s":"목단"},"w33":{"t":"두 사람이었던 한 사람","s":"애리"},"w34":{"t":"세상의 악역","s":"신려원"},"w35":{"t":"기울어진 저울","s":"공빛나"},"w36":{"t":"둘째 딸의 프로젝트","s":"허들레"},"w37":{"t":"항복 없는 전쟁","s":"위서리"},"w38":{"t":"같은 시각의 산책","s":"초하"},"w39":{"t":"체크아웃하지 않는 사람","s":"소요"},"w40":{"t":"273쪽의 답장","s":"편백"},"w41":{"t":"괴짜 취급 주의","s":"반짝"},"w42":{"t":"직원인 줄 알았던 사람","s":"온유"},"w43":{"t":"중매쟁이의 맹점","s":"다솜"},"w44":{"t":"국경의 밤 골목","s":"리하"},"w45":{"t":"옥상의 계절","s":"봄내"},"w46":{"t":"최애의 옆자리","s":"별하"},"w47":{"t":"오차 범위","s":"수리"},"w48":{"t":"소문의 반대편","s":"채란"},"w49":{"t":"예외 항목","s":"나기"},"w50":{"t":"공동 창업 계약서 별첨","s":"도해나"},"m01":{"t":"대필된 마음","s":"강이준"},"m02":{"t":"서로의 자리","s":"백무현"},"m03":{"t":"두 번째 트랙","s":"서도담"},"m04":{"t":"통역이 필요한 말","s":"카를로"},"m05":{"t":"두 번째 봄","s":"한시온"},"m06":{"t":"동승자","s":"유겸"},"m07":{"t":"마지막 특종","s":"문재하"},"m08":{"t":"야근의 끝","s":"지무영"},"m09":{"t":"낮과 밤의 그","s":"반석"},"m10":{"t":"첫차가 올 때까지","s":"온새벽"},"m11":{"t":"게이트 앞에서","s":"노을"},"m12":{"t":"점검 여행","s":"겨례"},"m13":{"t":"남의 집 침대에서","s":"하람"},"m14":{"t":"이름 없는 관계","s":"로"},"m15":{"t":"두 도시의 무대","s":"차하늘"},"m16":{"t":"공개 연애의 조건","s":"단우"},"m17":{"t":"존경하는 적수","s":"백강"},"m18":{"t":"위험 조합","s":"결"},"m19":{"t":"설정 권한","s":"아신"},"m20":{"t":"5월 셋째 주 토요일","s":"편강"},"m21":{"t":"2미터","s":"시헌"},"m22":{"t":"서약과 서약 사이","s":"도경"},"m23":{"t":"같은 플레이리스트, 다른 시차","s":"무진"},"m24":{"t":"1년 뒤의 발신인","s":"서한결"},"m25":{"t":"직진의 사람","s":"태양"},"m26":{"t":"박자를 어기는 천재","s":"루안"},"m27":{"t":"완벽한 사람의 집","s":"이서"},"m28":{"t":"문법이 다른 사람","s":"주노"},"m29":{"t":"갱신 조항","s":"해원"},"m30":{"t":"소리 없는 대화","s":"윤슬"},"m31":{"t":"복기 없는 밤","s":"감자못"},"m32":{"t":"4주의 실험","s":"채강"},"m33":{"t":"공유주택 B동","s":"온기"},"m34":{"t":"돌아온 사람","s":"강해"},"m35":{"t":"종착지 없음","s":"길"},"m36":{"t":"구조를 바꾸는 사람","s":"믿음"},"m37":{"t":"마침표의 위치","s":"선우제"},"m38":{"t":"증언 전야","s":"정온"},"m39":{"t":"간판 없는 가게","s":"모루"},"m40":{"t":"두 개의 정답","s":"라온"},"m41":{"t":"일요일의 얼굴","s":"견주안"},"m42":{"t":"밤 11시의 익명","s":"담월"},"m43":{"t":"목소리의 온도","s":"청"},"m44":{"t":"공동 저자","s":"서온"},"m45":{"t":"존경하는 적","s":"노관"},"m46":{"t":"성공의 이유","s":"은결"},"m47":{"t":"두 개의 집","s":"파도"},"m48":{"t":"공동 보호자","s":"결울"},"m49":{"t":"4번째 부스","s":"진해"},"m50":{"t":"합병 조건","s":"하도경"}};
+firebase.initializeApp({
+  apiKey: "AIzaSyAhq9SwaK0OLlXxsjilqimx9JPgsgP2zGQ",
+  authDomain: "ai-love-sim-6cafb.firebaseapp.com",
+  projectId: "ai-love-sim-6cafb"
+});
+function login() {
+  document.getElementById('msg').textContent = '';
+  firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    .catch(e => { document.getElementById('msg').textContent = '로그인 실패: ' + e.message; });
+}
+firebase.auth().onAuthStateChanged(u => { if (u) load(); });
+
+async function load() {
+  const u = firebase.auth().currentUser;
+  if (!u) return;
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('board').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  try {
+    const tok = await u.getIdToken();
+    const r = await fetch('/api/admin', { method: 'POST', headers: { Authorization: 'Bearer ' + tok } });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error === 'admin only' ? '운영자 계정이 아닙니다.' : (j.error || r.status));
+    render(j);
+  } catch (e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('gate').style.display = 'block';
+    document.getElementById('msg').textContent = String(e.message || e);
+    return;
+  }
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('who').style.display = 'block';
+  document.getElementById('board').style.display = 'block';
+}
+
+function render(j) {
+  const t = j.totals || {};
+  const set = (id, v) => { const el = document.getElementById(id); el.firstChild.nodeValue = (v == null ? '–' : v); };
+  set('c-players', t.players); set('c-today', t.activeToday); set('c-new', t.newThisWeek);
+  const g = t.genders || {};
+  document.getElementById('c-gender').textContent =
+    Object.keys(g).length ? Object.keys(g).map(k => k + ' ' + g[k] + '명').join(' · ') : '아직 없음';
+
+  const ids = Object.keys(j.stories || {});
+  let started = 0, completed = 0;
+  ids.forEach(id => { started += j.stories[id].started; completed += j.stories[id].completed; });
+  set('c-started', started); set('c-completed', completed);
+
+  ids.sort((a, b) => j.stories[b].started - j.stories[a].started);
+  const tb = document.getElementById('rows');
+  tb.innerHTML = '';
+  ids.forEach(id => {
+    const s = j.stories[id];
+    const ti = TITLES[id];
+    const tr = document.createElement('tr');
+    const label = ti ? ti.t : id;
+    const nm = ti ? ti.s : '';
+    tr.innerHTML = '<td>' + esc(label) + (nm ? '<span class="nm">' + esc(nm) + ' · ' + id + '</span>' : '') + '</td>'
+      + '<td class="hot">' + s.started + '</td><td>' + s.active + '</td>'
+      + '<td class="done">' + s.completed + '</td><td class="fail">' + s.failed + '</td>'
+      + '<td>' + s.last7d + '</td>';
+    tb.appendChild(tr);
+  });
+  if (!ids.length) tb.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--faint); padding:24px;">아직 시작된 이야기가 없습니다.</td></tr>';
+  document.getElementById('stamp').textContent = new Date(j.at).toLocaleString('ko-KR');
+}
+function esc(x) { return String(x).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+</script>
+</body>
+</html>
