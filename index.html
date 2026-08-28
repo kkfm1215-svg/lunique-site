@@ -1063,7 +1063,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.12</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.14</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2036,7 +2036,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-28.12';
+window.__BUILD = 'v2026-08-28.14';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -2924,6 +2924,55 @@ const AVATAR_IMAGE = {
   w50: "images/w50.jpg",
   m09: "images/m09.jpg",
   m12: "images/m12.jpg",
+  // 68일차: 남성 47명 일괄 연결 (재작업 4명 포함, m11은 확정된 변형(m11_1) 사용)
+  m01: "images/m01.jpg",
+  m02: "images/m02.jpg",
+  m03: "images/m03.jpg",
+  m04: "images/m04.jpg",
+  m05: "images/m05.jpg",
+  m06: "images/m06.jpg",
+  m07: "images/m07.jpg",
+  m08: "images/m08.jpg",
+  m10: "images/m10.jpg",
+  m11: "images/m11.jpg",
+  m13: "images/m13.jpg",
+  m14: "images/m14.jpg",
+  m15: "images/m15.jpg",
+  m16: "images/m16.jpg",
+  m17: "images/m17.jpg",
+  m18: "images/m18.jpg",
+  m19: "images/m19.jpg",
+  m20: "images/m20.jpg",
+  m21: "images/m21.jpg",
+  m22: "images/m22.jpg",
+  m23: "images/m23.jpg",
+  m24: "images/m24.jpg",
+  m25: "images/m25.jpg",
+  m26: "images/m26.jpg",
+  m27: "images/m27.jpg",
+  m28: "images/m28.jpg",
+  m29: "images/m29.jpg",
+  m30: "images/m30.jpg",
+  m31: "images/m31.jpg",
+  m32: "images/m32.jpg",
+  m33: "images/m33.jpg",
+  m34: "images/m34.jpg",
+  m35: "images/m35.jpg",
+  m36: "images/m36.jpg",
+  m37: "images/m37.jpg",
+  m38: "images/m38.jpg",
+  m39: "images/m39.jpg",
+  m40: "images/m40.jpg",
+  m41: "images/m41.jpg",
+  m42: "images/m42.jpg",
+  m43: "images/m43.jpg",
+  m44: "images/m44.jpg",
+  m45: "images/m45.jpg",
+  m46: "images/m46.jpg",
+  m47: "images/m47.jpg",
+  m48: "images/m48.jpg",
+  m49: "images/m49.jpg",
+  m50: "images/m50.jpg",
   yoona: "images/yoona.jpg",
   eunbi: "images/eunbi.jpg",
   harin: "images/harin.jpg",
@@ -9718,6 +9767,7 @@ async function callGeminiStream(userMessage, onBeat) {
   let jsonBuffer = '';    // 모델이 만들고 있는 JSON 텍스트 (점점 길어짐)
   let sseBuffer = '';     // 아직 줄바꿈이 안 된 SSE 조각
   let scannedUpTo = 0;    // 이미 확인해서 처리한 지점 (여기서부터만 다시 검사, 매번 처음부터 다시 훑지 않기 위함)
+  let lastUsage = null;   // 68일차: 토큰 사용량 대시보드 — 스트림 마지막 조각에 담겨 오는 실제 사용량을 기억해둔다
 
   function scanNewBeats() {
     objRegex.lastIndex = scannedUpTo;
@@ -9774,6 +9824,7 @@ async function callGeminiStream(userMessage, onBeat) {
         jsonBuffer += deltaText;
         scanNewBeats();
       }
+      if (chunkObj.usageMetadata) lastUsage = chunkObj.usageMetadata; // 스트림 끝 조각에만 실려 온다
     }
   }
 
@@ -9813,7 +9864,25 @@ async function callGeminiStream(userMessage, onBeat) {
   if (typeof finalParsed.new_rival_key !== 'string') finalParsed.new_rival_key = '';
   if (typeof finalParsed.new_rival_name !== 'string') finalParsed.new_rival_name = '';
   if (typeof finalParsed.new_rival_role !== 'string') finalParsed.new_rival_role = '';
+  finalParsed.__usage = lastUsage; // 68일차: 토큰 사용량 대시보드용. 화면에는 안 보이고 기록에만 쓰인다.
   return finalParsed;
+}
+
+// 68일차: 토큰 사용량을 하루 단위로 조용히 누적 기록한다(usageStats/{오늘날짜}).
+// 유저가 값을 조작해도 결제·코인처럼 손해가 나는 데이터가 아니라 운영 참고용 통계이므로,
+// 실패해도 대화 자체에는 영향을 주지 않도록 완전히 무음으로 처리한다.
+async function logTokenUsage(usage) {
+  if (!usage) return;
+  try {
+    const day = todayStr();
+    await db.collection('usageStats').doc(day).set({
+      promptTokens: firebase.firestore.FieldValue.increment(usage.promptTokenCount || 0),
+      cachedTokens: firebase.firestore.FieldValue.increment(usage.cachedContentTokenCount || 0),
+      candidatesTokens: firebase.firestore.FieldValue.increment(usage.candidatesTokenCount || 0),
+      turns: firebase.firestore.FieldValue.increment(1),
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (e) {}
 }
 
 let isSending = false; // 이미 요청이 진행 중이면 새로 전송하지 않기 위한 잠금장치
@@ -9907,6 +9976,7 @@ async function requestSuggestions() {
   setControlsDisabled(true);
   try {
     const result = await callGeminiStream(SUGGEST_ONLY_MARKER, () => {}); // 이 요청은 beats가 없으니 onBeat은 호출되지 않는다.
+    logTokenUsage(result.__usage);
     await consumeQuota(quotaCheck);
     renderBillingSnippet('chat-billing-status');
     renderSuggestions(result.suggested_replies);
@@ -10033,6 +10103,7 @@ async function runTurn(text, opts) {
       logClientError('blocked', result.blocked);
       return;
     }
+    logTokenUsage(result.__usage);
 
     // 아래는 이번 턴의 응답(result)을 반영하는 처리다. 재시도 턴에서는 이미 처리했으므로 건너뛴다.
     if (!isRetry) {

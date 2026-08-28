@@ -104,7 +104,30 @@ exports.handler = async (event) => {
       if ((V(f.lastTurnAt) || 0) >= d7) st.last7d++;
     });
 
-    return ok({ at: now, totals: { players: totalPlayers, activeToday, newThisWeek, genders }, stories });
+    // ③ 토큰 사용량 집계 (68일차) — 최근 8일치(usageStats/{YYYY-MM-DD}) 문서를 직접 하나씩 읽는다.
+    // gemini-3.5-flash-lite 단가(2026-08 기준, 100만 토큰당): 새 입력 $0.30 / 캐시 입력 $0.03 / 출력 $2.50
+    const PRICE = { fresh: 0.30, cached: 0.03, out: 2.50 };
+    const dayKeys = [];
+    for (let i = 0; i < 8; i++) dayKeys.push(new Date(now + 9 * 3600000 - i * 86400000).toISOString().slice(0, 10));
+    const usageDocs = await Promise.all(dayKeys.map(async (day) => {
+      const tok = await googleToken();
+      const url = 'https://firestore.googleapis.com/v1/projects/' + sa().project_id + '/databases/(default)/documents/usageStats/' + day;
+      const r = await fetch(url, { headers: { Authorization: 'Bearer ' + tok } });
+      if (r.status !== 200) return { day, promptTokens: 0, cachedTokens: 0, candidatesTokens: 0, turns: 0 };
+      const j = await r.json();
+      const f = j.fields || {};
+      return { day, promptTokens: V(f.promptTokens) || 0, cachedTokens: V(f.cachedTokens) || 0, candidatesTokens: V(f.candidatesTokens) || 0, turns: V(f.turns) || 0 };
+    }));
+    const costOf = (d) => {
+      const fresh = Math.max(0, d.promptTokens - d.cachedTokens);
+      return fresh * PRICE.fresh / 1e6 + d.cachedTokens * PRICE.cached / 1e6 + d.candidatesTokens * PRICE.out / 1e6;
+    };
+    const usageDaily = usageDocs.map(d => ({ ...d, costUsd: costOf(d) })).reverse(); // 오래된 날짜부터
+    const todayUsage = usageDocs[0];
+    const week = usageDocs.reduce((a, d) => ({ turns: a.turns + d.turns, costUsd: a.costUsd + costOf(d) }), { turns: 0, costUsd: 0 });
+
+    return ok({ at: now, totals: { players: totalPlayers, activeToday, newThisWeek, genders }, stories,
+      usage: { daily: usageDaily, todayCostUsd: costOf(todayUsage), todayTurns: todayUsage.turns, week7CostUsd: week.costUsd, week7Turns: week.turns } });
   } catch (e) {
     return bad(500, String(e && e.message || e).slice(0, 200));
   }

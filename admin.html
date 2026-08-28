@@ -69,6 +69,24 @@
     </div>
     <div class="card" style="margin-bottom:4px;"><div class="k">가입자 성별</div><div style="color:var(--dim); font-size:13px; margin-top:6px;" id="c-gender">–</div></div>
 
+    <div class="sect">AI 대화 비용 <span style="color:var(--faint); letter-spacing:0;">— gemini-3.5-flash-lite 단가 기준 추정</span></div>
+    <div class="cards">
+      <div class="card"><div class="k">오늘 나눈 대화</div><div class="v" id="u-today-turns">–<small>턴</small></div></div>
+      <div class="card"><div class="k">오늘 예상 비용</div><div class="v" id="u-today-cost">–</div></div>
+      <div class="card"><div class="k">최근 7일 비용</div><div class="v" id="u-week-cost">–</div></div>
+      <div class="card"><div class="k">이번 달 예상(오늘×30)</div><div class="v" id="u-month-cost">–</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>날짜</th><th>대화 수</th><th>비용($)</th><th>비용(원)</th></tr></thead>
+        <tbody id="u-rows"></tbody>
+      </table>
+    </div>
+    <div class="note">
+      · 유료(구독) 등급이나 더 비싼 모델을 쓰면 실제 비용은 이보다 커질 수 있습니다. 환율은 1,380원 기준입니다.<br>
+      · 이 통계는 브라우저에서 기록하는 참고용 수치라 실제 청구서(Google Cloud 콘솔)와 약간 차이가 날 수 있습니다.
+    </div>
+
     <div class="sect">이야기별 성적표 <span style="color:var(--faint); letter-spacing:0;">— 시작 많은 순</span></div>
     <div class="tbl-wrap">
       <table>
@@ -150,6 +168,24 @@ function render(j) {
   });
   if (!ids.length) tb.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--faint); padding:24px;">아직 시작된 이야기가 없습니다.</td></tr>';
   document.getElementById('stamp').textContent = new Date(j.at).toLocaleString('ko-KR');
+
+  // 68일차: AI 대화 비용 카드·표
+  const u = j.usage || {};
+  const KRW = 1380;
+  const money = (usd) => '$' + usd.toFixed(2) + '<small>(' + Math.round(usd * KRW).toLocaleString('ko-KR') + '원)</small>';
+  const setHtml = (id, html) => { document.getElementById(id).innerHTML = html; };
+  setHtml('u-today-turns', (u.todayTurns ?? '–') + '<small>턴</small>');
+  setHtml('u-today-cost', money(u.todayCostUsd || 0));
+  setHtml('u-week-cost', money(u.week7CostUsd || 0));
+  setHtml('u-month-cost', money((u.todayCostUsd || 0) * 30));
+  const ub = document.getElementById('u-rows');
+  ub.innerHTML = '';
+  (u.daily || []).forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + esc(d.day) + '</td><td>' + d.turns + '</td><td>' + d.costUsd.toFixed(3) + '</td><td>' + Math.round(d.costUsd * KRW).toLocaleString('ko-KR') + '</td>';
+    ub.appendChild(tr);
+  });
+  if (!(u.daily || []).length) ub.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--faint); padding:24px;">아직 기록된 대화가 없습니다.</td></tr>';
 }
 function esc(x) { return String(x).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 </script>
