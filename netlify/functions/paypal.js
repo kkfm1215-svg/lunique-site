@@ -261,6 +261,30 @@ exports.handler = async (event) => {
       return ok({ active: false });
     }
 
+    // ===== 코인 차감 (68일차, 서버화) — 되돌리기(2)·인연 되살리기(30) 전용 =====
+    // 브라우저가 직접 코인을 깎던 것을 이 액션으로 옮겼다. 금액은 정해진 두 가지만 받는다.
+    if (action === 'spend-coins') {
+      const amount = parseInt(req.amount, 10);
+      if (amount !== 2 && amount !== 30) return bad(400, 'unknown amount');
+      const doc = await fsGet('players/' + uid);
+      const cf = doc && doc.fields && doc.fields.coins;
+      const coins = cf ? parseInt(cf.integerValue !== undefined ? cf.integerValue : cf.doubleValue, 10) || 0 : 0;
+      if (coins < amount) return ok({ ok: false, coins });
+      const res = await fsCommit([{
+        transform: { document: fsDoc('players/' + uid), fieldTransforms: [{ fieldPath: 'coins', increment: fInt(-amount) }] }
+      }]);
+      if (res.status !== 200) return bad(502, 'spend failed');
+      return ok({ ok: true, coins: coins - amount });
+    }
+
+    // ===== 테스트 구독 켜고 끄기 (68일차) — 샌드박스 환경에서만 작동 =====
+    // 실결제(live) 전환과 동시에 이 뒷문은 자동으로 닫힌다.
+    if (action === 'test-sub') {
+      if (process.env.PAYPAL_ENV === 'live') return bad(403, 'not available in live');
+      await setSubscription(uid, !!req.active, '');
+      return ok({ active: !!req.active });
+    }
+
     return bad(400, 'unknown action');
   } catch (e) {
     return bad(500, String(e && e.message || e).slice(0, 300));

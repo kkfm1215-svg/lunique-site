@@ -21,3 +21,9 @@
   from = "/api/admin"
   to = "/.netlify/functions/admin"
   status = 200
+
+# PWA (68일차) — 매니페스트 파일의 종류를 정확히 알려준다 (일부 브라우저의 인식 보장)
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
