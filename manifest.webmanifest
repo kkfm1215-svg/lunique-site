@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "LUNIQUE — Interactive Romance Fiction",
+  "short_name": "LUNIQUE",
+  "description": "An AI romance where every conversation is remembered.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0C1017",
+  "theme_color": "#0C1017",
+  "icons": [
+    { "src": "/images/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/images/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
