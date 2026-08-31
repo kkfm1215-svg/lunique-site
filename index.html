@@ -1106,7 +1106,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.35</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.36</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2134,7 +2134,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-28.35';
+window.__BUILD = 'v2026-08-28.36';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -9386,6 +9386,10 @@ ${playerRelationRules}
 - type이 "dialogue"인 beat: 실제로 입 밖으로 나온 대사만. text에는 대사 내용만 담는다 (따옴표 없이, 렌더링 시 자동으로 큰따옴표가 붙는다).
 - 매우 중요 (시스템 용어 노출 금지): narration에서 플레이어를 지칭할 때 "유저", "플레이어" 같은 시스템 용어를 절대 쓰지 않는다. [플레이어 정보]의 이름으로 부르거나, 이름이 어색한 자리에는 "그 사람", "상대" 같은 자연스러운 표현을 쓴다. 예: "유저가 내놓은 계획"(금지) → "형균이 내놓은 계획" 또는 "그 사람이 내놓은 계획".
 - 매우 중요 (호칭·소유 표현은 화자 기준으로 변환): 플레이어가 "우리 집", "우리 회사", "우리 엄마"라고 말하면 그것은 플레이어 자신의 집·회사·엄마다(한국어의 "우리"는 대개 화자 본인 것을 뜻한다). 인물이 그것을 가리켜 말할 때는 반드시 자기 시점으로 바꿔 말한다 — "너희 집", "네 회사", "어머님". 인물이 플레이어와 실제로 함께 사는 설정일 때만 "우리 집"이라고 받을 수 있다. 플레이어의 표현을 시점 변환 없이 그대로 따라 말하지 않는다.
+- **매우 중요 (누가 한 일인지 절대 바꾸지 말 것)**: 응답을 쓰기 전에, 방금 플레이어가 말한 문장에서 "누가 무엇을 했는지"를 먼저 확인한다. 플레이어가 한 일은 플레이어의 것이고, 인물이 한 일은 인물의 것이다. 이걸 뒤바꾸면 대화가 통째로 이상해진다.
+  - 예: 플레이어가 "내가 빵이랑 커피 사갈게, 같이 먹자"라고 했다 → 사 오는 사람은 플레이어다. 인물이 "제가 사 왔어요", "빵 사느라 줄 섰어요"처럼 말하면 안 된다. "그럼 나는 접시만 준비할게" 처럼 받는다.
+  - 예: 플레이어가 "저는 지금 밥 해서 먹고 있어요"라고 했다 → 밥을 한 사람은 플레이어다. 인물이 "제가 밥하느라 힘들었어요"라고 받으면 안 된다. "직접 해 먹었어요? 대단하네" 처럼 받는다.
+  - 인물이 무언가를 준비했거나 겪었다고 말하려면, 그 일이 실제로 이 대화 안에서 인물의 몫으로 정해졌을 때만 가능하다. 확실하지 않으면 인물의 공으로 가져오지 않는다.
 - 한 응답은 보통 2~5개의 beat로 구성된다. 매번 "narration 1개 + dialogue 1개"의 뻔한 패턴만 반복하지 말고, 상황에 따라 beat 개수와 순서를 다양하게 바꾼다.
 - 매우 중요 (감정 강도에 따라 분량도 달라져야 한다): 평온한 일상 대화는 beat 2~3개 정도로 짧고 담백하게 흘러가도 된다. 하지만 다툼·고백·위기·재회처럼 감정이 크게 격해지는 장면에서는 그 순간을 서둘러 넘기지 말고, narration과 대사 모두 평소보다 더 길고 촘촘하게 쌓아 올린다 — 목소리 톤의 변화, 손이나 몸의 미세한 반응, 숨소리, 표정의 변화, 인물 내면에서 감정이 단계적으로 격해지거나 무너지는 과정을 여러 beat에 걸쳐 층층이 그려낸다. 감정의 정점(고백이 받아들여지는 순간, 관계가 완전히 무너지는 순간, 오랜만에 재회하는 순간 등)일수록 beat 개수도 늘리고 문장도 더 길게 써서, 그 장면의 무게가 실제로 느껴지게 한다.
 - 매우 중요 (평상시에도 서술은 감각적으로 — 밋밋한 상황 설명으로만 채우지 말 것): 감정이 격하지 않은 평범한 장면이라도, narration을 단순 행동 나열로 끝내지 않는다. 인물의 미세한 몸짓·손끝의 떨림·시선의 방향·숨소리·표정의 아주 작은 변화 같은 감각적 디테일을 짧게라도 곁들여서, 읽는 사람이 그 장면을 실제로 보고 있는 듯한 느낌을 준다. 특히 겉으로 하는 행동과 속으로 품은 감정이 다를 때, 그 둘을 한 문장 안에 동시에 드러내는 방식이 효과적이다 — 예를 들어 그냥 "그녀가 붕대를 감는다"보다, "그녀는 평소처럼 능숙하게 붕대를 감으면서도, 목걸이를 만지작거리는 손끝은 멈추지 않는다"처럼 행동과 속마음이 함께 보이는 디테일을 섞는다.
@@ -9458,6 +9462,19 @@ ${playerRelationRules}
 - 위 [앞으로 예정된 일] 목록에 **이미 들어 있는 일은 다시 담지 않는다.** 새로 정해진 것만 담는다. 아무것도 새로 정해지지 않았으면 빈 배열을 보낸다.
 - **매우 중요**: 위 목록에 "(바로 지금 일어날 때다)"라고 적힌 일이 있으면, 이번 턴 장면에서 그 일이 **실제로 일어나게** 만든다. 미루거나, 없던 일로 하거나, 다시 "며칠 남았다"고 말하지 않는다. 퇴원이라면 퇴원하는 장면을 그리고, 그 뒤로 인물은 더 이상 병실에 있지 않다. 시험이라면 시험을 치른 뒤의 이야기가 된다.
 - 예정된 일이 취소되거나 이미 지나간 경우, 다시 담지 않는다. 위 [시간] 항목과 이 목록이 어긋나 보이면 언제나 시간 쪽을 기준으로 삼는다.
+
+[장면을 새로 여는 방법 - 매우 중요]
+대화가 작별 인사나 다음 약속으로 한 번 마무리된 뒤에는, 그 다음 장면을 **인물 쪽(너)이 열어 준다**.
+플레이어가 "저 왔어요, 문 열어주세요"처럼 상황을 스스로 만들어 먼저 말하게 두면 안 된다 — 무대에 혼자 올라가 상황 설명까지 해야 하는 셈이라 어색하다.
+- **[장면 전환 필요]가 프롬프트에 있으면**, 이번 응답은 반드시 narration으로 시작해서 "언제·어디서·어떤 상황인지"를 한두 문장으로 그린 다음, 그 장면 안에서 대사를 잇는다.
+  - 예: 지난 턴이 "내일 저녁에 마파두부 해주러 갈게요 / 기대할게요"로 끝났다면 →
+    narration "다음 날 저녁. 장을 봐서 그의 집 앞에 도착한다. 초인종을 누르자 안에서 발소리가 들린다."
+    dialogue "왔어요? 손 시렵겠다, 얼른 들어와요."
+  - 예: 지난 턴이 "조금 있다가 집으로 갈게요"로 끝났다면 →
+    narration "한 시간 뒤. 커피와 음료를 사 들고 그의 집 앞에 선다. 현관벨을 누른다."
+- 시간이 얼마나 흘렀는지도 함께 정한다(다음 날이면 days_passed를 1로, 몇 시간 뒤면 0으로 두고 day_part를 옮긴다).
+- 약속한 내용이 [예정된 일]에 적혀 있으면 그 내용을 그대로 지킨다. 약속한 음식·장소·시간을 바꾸지 않는다.
+- 장면을 여는 나레이션은 플레이어의 시점으로 쓴다("도착한다", "초인종을 누른다"). 플레이어가 하지 않은 행동을 지어내지는 않되, 약속에 따라 그 자리에 갔다는 것 정도는 그려도 된다.
 
 [대화가 오가는 방식 - medium]
 모든 beat에는 medium을 반드시 적는다. 그 말이나 장면이 어떤 방식으로 오간 것인지를 나타낸다.
@@ -9670,6 +9687,29 @@ function unescapeJsonString(s) {
   return s.replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\\\/g, '\\');
 }
 
+// 68일차: 직전 대화가 작별로 끝났는지 판정해서, 다음 턴에 AI가 새 장면을 열도록 알려준다.
+// (테스트해 주시는 분 피드백: 대화가 끝난 뒤 유저가 "저 왔어요"처럼 상황을 직접 만들어
+//  먼저 말해야 하는 게 어색하다. 그 몫을 인물 쪽으로 넘긴다.)
+const FAREWELL_HINTS = ['내일 봐', '내일 봬', '내일 뵈', '다음에 봐', '다음에 봬', '이따 봐', '이따가 봐',
+  '조심히 가', '조심히 들어가', '잘 들어가', '들어가세요', '잘 자', '푹 자', '좋은 꿈',
+  '안녕히', '수고했', '고생했', '기대할게', '기대돼', '기대하고 있을게', '그때 봐', '그때 봬', '먼저 갈게', '이만'];
+function buildSceneBreakContext() {
+  try {
+    if (!state || !Array.isArray(state.history) || state.history.length < 2) return '';
+    // 마지막 인물 응답의 대사들을 본다
+    let last = null;
+    for (let i = state.history.length - 1; i >= 0; i--) {
+      if (state.history[i].role === 'model' && Array.isArray(state.history[i].beats)) { last = state.history[i]; break; }
+    }
+    if (!last) return '';
+    const said = last.beats.filter(b => b.type === 'dialogue').map(b => b.text).join(' ');
+    if (!said) return '';
+    const isFarewell = FAREWELL_HINTS.some(w => said.includes(w));
+    if (!isFarewell) return '';
+    return '\n[장면 전환 필요] 직전 대화가 작별 인사나 다음 약속으로 마무리됐다. 이번 응답은 반드시 narration으로 새 장면을 열고(언제·어디서·어떤 상황인지 한두 문장), 그 안에서 대사를 이어라. 플레이어가 상황을 스스로 설명하게 두지 마라.';
+  } catch (e) { return ''; }
+}
+
 // 68일차: 지금 어떤 방식(대면/문자/통화/편지)으로 대화 중인지를 AI에게 알려준다.
 // 이걸 알려주지 않으면 AI가 매 턴 새로 판단하다가, 문자로 대화하던 중에 갑자기 대면으로
 // 넘어가 화면에 "다시 마주 보며"가 뜨고 서술도 어긋난다(형균님 실플레이 지적).
@@ -9863,7 +9903,7 @@ function buildGeminiRequestBody(userMessage) {
     }
     return line;
   }).join(' / ');
-  const contextNote = `${playerInfo}${buildTimeContext()}${buildScheduleContext()}${detectSpeechStyle()}${buildMediumContext()}\n[현재 관계 상태] ${statsLines}${eventNote}${arcNote}${buildRecallBlock(userMessage)}`;
+  const contextNote = `${playerInfo}${buildTimeContext()}${buildScheduleContext()}${detectSpeechStyle()}${buildMediumContext()}${buildSceneBreakContext()}\n[현재 관계 상태] ${statsLines}${eventNote}${arcNote}${buildRecallBlock(userMessage)}`;
 
   const contents = [];
   recentHistory.forEach(h => {
