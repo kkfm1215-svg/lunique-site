@@ -277,6 +277,25 @@ exports.handler = async (event) => {
       return ok({ ok: true, coins: coins - amount });
     }
 
+    // ===== 테스트용 코인 받기 (68일차, 형균님 요청 — 지인 테스트 기간 한정) =====
+    // 누구나 쓸 수 있지만 세 겹의 안전장치가 있다:
+    //  1) 실결제(live) 전환 시 자동으로 닫힌다 — 끄는 걸 잊어도 안전하다
+    //  2) 잔액이 이미 충분하면(500 이상) 주지 않는다 — 무한 클릭으로 쌓을 수 없다
+    //  3) 지급은 서버가 한다 — 브라우저 조작으로 액수를 바꿀 수 없다
+    if (action === 'test-coins') {
+      if (process.env.PAYPAL_ENV === 'live') return bad(403, 'not available in live');
+      const GRANT = 500, CEILING = 500;
+      const doc = await fsGet('players/' + uid);
+      const cf = doc && doc.fields && doc.fields.coins;
+      const coins = cf ? (parseInt(cf.integerValue !== undefined ? cf.integerValue : cf.doubleValue, 10) || 0) : 0;
+      if (coins >= CEILING) return ok({ granted: 0, coins, reason: 'enough' });
+      const res = await fsCommit([{
+        transform: { document: fsDoc('players/' + uid), fieldTransforms: [{ fieldPath: 'coins', increment: fInt(GRANT) }] }
+      }]);
+      if (res.status !== 200) return bad(502, 'grant failed');
+      return ok({ granted: GRANT, coins: coins + GRANT });
+    }
+
     // ===== 테스트 구독 켜고 끄기 (68일차) — 샌드박스 환경에서만 작동 =====
     // 실결제(live) 전환과 동시에 이 뒷문은 자동으로 닫힌다.
     if (action === 'test-sub') {
