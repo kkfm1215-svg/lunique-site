@@ -14,8 +14,8 @@
 //   FIREBASE_SA_B64       (기존) Firebase 서비스 계정 JSON(base64) — Firestore 서버 권한
 //   SIM_KEY               (신규) 로컬 QA 시뮬레이터 전용 통행 키. 미설정이면 우회 자체가 꺼진다.
 //
-// index.html과 반드시 일치해야 하는 값: FREE_DAILY_LIMIT=5, COST_PER_MESSAGE=2
-const FREE_DAILY_LIMIT = 5;
+// index.html과 반드시 일치해야 하는 값: FREE_DAILY_LIMIT=10, COST_PER_MESSAGE=2
+const FREE_DAILY_LIMIT = 10;
 const COST_PER_MESSAGE = 2;
 
 // ---------- 판정 (순수 함수 — 로컬에서 node로 단위 테스트한다) ----------
