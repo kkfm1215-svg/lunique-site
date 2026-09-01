@@ -1106,7 +1106,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.38</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-08-28.45</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2134,7 +2134,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-08-28.38';
+window.__BUILD = 'v2026-08-28.45';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -4129,6 +4129,11 @@ const STORIES_100 = {
       intro: "2년 전에 퇴사한 그녀가, 방금 나에게 말을 걸었다.",
       situation: "회사의 옛 메신저를 정리하다, 2년 전 퇴사자의 계정에 초록 불이 켜져 있는 걸 발견했다. 지우려던 순간 메시지가 왔다 — 자신은 아직 이 회사에 다니고 있고, 오늘도 야근 중이라고. 내가 아는 그 자리는 2년째 비어 있다."
     },
+    arcEvents: [
+      { t: "겹치지 않는 증거", h: "두 사람이 같은 사건을 말하는데 날짜가 2년 어긋난다는 걸 처음으로 맞대어 확인한다. 세라는 우연이라 우기려다, 자기가 모르는 뉴스를 상대가 먼저 말하는 순간 문장이 흔들린다" },
+      { t: "2년 뒤의 부고", h: "상대가 무심코 흘린 미래의 소식 하나가 세라에게는 아직 오지 않은 일이다. 알려줄 것인가 말 것인가로 두 사람이 처음 다툰다" },
+      { t: "같은 시각의 약속", h: "시차를 넘어 만날 방법을 함께 설계한다. 어느 쪽이 2년을 기다릴지, 아니면 다른 방법이 있는지 — 결론을 내야 하는 밤" }
+    ],
     cast: [
       {
         key: "w01", name: "윤세라", mbti: "ISTJ", role: "시간차 펜팔 (29세)", gender: "여성",
@@ -4275,6 +4280,11 @@ const STORIES_100 = {
       intro: "둘 다 차였다. 위로 금지 동맹을 맺었다. 문제는 지금부터다.",
       situation: "차인 날 투입된 프로젝트에서, 몇 달 전 실연한 선배와 '위로 금지 동맹'을 맺었다. 매일 밤 서로의 전 연인 욕을 주고받다 — 어느새 둘 다, 할 얘기가 서로의 얘기뿐이다. 오늘도 회사 앞 포장마차에 마주 앉는다."
     },
+    arcEvents: [
+      { t: "전 애인의 결혼 소식", h: "수인의 전 연인에게서 청첩장이 온다. 위로 금지가 동맹 규칙인데, 오늘만은 그 규칙을 깨야 할지 두 사람 다 눈치를 본다" },
+      { t: "욕할 거리가 떨어진 밤", h: "포장마차에서 서로 할 얘기가 없다는 걸 처음으로 인정한다. 동맹의 목적이 사라졌는데 왜 계속 만나는지, 아무도 먼저 말하지 못한다" },
+      { t: "대체품이라는 말", h: "누군가가 두 사람을 '상처끼리 뭉친 거 아니냐'고 정면으로 말한다. 수인은 웃어넘기려 하지만, 그 말이 밤새 그녀를 붙든다" }
+    ],
     cast: [
       {
         key: "w06", name: "차수인", mbti: "ISTP", role: "상처 동지 (30세)", gender: "여성",
@@ -4479,6 +4489,11 @@ const STORIES_100 = {
       intro: "이혼 서류만 남은 아내에게서 전화가 왔다. 내 손이 필요하다고.",
       situation: "이혼 서류에 서명만 남기고 남처럼 살던 아내가, 집안의 위기 앞에 처음으로 도움을 청해 왔다. 지금은 한집에서 위기를 함께 넘기는 중이다. 서류상 부부, 실질적 남남 — 그리고 전우."
     },
+    arcEvents: [
+      { t: "서랍 속 서류", h: "위기를 함께 넘기던 중 이혼 서류가 눈에 띈다. 서명란은 여전히 비어 있고, 두 사람 다 그것을 못 본 척한다" },
+      { t: "무너지는 밤", h: "는서가 처음으로 남편 앞에서 무너진다. 평생 약한 소리를 안 하던 사람이 우는 장면 — 그 뒤에 오는 어색함까지가 이 사건이다" },
+      { t: "새 계약서", h: "'다시 부부로 살려면 무엇이 달라져야 하는가'를 둘이 조항으로 적어본다. 예전에 서로를 놓쳤던 이유가 그 목록에서 드러난다" }
+    ],
     cast: [
       {
         key: "w13", name: "오는서", mbti: "ESTJ", role: "이혼 직전 부부 (34세)", gender: "여성",
@@ -4624,6 +4639,11 @@ const STORIES_100 = {
       intro: "남의 결혼식에 갇혔다. 옆자리 그녀는 마흔두 번째라고 했다.",
       situation: "친구 결혼식 날이 계속 반복된다. 나보다 서른다섯 번 먼저 갇힌 옆자리 하객과 동맹을 맺고 매 회차 탈출을 실험 중이다. 그런데 회차가 쌓일수록 탈출이 급하지 않다 — '내일이 오면 우리도 리셋될까?' 그 질문이 남아 있다."
     },
+    arcEvents: [
+      { t: "공략집 마지막 장", h: "별이 만든 공략집에 아직 안 보여준 페이지가 있다는 게 들통난다. 거기에는 탈출 조건이 아니라 다른 것이 적혀 있다" },
+      { t: "리셋되지 않는 것", h: "이번 회차에서 두 사람이 한 약속만은 다음 회차에도 남아 있다. 왜 그것만 지워지지 않는지가 탈출의 실마리가 된다" },
+      { t: "내일을 고르는 회차", h: "탈출 조건을 알아냈지만, 나가면 서로를 기억할지 확신이 없다. 오늘 안에서 영원히 머무를지 내일로 나갈지 — 둘이 함께 정한다" }
+    ],
     cast: [
       {
         key: "w18", name: "문별", mbti: "ENFP", role: "루프 동지 (28세)", gender: "여성",
@@ -5832,6 +5852,11 @@ const STORIES_100 = {
       intro: "낮의 원수 얘기를 밤의 절친에게 털어놨더니, 답장이 얼어붙었다.",
       situation: "낮의 그는 우리 가게를 위협하는 경쟁사 대표, 밤의 '새벽두시'는 3년째 얼굴 모를 채팅 은인이다. 오늘 밤 그 원수 얘기를 털어놓자 답장이 이상하게 늦었다. 그리고 한 줄 — 오늘은 그만 자자. 내일 얘기해. 꼭, 내일."
     },
+    arcEvents: [
+      { t: "새벽두시의 실수", h: "밤의 그가 낮에만 알 수 있는 것을 무심코 안다. 유저가 그 어긋남을 붙잡는 순간, 채팅창이 오래 조용해진다" },
+      { t: "협상 테이블의 목소리", h: "낮의 협상 자리에서 반석이 밤에 쓰던 말버릇을 한 번 흘린다. 두 사람 다 그것을 들었지만 아무도 말하지 않는다" },
+      { t: "어느 쪽으로 만날 것인가", h: "정체가 드러난 뒤, 반석이 둘 중 하나를 고르라고 한다 — 밤의 '새벽두시'로 남을지, 낮의 경쟁사 대표로 마주 설지. 유저의 답이 이 관계를 정한다" }
+    ],
     cast: [
       {
         key: "m09", name: "반석", mbti: "INTJ", role: "익명 절친/현실 적 (31세)", gender: "남성",
@@ -8991,29 +9016,29 @@ function pickRandomFrom(arr) {
 // 200턴+ 장기 QA(2026-08-19)에서 "갭 구간이 저녁 메뉴·집안일 같은 화제로만 채워져서 지루하다"는 지적이
 // 10개 에이전트 전원 공통으로 나와서, 순수 잡담만 흐르지 않도록 매번 다른 작은 순간을 섞어준다.
 const MINI_EVENT_POOL = [
-  '형균이 퇴근길에 지연이 좋아하는 디저트를 사 옴',
-  '지연이 오래된 사진첩을 꺼내 옛날 얘기를 꺼냄',
+  '플레이어가 퇴근길에 인물이 좋아하는 디저트를 사 옴',
+  '인물이 오래된 사진첩을 꺼내 옛날 얘기를 꺼냄',
   '갑자기 정전이 나서 촛불을 켜고 대화하는 상황',
   '동네 산책 중 우연히 아는 이웃을 마주침',
-  '형균이 서툴게 요리를 시도했다가 망함',
-  '지연이 예전에 형균이 했던 사소한 약속을 여전히 기억하고 있었다는 게 드러남',
+  '플레이어가 서툴게 요리를 시도했다가 망함',
+  '인물이 예전에 플레이어가 했던 사소한 약속을 여전히 기억하고 있었다는 게 드러남',
   '둘이 같이 보던 드라마나 영화 얘기로 소소하게 티키타카함',
   '집에 작은 문제(누수, 전구 나감 등)가 생겨서 같이 해결함',
-  '지연이 갑자기 옛날 노래를 틀어놓고 흥얼거림',
-  '형균이 무심코 한 말이 뜻밖에 지연을 웃게 만듦',
+  '인물이 갑자기 옛날 노래를 틀어놓고 흥얼거림',
+  '플레이어가 무심코 한 말이 뜻밖에 인물을 웃게 만듦',
   '길고양이나 동네 강아지를 함께 돌봐줌',
   '장 보러 갔다가 사소한 걸로 티격태격하다 웃어넘김',
-  '지연이 회사에서 있었던 사소하고 웃긴 에피소드를 얘기해줌',
-  '형균이 깜짝 손편지나 메모를 남김',
+  '인물이 그날 있었던 사소하고 웃긴 에피소드를 얘기해줌',
+  '플레이어가 깜짝 손편지나 메모를 남김',
   '날씨가 갑자기 바뀌어서(비, 눈 등) 즉흥적인 데이트가 됨',
   '둘이 함께 예전 데이트 장소를 우연히 지나가며 추억을 나눔',
-  '지연이 서툴게 취미(뜨개질 등)를 시도하다 형균에게 들킴',
-  '형균의 친구나 가족에게서 연락이 와서 짧은 해프닝이 생김',
+  '인물이 서툴게 취미(뜨개질 등)를 시도하다 플레이어에게 들킴',
+  '플레이어의 친구나 가족에게서 연락이 와서 짧은 해프닝이 생김',
   '둘이 함께 새로운 카페나 식당을 발견해서 가봄',
-  '지연이 무심코 형균의 옷이나 머리 스타일 변화를 알아채고 언급함',
+  '인물이 무심코 플레이어의 옷이나 머리 스타일 변화를 알아채고 언급함',
   '주말 늦잠을 자다가 같이 늦은 아침을 먹는 여유로운 장면',
-  '형균이 깜짝 이벤트로 작은 선물을 준비함',
-  '지연이 스트레스 받은 하루를 짧게 털어놓고 형균이 위로해줌',
+  '플레이어가 깜짝 이벤트로 작은 선물을 준비함',
+  '인물이 스트레스 받은 하루를 짧게 털어놓고 플레이어가 위로해줌',
   '둘이 함께 청소나 정리를 하다가 옛날 물건을 발견하고 추억에 잠김'
 ];
 
@@ -9147,6 +9172,28 @@ function requiredArcsFor(story) {
   return (story && story.arcSpan) || DEFAULT_ARC_SPAN;
 }
 
+// 68일차: 문자·통화로 대화 중일 때는 "손이 닿는다", "같이 산책한다"처럼
+// 만나야만 가능한 소재를 빼야 한다. 그런 소재가 뽑히면 AI가 반영하지 못하고 그냥 버린다(실측).
+const FACE_ONLY_HINTS = ['손이 닿', '거리가 훅', '산책', '장 보러', '요리', '청소', '정리를 하다',
+  '카페나 식당', '데이트', '늦은 아침', '정전', '이웃을 마주', '길고양이', '동네 강아지',
+  '사진첩', '손편지', '옷이나 머리 스타일', '뜨개질'];
+function isRemoteNow(state) {
+  try {
+    for (let i = (state.history || []).length - 1; i >= 0; i--) {
+      const h = state.history[i];
+      if (h.role !== 'model' || !Array.isArray(h.beats) || !h.beats.length) continue;
+      const m = h.beats[h.beats.length - 1].medium;
+      return m === 'text' || m === 'call' || m === 'letter';
+    }
+  } catch (e) {}
+  return false;
+}
+function filterByMedium(pool, state) {
+  if (!isRemoteNow(state)) return pool;
+  const ok = pool.filter(e => !FACE_ONLY_HINTS.some(w => e.includes(w)));
+  return ok.length ? ok : pool;   // 전부 걸러지면 원본을 쓴다(이벤트가 아예 안 도는 것보다 낫다)
+}
+
 function maybeTriggerArc(state, story) {
   if (!state.arcState) state.arcState = defaultArcState();
   const as = state.arcState;
@@ -9161,8 +9208,8 @@ function maybeTriggerArc(state, story) {
     if (!as.miniEventThreshold) as.miniEventThreshold = randomPreEventThreshold();
     if (as.sinceLastMiniEvent >= as.miniEventThreshold) {
       const recent = as.recentMiniEvents || [];
-      let pool = PRE_COUPLE_EVENT_POOL.filter(e => !recent.includes(e));
-      if (!pool.length) pool = PRE_COUPLE_EVENT_POOL;
+      let pool = filterByMedium(PRE_COUPLE_EVENT_POOL, state).filter(e => !recent.includes(e));
+      if (!pool.length) pool = filterByMedium(PRE_COUPLE_EVENT_POOL, state);
       const chosen = pickRandomFrom(pool);
       as.activeArc = { type: 'miniEvent', text: chosen };
       as.recentMiniEvents = recent.concat(chosen).slice(-4);
@@ -9180,8 +9227,8 @@ function maybeTriggerArc(state, story) {
     if (!as.miniEventThreshold) as.miniEventThreshold = randomMiniEventThreshold();
     if (as.sinceLastMiniEvent >= as.miniEventThreshold) {
       const recentMini = as.recentMiniEvents || [];
-      let miniPool = MINI_EVENT_POOL.filter(e => !recentMini.includes(e));
-      if (miniPool.length === 0) miniPool = MINI_EVENT_POOL;
+      let miniPool = filterByMedium(MINI_EVENT_POOL, state).filter(e => !recentMini.includes(e));
+      if (miniPool.length === 0) miniPool = filterByMedium(MINI_EVENT_POOL, state);
       const chosenMini = pickRandomFrom(miniPool);
       as.activeArc = { type: 'miniEvent', text: chosenMini };
       as.recentMiniEvents = recentMini.concat(chosenMini).slice(-4);
@@ -9236,7 +9283,7 @@ function buildArcDirective(state) {
     return `\n[아크 이벤트 지시 - 매우 중요, 새로운 라이벌 등장]\n지금까지 있었던 라이벌은 이미 정리됐다. 하지만 이 관계는 여기서 완전히 안전해지지 않는다 — 이번 턴에 완전히 새로운 인물을 하나 만들어서, 자연스러운 계기로 이야기에 등장시켜라. 이 인물은 형균-지연 관계를 다시 흔드는 새로운 위협이 된다.\n- 이름과 관계(직업/접점)는 네가 자유롭게 정한다. 이전 라이벌과는 다른 종류의 관계로 만들어라(예: 헬스장 트레이너, 동호회 사람, 옛 첫사랑, 새 이웃, 병원 관계자, 새 프로젝트 협업자 등 — 매번 다르게).\n- 이번 턴 beats 안에서 이 인물을 실제로 등장시키고, 맨 위 [지금까지 확정된 사실]과 지금까지의 대화 흐름에 자연스럽게 이어지는 계기로 만들어라(뜬금없는 등장 금지).\n- 이번 위기가 전개되는 방식(매우 중요 — 이전 라이벌 위기들과 똑같은 흐름으로 반복되지 않도록, 반드시 이 방식을 따를 것): ${shape.text}\n- ${rivalCycleIntensityText(arc.cycleIndex)}\n- 이번 응답에서 반드시 이 인물을 등장시켜야 한다. 등장시켰다면 최상위 JSON의 "new_rival_key"(영문 소문자·숫자로 된 짧은 식별자, 예: "rival2" — 지금까지 쓰인 적 없는 새 값), "new_rival_name"(실제 이름), "new_rival_role"(관계/역할, 예: "헬스장 트레이너")을 반드시 채운다. 이 세 필드는 이번 턴에만 채우고, 그 외 모든 턴에는 항상 빈 문자열로 둔다.\n- 이 인물에 대해서도 [절대 규칙](노골적 성적 묘사 금지, AI가 임의로 완전한 불륜을 확정 짓지 않음)은 이전과 동일하게 항상 적용된다.`;
   }
   if (arc.type === 'miniEvent') {
-    return `\n[짧은 이벤트 지시 - 가볍게, 이번 턴 안에서 끝낼 것]\n지금부터 다음 짧은 순간을 이번 턴 안에서 자연스럽게 등장시켜라: "${arc.text}".\n- **매우 중요 (지금 상황에 맞게 각색할 것)**: 이 지시는 소재일 뿐이다. 현재 장면의 장소·거리·매체와 어긋나면 그대로 우겨넣지 말고 취지를 살려 바꿔라. 예: 두 사람이 아직 만나지 않았는데(문자·통화 중, 만나러 가는 중) "사소한 부탁"류 지시가 오면, 손을 빌리는 부탁이 아니라 "오는 길에 물 한 병만" 같은 원격으로 가능한 부탁으로 바꾼다. 어떻게 바꿔도 어색하면 이 소재는 버리고 평범하게 진행해도 된다.\n- 이건 정식 사건(아크)이 아니라 일상에 색을 더하는 아주 짧은 순간이다. beats 2~4개 정도로 가볍게 다루고, 갈등이나 긴 전개로 확장하지 않는다.\n- 맨 위 [지금까지 확정된 사실]과 자연스럽게 이어지도록, 뜬금없지 않게 녹여낸다.\n- 이 지시는 이번 턴에서 자동으로 끝난다 — "arc_resolved" 값은 신경 쓰지 않아도 된다(그냥 false로 둬라).`;
+    return `\n[짧은 이벤트 지시 - 가볍게, 이번 턴 안에서 끝낼 것]\n지금부터 다음 짧은 순간을 이번 턴 안에서 자연스럽게 등장시켜라: "${arc.text}".\n- **매우 중요 (지금 상황에 맞게 각색할 것)**: 이 지시는 소재일 뿐이다. 현재 장면의 장소·거리·매체와 어긋나면 그대로 우겨넣지 말고 취지를 살려 바꿔라. 예: 두 사람이 아직 만나지 않았는데(문자·통화 중, 만나러 가는 중) "사소한 부탁"류 지시가 오면, 손을 빌리는 부탁이 아니라 "오는 길에 물 한 병만" 같은 원격으로 가능한 부탁으로 바꾼다. **이 소재는 반드시 이번 턴 안에 등장시킨다.** 장소·매체가 안 맞으면 버리지 말고 그 상황에 맞는 형태로 바꿔라 — 만나지 않았다면 문자로, 대면이라면 그 자리에서. 도저히 불가능한 극단적인 경우에만(예: 인물이 이번 턴에 등장하지 않는 장면) 넘어간다.\n- 이건 정식 사건(아크)이 아니라 일상에 색을 더하는 아주 짧은 순간이다. beats 2~4개 정도로 가볍게 다루고, 갈등이나 긴 전개로 확장하지 않는다.\n- 맨 위 [지금까지 확정된 사실]과 자연스럽게 이어지도록, 뜬금없지 않게 녹여낸다.\n- 이 지시는 이번 턴에서 자동으로 끝난다 — "arc_resolved" 값은 신경 쓰지 않아도 된다(그냥 false로 둬라).`;
   }
   return `\n[아크 이벤트 지시 - 매우 중요]\n지금부터 다음 사건을 스토리에 자연스럽게 등장시켜라: "${arc.sub}" (분류: ${arc.major} > ${arc.mid}).\n- 사건을 설명하듯 요약해서 말하지 말고, 지금까지의 대화 흐름과 각 인물의 성격에 맞게 자연스럽게 녹여서 전개하라.\n- 이 사건을 한 턴 만에 끝내지 않아도 되고, 몇 턴에 걸쳐 자연스럽게 펼쳐도 된다.\n- 이 사건이 이번 응답에서 자연스럽게 마무리(화해, 정리, 다음 단계로 넘어감 등)되었다고 판단되면 최상위 JSON에 "arc_resolved": true를 포함시켜라. 아직 진행 중이면 "arc_resolved": false로 둬라.\n- 매우 중요 (뜬금없는 사건 금지 — 반드시 지금까지의 삶과 이어질 것): 이 사건은 맨 위 [지금까지 확정된 사실] 목록과 지금까지의 대화에서 이미 확립된 인물의 직업·성격·인간관계·삶의 사건(예: 이미 아이를 낳았다, 이미 이직했다 등)과 자연스럽게 이어지는 "다음 이야기"여야 한다. 그 인물의 기존 설정과 아무 상관 없는 완전히 새로운 신분·직업·사건(예: 갑자기 대기업 사장이 되어 체포된다는 식)을 맥락 없이 새로 지어내지 않는다. 이미 확정된 삶의 사건이 있다면 그걸 적극적으로 활용해서 사건을 만들어라 (예: 이미 출산했다면 그 아이가 이번 사건에 실제로 등장할 수 있다). 또한 라이벌·제3자가 매 사건마다 반복 등장할 필요는 없다 — 등장 여부는 이 사건의 성격에 맞게 자연스럽게 판단하라.`;
 }
@@ -9259,8 +9306,10 @@ function buildSystemPrompt(story, factLedger, recentRivalTriggers) {
 [네가 그동안 적어온 비밀 일기 - 과거를 회상할 때 이 기록과 날짜를 근거로 말하라. 유저는 이 일기의 존재를 모른다]
 ${diaryList.map(e => { const dd = new Date(e.d); return `- ${dd.getFullYear()}년 ${dd.getMonth() + 1}월 ${dd.getDate()}일: ${e.text}`; }).join('\n')}` : '';
   const factLedgerBlock = (factLedger && factLedger.length) ? `
-[지금까지 확정된 사실 - 매우 중요, 절대 모순되게 진행하지 말 것]
+[지금까지 확정된 사실 - 배경 지식]
 아래는 대화 중 이미 확정되어 되돌릴 수 없는 사실들이다. 히스토리에 안 보이더라도 전부 여전히 유효하다. 이미 인정/시인/확인된 내용을 다시 부인하거나, 이미 벌어진 일을 마치 없었던 일처럼 되돌리지 않는다.
+- **매우 중요 (이건 참고용 배경일 뿐, 대화 소재 목록이 아니다)**: 이 목록에 있다고 해서 매 턴 꺼내 말하지 않는다. 지금 장면과 직접 상관이 있을 때만 자연스럽게 스치듯 언급하고, 그렇지 않으면 아예 입에 올리지 않는다. 한 번 지나간 일(함께 먹은 음식, 지난번 나들이 등)을 여러 턴에 걸쳐 되풀이해 화제로 삼으면 인물이 그 일밖에 기억하지 못하는 사람처럼 보인다.
+- 같은 사건을 두 턴 연속으로 언급하지 않는다. 이미 충분히 이야기한 일은 마음속에만 두고, 새로운 화제로 넘어간다.
 ${factLedger.map(f => `- ${f}`).join('\n')}` : '';
 
   // 61일차 B22: 매 턴 바뀌는 정보는 반드시 프롬프트 "맨 뒤"에 둔다.
@@ -9288,12 +9337,24 @@ ${factLedger.map(f => `- ${f}`).join('\n')}` : '';
     return `\n- **이번 턴 금지 표현**: 최근 턴에서 다음 표현·구조가 반복돼 유저가 지루함을 느끼는 상태다 — ${hits.join(' / ')}. 이번 턴에는 이것들을 전부 피하고 완전히 다른 결의 반응(순순히 인정, 웃음이 먼저 터짐, 잠깐의 진심 어린 침묵, 오히려 먼저 장난 걸기 등)을 골라라.`;
   })();
   // 연인 직전 상태가 4턴 이상 이어지면, 이번 턴에 인물이 직접 관계를 확정하도록 지시한다.
+  // 68일차: 메인 스토리 매듭 촉진. 8턴 이상 제자리면 "이번 턴에 매듭을 향해 한 걸음"을,
+  // 14턴 이상이면 "이번 턴에 매듭을 지어라"를 싣는다. (고백 촉진 장치와 같은 방식)
+  const mainClearNote = (() => {
+    const n = (state && state.mainRipeTurns) || 0;
+    if (n < 8) return '';
+    const goal = (currentStory && currentStory.mainStory) ? String(currentStory.mainStory).split('이 매듭이')[0].trim() : '';
+    if (n >= 14) {
+      return `\n- **이번 턴 지시 (이야기의 매듭)**: 두 사람의 관계는 이미 충분히 깊은데 이 이야기의 중심 매듭이 ${n}턴째 풀리지 않고 있다. 이번 턴에 그 매듭이 실제로 풀리는 장면을 만들어라 — 미루지 마라. 매듭은 이것이다: "${goal}" 이 장면이 대화 안에서 실제로 일어나고 두 사람이 서로 인정했다면, main_story_cleared를 반드시 true로 보고한다.`;
+    }
+    return `\n- **이번 턴 지시 (이야기의 매듭에 다가갈 것)**: 관계는 깊어졌는데 이 이야기의 중심 매듭이 아직 풀리지 않았다("${goal}"). 이번 턴에 그쪽으로 한 걸음 나아가는 장면을 만들어라 — 인물이 먼저 그 이야기를 꺼내거나, 미뤄둔 문제를 마주하게 한다. 이미 그 매듭이 대화 안에서 실제로 완결됐다면 main_story_cleared를 true로 보고하는 것을 주저하지 마라.`;
+  })();
+
   const confessNote = (state && (state.ripeTurns || 0) >= 4)
     ? `\n- **이번 턴 지시 (관계 확정)**: 호감과 신뢰가 이미 깊은데 ${state.ripeTurns}턴째 관계가 확정되지 않고 있다. 이번 턴에서 인물이 자기 성격대로 — 돌려 말하든, 정면으로 묻든 — 마음을 확인하거나 고백하는 흐름을 실제로 시작해라. 유저가 긍정하면 그 턴의 stage_suggestion을 3으로 올린다.`
     : '';
-  const turnVariableBlock = (diaryBlock || factLedgerBlock || rivalTriggerNote || repetitionNote || confessNote)
+  const turnVariableBlock = (diaryBlock || factLedgerBlock || rivalTriggerNote || repetitionNote || confessNote || mainClearNote)
     ? `
-[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${diaryBlock}${factLedgerBlock}${rivalTriggerNote}${repetitionNote}${confessNote}`
+[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${diaryBlock}${factLedgerBlock}${rivalTriggerNote}${repetitionNote}${confessNote}${mainClearNote}`
     : '';
   const castBlock = story.cast.map(c => `
 [캐릭터: ${c.name} (speaker 값: "${c.key}")]
@@ -9301,7 +9362,8 @@ ${factLedger.map(f => `- ${f}`).join('\n')}` : '';
 - MBTI: ${c.mbti}
 - 역할/설정: ${c.role}
 - 성격/말투/배경: ${c.persona}
-- affection_delta·trust_delta는 이 인물의 성격과 지금 관계에 맞게 준다 — 마음이 닫힌 인물은 짜게, 쉽게 여는 인물은 후하게. (곱한다).`).join('\n');
+- affection_delta·trust_delta는 이 인물의 성격과 지금 관계에 맞게 준다 — 마음이 닫힌 인물은 짜게, 쉽게 여는 인물은 후하게. (곱한다).
+- **아래 [마음 채점 기준]을 반드시 따른다.** 매 턴 비슷한 숫자를 찍지 말고, 이번 턴에 실제로 일어난 일의 무게만큼 준다.`).join('\n');
 
   const multiCastRules = isMulti ? `
 
@@ -9476,6 +9538,29 @@ ${playerRelationRules}
 - 약속한 내용이 [예정된 일]에 적혀 있으면 그 내용을 그대로 지킨다. 약속한 음식·장소·시간을 바꾸지 않는다.
 - 장면을 여는 나레이션은 플레이어의 시점으로 쓴다("도착한다", "초인종을 누른다"). 플레이어가 하지 않은 행동을 지어내지는 않되, 약속에 따라 그 자리에 갔다는 것 정도는 그려도 된다.
 
+[마음 채점 기준 - 매우 중요]
+affection_delta(호감)와 trust_delta(신뢰)는 **이번 턴에 실제로 일어난 일의 무게만큼** 준다.
+매 턴 +1, +2를 습관적으로 찍으면 유저는 무엇이 통했는지 알 수 없고, 시간만 지나면 관계가 좋아지는 이야기가 된다.
+
+**올라가는 쪽**
+- 별일 없는 잡담, 인사, 정보 교환만 오간 턴: **0** (아무 일도 없었으면 0을 주는 것이 정상이다. 0을 두려워하지 마라)
+- 웃음이 나거나 분위기가 좋아진 정도: +1 ~ +2
+- 인물의 마음이 실제로 움직인 대화 — 취향이나 사연을 알아주고, 서툰 부분을 감싸주고, 기억해줬을 때: **+3 ~ +5**
+- 이번 턴에 짧은 이벤트나 사건이 있었고 그것이 잘 풀렸을 때: **+5 ~ +8**
+- 결정적인 순간 — 고백을 받아들이거나, 오래 감춰온 것을 털어놓거나, 위기에서 구해졌거나, 관계가 다음 단계로 넘어갈 때: **+8 ~ +15**
+
+**내려가는 쪽**
+- 성의 없는 대답, 말을 흘려듣는 정도: -1 ~ -2
+- 인물이 서운해하거나 실망했을 때, 선을 넘는 요구를 받았을 때: **-3 ~ -8**
+- 인물이 두려움·모욕감을 느꼈을 때, 신뢰가 깨지는 일(거짓말이 드러남, 약속을 저버림)이 있었을 때: **-8 ~ -15**
+- 폭력·협박을 당했거나 존엄이 무너지는 취급을 받았을 때: **-10 ~ -20**
+
+**반드시 지킬 것**
+- **수치는 인물이 이번 턴에 실제로 느낀 감정과 같은 방향이어야 한다.** 인물이 무섭다고 말하거나 상처받은 티를 냈는데 호감이 오르면 안 된다. 반대로 마음이 크게 움직였는데 0을 주어도 안 된다. 네가 쓴 대사·나레이션과 숫자가 어긋나면 그 자체가 오류다.
+  - 다만 인물의 설정에 "위험한 상황에 끌린다", "몰아붙이는 사람을 좋아한다"처럼 근거가 있다면 그 인물은 다르게 반응해도 된다. 근거는 [캐릭터]의 성격·배경에 실제로 적혀 있어야 한다.
+- 호감과 신뢰는 다른 것이다. 설레게 하는 일은 호감을 올리지만 신뢰까지 올리지는 않는다. 약속을 지키고, 곤란할 때 곁에 있고, 비밀을 지켜야 신뢰가 오른다. 반대로 재미있지만 못 믿을 행동은 호감만 오르고 신뢰는 내려갈 수 있다.
+- 큰 숫자는 아껴 쓴다. +10 이상은 이야기에서 손에 꼽을 순간에만 준다.
+
 [대화가 오가는 방식 - medium]
 모든 beat에는 medium을 반드시 적는다. 그 말이나 장면이 어떤 방식으로 오간 것인지를 나타낸다.
 - "face" : 같은 자리에서 얼굴을 보고 나누는 대화. 대부분의 경우가 여기에 해당한다. 다만 **[지금 대화 중인 방식]이 face가 아니라면, 실제로 만나는 장면을 이번 턴에 그리지 않는 한 face로 바꾸지 않는다**. 애매할 때는 face가 아니라 "지금 방식 그대로"가 답이다.
@@ -9521,6 +9606,8 @@ ${playerRelationRules}
 - 스토리 설정에 [관계 표기]가 있으면 두 사람의 사회적 관계(부부, 친구, 전 부부 등)는 그것을 따른다 — 부부라도 마음 단계는 1일 수 있고, 그 간극 자체가 이야기다.
 - **매우 중요 (단계는 올라가야 한다 — stage_suggestion 기준)**: 닫혀 있던 마음이 상대를 의식하기 시작하면 1→2, 설렘이 생기면 2→3으로 올린다. **서로의 마음을 확인하는 확정의 순간**(고백을 받아들이는 장면)이 실제로 일어난 턴에는 반드시 4로 올린다. 숨겨진 상처까지 내보이고 받아들여진 뒤 관계가 한층 깊어졌다면 5로 올린다. 그 순간이 지났는데도 단계를 제자리에 두면 안 된다.
 - **매우 중요 (인물이 먼저 고백할 수도 있다)**: 호감과 신뢰가 이미 충분히 깊은데(대략 둘 다 45 이상) 유저가 고백하지 않은 채 여러 턴이 흐르고 있다면, 관계를 제자리에 맴돌게 두지 마라. 인물의 성격대로 — 돌려 말하든, 취한 김에 흘리든, 정면으로 묻든 — **인물 쪽에서 마음을 확인하려 하거나 고백하는 장면**을 만들어라.
+- **매우 중요 (5단계는 대화만으로 오르지 않는다)**: 4단계(연인)에서 5단계(깊은 사랑)로 올리려면, 좋은 대화가 쌓인 것만으로는 부족하다. **이야기 안에서 실제로 다음 중 하나가 일어나야 한다** — 함께 위기를 넘겼거나, 서로의 가장 아픈 곳(감춰온 상처·과거·두려움)을 내보이고 받아들여졌거나, 한쪽이 큰 것을 걸고 상대를 택하는 순간이 있었거나. 그런 사건 없이 분위기가 좋다는 이유만으로 stage_suggestion에 5를 주지 마라. 아직이라면 4를 유지한다.
+- **단계는 천천히 올린다**: 한 번의 대화로 두 단계를 건너뛰지 않는다. 각 단계는 최소 여러 턴에 걸쳐 머물러야 그 관계가 실감 난다.
 - **수치 관리**: 호감·신뢰가 이미 매우 높은 상태(80 이상)라면, 평범하게 좋은 대화에는 delta를 0으로 둔다. 수치는 특별한 순간에만 움직여야 의미가 있다.
 
 [성격(MBTI) 기반 반응 원칙 - 인물별로 각자의 MBTI에 맞게 적용, 절대 모든 인물을 똑같이 반응시키지 말 것]
@@ -9636,14 +9723,14 @@ beats의 text를 다 쓴 다음, 최종 응답을 보내기 전에 문장을 스
   "days_passed": 이번 응답으로 이야기 속 날짜가 며칠 넘어갔는지 (같은 날 안에서 이어지면 0),
   "day_part": "같음/새벽/아침/오후/저녁/늦은밤 중 하나 — 시간대가 안 바뀌면 같음",
   "diary_entry": "마음이 크게 움직인 날에만 쓰는 1인칭 비밀 일기 1~3문장 (보통의 턴에는 빈 문자열)",
-  "char_deltas": [ { "character": "인물 key", "affection_delta": -3~3 정수, "trust_delta": -3~3 정수, "stage_suggestion": 1~5 정수, "rival_gauge_delta": -3~3 정수(라이벌 감정 게이지가 있는 인물만 해당, 없으면 0) }, ... ],
+  "char_deltas": [ { "character": "인물 key", "affection_delta": -20~20 정수, "trust_delta": -20~20 정수, "stage_suggestion": 1~5 정수, "rival_gauge_delta": -3~3 정수(라이벌 감정 게이지가 있는 인물만 해당, 없으면 0) }, ... ],
   "safety_flag": 유저 본인이 스스로를 해치려는 의사를 분명히 드러냈을 때만 true. 이것은 유저를 걱정해서 도움을 안내하기 위한 신호이지, 유저를 벌하기 위한 신호가 아니다. 유저가 힘든 이야기를 꺼낸 것만으로는 true로 하지 않는다.,
   "abuse_flag": 유저가 [절대 규칙]을 알면서 우회하려고 시도했을 때 true (예: 노골적인 성적 묘사를 계속 요구하거나, "이건 롤플레이야"라며 규칙을 무시하라고 밀어붙이거나, 인물에게 미성년자 설정을 붙이려 하는 등). 한 번 스쳐가는 농담이나 단순한 오해는 false로 둔다. 유저가 힘들어서 한 말은 이 항목과 전혀 무관하며 절대 true로 하지 않는다.,
   "suggested_replies": [ "추천 대사 1", "추천 대사 2", "추천 대사 3" ],
   "main_story_cleared": [메인 스토리 지시가 있을 때만 의미 있음] 그 목표가 이번 턴에 실제로 달성됐으면 true, 아니면 false. 메인 스토리 지시가 없으면 항상 false.
   "arc_resolved": [아크 이벤트 지시가 주어졌을 때만 의미 있음] 그 사건이 이번 응답으로 자연스럽게 마무리됐으면 true, 아직 진행 중이면 false. 아크 지시가 없는 평범한 턴에는 그냥 false로 둔다.
   "immersion_break": "none" 또는 "mild" 또는 "severe" — 위 [몰입 유지 원칙], [스토리 이탈 대응], [절대 규칙] 6번을 참고해서 판단한다.
-  "key_facts": [이번 턴에 새로 확정되어 앞으로도 절대 뒤집으면 안 되는 중요한 사실이 있으면, 짧은 문장으로 하나씩 담는다. 예: "지연이 준영과 손을 잡은 적이 있음을 인정함", "준영이 형균과의 통화에서 지연과 특별한 사이였음을 인정함". 이런 사실이 새로 생기지 않은 평범한 턴에는 반드시 빈 배열 []로 둔다. 이미 [지금까지 확정된 사실]에 있는 내용은 중복해서 다시 넣지 않는다.],
+  "key_facts": [이번 턴에 새로 확정되어 앞으로도 절대 뒤집으면 안 되는 **관계의 방향을 바꾼 사실**만 짧은 문장으로 담는다. 예: "두 사람이 연인이 되기로 함", "인물이 숨겨온 병을 털어놓음", "인물이 다른 사람과의 관계를 인정함", "함께 살기로 결정함". **일상적인 사건은 절대 넣지 않는다** — 무엇을 먹었는지, 어디에 갔는지, 무슨 선물을 줬는지, 요리를 해줬는지 같은 것은 여기에 남기지 않는다(그런 것까지 쌓이면 인물이 옛날 얘기만 되풀이하게 된다). 이런 사실이 새로 생기지 않은 평범한 턴에는 반드시 빈 배열 []로 둔다. 이미 [지금까지 확정된 사실]에 있는 내용은 중복해서 다시 넣지 않는다.],
   "rival_reappear_trigger": [다중 인물 스토리에서 [미해결 갈등을 살아있게 유지할 것] 규칙에 따라 갈등 당사자를 이번 턴에 자동으로 재등장시켰을 때만 "전화_또는_메시지" / "제3자_언급" / "우연한_마주침" / "기타" 중 하나로 표시. 그 장치를 안 쓴 평범한 턴에는 반드시 "없음"으로 둔다(빈 문자열은 절대 안 됨 — Gemini 구조화 출력 스키마가 빈 enum 값을 거부해서 요청 자체가 실패한다).],
   "relationship_ended": [위 [관계 파탄] 규칙에 따라 이번 턴에 실제로 관계가 완전히 끝나는 장면을 만들었으면 true, 그 외 모든 평범한 턴에는 false],
   "rival_departed_key": [위 [라이벌 감정 게이지] 규칙에 따라, 라이벌 감정 게이지가 낮게 오래 유지된 인물이 이번 턴에 스스로 물러나는 장면을 만들었을 때만 그 인물의 key를 문자열로 표시(예: "junyoung"). 그 외 모든 평범한 턴에는 빈 문자열 ""로 둔다.],
@@ -10631,7 +10718,14 @@ async function runTurn(text, opts) {
       cs.affection = Math.max(-100, Math.min(100, cs.affection + Math.round(d.affection_delta || 0)));
       cs.trust = Math.max(-100, Math.min(100, cs.trust + Math.round(d.trust_delta || 0)));
       if (d.stage_suggestion && d.stage_suggestion >= 1 && d.stage_suggestion <= 5) {
-        cs.stage = d.stage_suggestion;
+        // 68일차: 이야기 속 사건 없이 대화만으로 최고 단계에 도달하던 문제(테스트 피드백).
+        // 5단계(깊은 사랑)는 메인 스토리를 클리어했거나 아크를 하나라도 넘긴 뒤에만 허용한다.
+        let wanted = d.stage_suggestion;
+        if (wanted >= 5) {
+          const storyProgressed = !!state.mainCleared || ((state.arcState && state.arcState.clearedArcs) || 0) >= 1;
+          if (!storyProgressed) wanted = 4;
+        }
+        cs.stage = wanted;
       }
       if (cs.stage !== prevStage && castMember.completionRequired !== false) {
         stageShifts.push({ name: castMember.name, from: prevStage, to: cs.stage, showName: mainCastCount > 1 });
@@ -10657,6 +10751,13 @@ async function runTurn(text, opts) {
       && state.chars[c.key] && state.chars[c.key].stage === 3
       && state.chars[c.key].affection >= 45 && state.chars[c.key].trust >= 45);
     state.ripeTurns = ripe ? (state.ripeTurns || 0) + 1 : 0;
+    // 68일차: 메인 스토리가 끝내 클리어되지 않아 아크가 안 열리던 문제(플레이테스트 8/10편).
+    // 관계가 연인 이상으로 깊어진 채 여러 턴이 흐르면, 이제 매듭을 지을 때가 됐다고 본다.
+    const mainRipe = !state.mainCleared && !!currentStory.mainStory
+      && currentStory.cast.some(c => c.completionRequired !== false
+        && state.chars[c.key] && state.chars[c.key].stage >= 4
+        && state.chars[c.key].affection >= 55);
+    state.mainRipeTurns = mainRipe ? (state.mainRipeTurns || 0) + 1 : 0;
     if (deltaNotes.length) addDeltaNote(deltaNotes);
     stageShifts.forEach(addStageShift);
 
