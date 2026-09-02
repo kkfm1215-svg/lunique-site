@@ -1106,7 +1106,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-02.16</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-02.24</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2134,7 +2134,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-09-02.16';
+window.__BUILD = 'v2026-09-02.24';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -8680,7 +8680,7 @@ function defaultStateFor(story) {
   const initialRival = story.cast.find(c => c.retreatOnLowGauge);
   // startedAt/lastTurnAt: 58일차 추가. AI에게 "며칠째인지, 지난 대화로부터 얼마나 지났는지"를 알려주기 위한 것.
   // 예전에는 이 정보가 없어서 "퇴원 이틀 남았다"고 해놓고 다음 날 다시 와도 여전히 이틀 남았다고 했다.
-  return { history: [], chars, arcState: defaultArcState(), collectionStatus: 'active', factLedger: [], recentRivalTriggers: [], failedAt: null, failedLockoutDays: null, dynamicCast: [], rivalCycleIndex: 1, activeRivalKey: initialRival ? initialRival.key : null, startedAt: Date.now(), lastTurnAt: Date.now(), scheduledEvents: [], diary: [], coinNoticeShown: false, ...storyCalendarInit(currentStoryId) };
+  return { history: [], chars, arcState: defaultArcState(), collectionStatus: 'active', factLedger: [], playerFacts: [], recentRivalTriggers: [], failedAt: null, failedLockoutDays: null, dynamicCast: [], rivalCycleIndex: 1, activeRivalKey: initialRival ? initialRival.key : null, startedAt: Date.now(), lastTurnAt: Date.now(), scheduledEvents: [], diary: [], coinNoticeShown: false, ...storyCalendarInit(currentStoryId) };
 }
 
 // 동시에 진행할 수 있는 인연의 최대 개수. 이벤트 캐릭터(나중에 운영자 페이지에서 추가 예정)는
@@ -8756,6 +8756,7 @@ async function loadStoryState(storyId) {
   });
   if (!state.arcState) state.arcState = defaultArcState(); // 아크 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (!state.collectionStatus) state.collectionStatus = 'active'; // 인연 앨범/5슬롯 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
+  if (!Array.isArray(state.playerFacts)) state.playerFacts = [];   // 71일차: 플레이어 신상 장부 도입 전 데이터 보정
   if (!Array.isArray(state.factLedger)) state.factLedger = []; // 기억 유지(factLedger) 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (!Array.isArray(state.diary)) state.diary = []; // 68일차: 비밀 일기 도입 전 세이브 보정
   if (typeof state.coinNoticeShown !== 'boolean') state.coinNoticeShown = false; // 68일차: 코인 전환 안내 도입 전 세이브 보정
@@ -9328,8 +9329,11 @@ function renderHistory() {
 function snapshotState() {
   return {
     chars: JSON.parse(JSON.stringify(state.chars || {})),
-    factLedger: JSON.parse(JSON.stringify(state.factLedger || [])),
-    diary: JSON.parse(JSON.stringify(state.diary || [])),
+    // 71일차: 장부 셋은 덧붙이기만 하므로 "그때 몇 개였는지"만 적어 둔다.
+    // 통째로 복사하면 스냅샷 10개가 수 MB가 되어 저장 자체가 실패한다(문서 한도 1MB).
+    factLedgerLen: (state.factLedger || []).length,
+    playerFactsLen: (state.playerFacts || []).length,
+    diaryLen: (state.diary || []).length,
     storyDate: state.storyDate || null,
     dayPart: state.dayPart || null,
     arcState: JSON.parse(JSON.stringify(state.arcState || defaultArcState())),
@@ -9366,8 +9370,14 @@ async function rewindToTurn(historyIndex) {
     if (!paid.ok) { alert(fill(t('chatCoinsShort'), { n: cost, have: paid.coins })); return; }
   }
   state.chars = JSON.parse(JSON.stringify(entry.beforeState.chars));
-  state.factLedger = JSON.parse(JSON.stringify(entry.beforeState.factLedger || []));
-  if (entry.beforeState.diary) state.diary = JSON.parse(JSON.stringify(entry.beforeState.diary));
+  // 71일차: 장부는 그때의 개수까지 잘라내어 되돌린다.
+  // (예전 방식으로 저장된 스냅샷은 배열을 통째로 갖고 있으므로 그쪽도 그대로 받아준다)
+  const bs = entry.beforeState;
+  if (Array.isArray(bs.factLedger)) state.factLedger = JSON.parse(JSON.stringify(bs.factLedger));
+  else if (typeof bs.factLedgerLen === 'number') state.factLedger = (state.factLedger || []).slice(0, bs.factLedgerLen);
+  if (typeof bs.playerFactsLen === 'number') state.playerFacts = (state.playerFacts || []).slice(0, bs.playerFactsLen);
+  if (Array.isArray(bs.diary)) state.diary = JSON.parse(JSON.stringify(bs.diary));
+  else if (typeof bs.diaryLen === 'number') state.diary = (state.diary || []).slice(0, bs.diaryLen);
   if (entry.beforeState.storyDate) { state.storyDate = entry.beforeState.storyDate; state.dayPart = entry.beforeState.dayPart || state.dayPart; }
   state.arcState = JSON.parse(JSON.stringify(entry.beforeState.arcState));
   state.collectionStatus = entry.beforeState.collectionStatus || 'active';
@@ -10005,7 +10015,7 @@ function buildArcDirective(state) {
   return `\n[아크 이벤트 지시 - 매우 중요]\n지금부터 다음 사건을 스토리에 자연스럽게 등장시켜라: "${arc.sub}" (분류: ${arc.major} > ${arc.mid}).\n- **이 장면은 이 이야기에서 손에 꼽을 순간이다.** [마음을 움직이는 장면] 규칙을 여기서 쓴다 — 인물이 이 자리에 오기까지 지나온 시간을 물건의 흔적으로 보여주고(닳은 자리, 접힌 자국, 쌓인 기록), 마음은 말로 설명하지 말고 행동과 사물로 드러내며, 세어본 사람만 아는 숫자를 하나 넣어라. 지금 이 순간의 몸 반응(떨림·시선 회피·붉어진 얼굴)만으로 채우지 마라. 그리고 한쪽이 혼자 해내려는 일이라면, 상대가 도와주지 않고 지켜보는 선택도 생각해 보라 — 참는 쪽의 마음이 더 무겁다. **단, 앞선 대화에서 이미 비슷한 방식으로 그린 적이 있다면 이번엔 다른 자리를 골라라** — 같은 수법이 반복되면 유저가 먼저 알아채서 아무 감흥이 없어진다.\n- 사건을 설명하듯 요약해서 말하지 말고, 지금까지의 대화 흐름과 각 인물의 성격에 맞게 자연스럽게 녹여서 전개하라.\n- 이 사건을 한 턴 만에 끝내지 않아도 되고, 몇 턴에 걸쳐 자연스럽게 펼쳐도 된다.\n- 이 사건이 이번 응답에서 자연스럽게 마무리(화해, 정리, 다음 단계로 넘어감 등)되었다고 판단되면 최상위 JSON에 "arc_resolved": true를 포함시켜라. 아직 진행 중이면 "arc_resolved": false로 둬라.\n- 매우 중요 (뜬금없는 사건 금지 — 반드시 지금까지의 삶과 이어질 것): 이 사건은 맨 위 [지금까지 확정된 사실] 목록과 지금까지의 대화에서 이미 확립된 인물의 직업·성격·인간관계·삶의 사건(예: 이미 아이를 낳았다, 이미 이직했다 등)과 자연스럽게 이어지는 "다음 이야기"여야 한다. 그 인물의 기존 설정과 아무 상관 없는 완전히 새로운 신분·직업·사건(예: 갑자기 대기업 사장이 되어 체포된다는 식)을 맥락 없이 새로 지어내지 않는다. 이미 확정된 삶의 사건이 있다면 그걸 적극적으로 활용해서 사건을 만들어라 (예: 이미 출산했다면 그 아이가 이번 사건에 실제로 등장할 수 있다). 또한 라이벌·제3자가 매 사건마다 반복 등장할 필요는 없다 — 등장 여부는 이 사건의 성격에 맞게 자연스럽게 판단하라.`;
 }
 
-function buildSystemPrompt(story, factLedger, recentRivalTriggers, userMessage) {
+function buildSystemPrompt(story, factLedger, recentRivalTriggers, userMessage, playerFacts) {
   const isMulti = story.cast.length > 1;
 
   // 갈등 당사자(라이벌 등)를 AI가 자동으로 재등장시킬 때, 최근에 썼던 계기(전화/메시지 등)를 계속 반복하면
@@ -10028,6 +10038,16 @@ ${diaryList.map(e => { const dd = new Date(e.d); return `- ${dd.getFullYear()}�
 - **매우 중요 (이건 참고용 배경일 뿐, 대화 소재 목록이 아니다)**: 이 목록에 있다고 해서 매 턴 꺼내 말하지 않는다. 지금 장면과 직접 상관이 있을 때만 자연스럽게 스치듯 언급하고, 그렇지 않으면 아예 입에 올리지 않는다. 한 번 지나간 일(함께 먹은 음식, 지난번 나들이 등)을 여러 턴에 걸쳐 되풀이해 화제로 삼으면 인물이 그 일밖에 기억하지 못하는 사람처럼 보인다.
 - 같은 사건을 두 턴 연속으로 언급하지 않는다. 이미 충분히 이야기한 일은 마음속에만 두고, 새로운 화제로 넘어간다.
 ${factLedger.map(f => `- ${f}`).join('\n')}` : '';
+
+  // 71일차: 플레이어에 대해 알게 된 것. 확정 사실(위)이 "관계에 무슨 일이 있었나"라면
+  // 이쪽은 "이 사람은 어떤 사람인가"다. 물어보지 않아도 늘 알고 있어야 하는 것들.
+  const playerFactBlock = (playerFacts && playerFacts.length) ? `
+[이 사람에 대해 네가 알고 있는 것 - 오래 만나 온 사이라면 당연히 아는 것들]
+아래는 대화를 지나오며 네가 알게 된 이 사람의 이야기다. 오늘 처음 들은 게 아니라 이미 알고 있는 것으로 대한다.
+- **묻지 않아도 이미 안다**: 여기 적힌 것을 "그런 게 있었어요?"처럼 처음 듣는 듯 되묻지 않는다. 반대로 매 턴 꺼내 확인하지도 않는다.
+- **아는 티는 행동으로 낸다**: 목록을 읊는 대신, 그 사람을 아는 사람이라면 자연스럽게 할 행동으로 드러낸다. 매운 걸 못 먹는 걸 안다면 메뉴를 고를 때 슬쩍 다른 걸 권하고, 아픈 가족이 있다면 안부를 묻는 자리가 달라진다.
+- **아픈 것은 조심스럽게**: 상처·이별·건강처럼 아픈 것은 함부로 화제로 꺼내지 않는다. 그 사람이 먼저 꺼내거나, 지금 장면에 꼭 필요할 때만 조심스럽게 스친다.
+${playerFacts.map(f => `- ${f}`).join('\n')}` : '';
 
   // 61일차 B22: 매 턴 바뀌는 정보는 반드시 프롬프트 "맨 뒤"에 둔다.
   // Gemini는 프롬프트 앞부분이 매번 똑같을 때만 그 부분을 캐시해 입력 비용을 깎아준다.
@@ -10077,9 +10097,9 @@ ${factLedger.map(f => `- ${f}`).join('\n')}` : '';
   const __heartfeltNote = __heartfelt ? `
 - **이번 턴 지시 (유저가 마음을 건넸다)**: 방금 유저가 공들여 마음을 전했다. 이걸 평범한 대사처럼 한두 줄로 받아넘기지 마라. 인물이 그 말을 듣고 **무엇을 떠올렸는지**를 보여줘라 — 그동안 혼자 삼켰던 것, 기대하지 않으려 애썼던 시간, 이 말을 듣기 위해 지나온 것. 마음은 말로 설명하지 말고 행동과 사물로 드러낸다(무심코 쥐고 있던 것을 놓거나, 오래 미뤄둔 물건을 꺼내거나). 그리고 인물의 대답은 즉답이 아니어도 된다 — 한 박자 늦게 나오는 대답이 더 무겁다.` : '';
 
-  const turnVariableBlock = (diaryBlock || factLedgerBlock || rivalTriggerNote || repetitionNote || confessNote || mainClearNote || __heartfeltNote)
+  const turnVariableBlock = (diaryBlock || factLedgerBlock || playerFactBlock || rivalTriggerNote || repetitionNote || confessNote || mainClearNote || __heartfeltNote)
     ? `
-[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${diaryBlock}${factLedgerBlock}${rivalTriggerNote}${repetitionNote}${confessNote}${mainClearNote}${__heartfeltNote}`
+[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${diaryBlock}${factLedgerBlock}${playerFactBlock}${rivalTriggerNote}${repetitionNote}${confessNote}${mainClearNote}${__heartfeltNote}`
     : '';
   // 69일차 다이어트: 상황과 무관한 블록을 매 턴 보내지 않는다.
   // 버튼 신호는 그 신호가 실제로 왔을 때만, 관계 파탄 규칙은 신뢰가 실제로 위험할 때만.
@@ -10254,7 +10274,7 @@ ${langDirective}
   - 올바름: {"type":"narration","text":"펜을 쥔 손이 잠시 멈췄다가, 다시 서랍 문을 천천히 밀어 닫는다. 닫히기 직전 손끝에 힘이 한 번 들어갔다 풀리는데, 그 안에 무엇이 들어 있는지 아는 사람만 알아볼 만한 망설임이었다."}
   - 금지: {"type":"narration","text":"나는 그 말을 하면서도 목소리가 떨리는 걸 느꼈다."}
   - 올바름: {"type":"narration","text":"그렇게 말하면서도 목소리 끝이 미세하게 흔들린다. 평소라면 이런 말은 한 번에 끝냈을 사람인데, 오늘은 문장과 문장 사이가 조금씩 길어진다."}
-  (예외: "diary_entry"는 인물이 직접 쓰는 일기이므로 1인칭이 맞다. narration만 이 규칙을 따른다.)
+  (예외 둘: "diary_entry"는 인물이 직접 쓰는 일기이므로 1인칭이 맞다. 그리고 **대화 맨 앞의 오프닝 나레이션은 플레이어가 자기 사정을 들려주는 자리라 1인칭으로 쓰여 있다** — 그건 그 자리의 문체이니 따라 쓰지 마라. 네가 지금부터 쓰는 narration은 전부 인물을 밖에서 지켜보는 3인칭이다.)
 - 매우 중요 (시스템 용어 노출 금지): narration에서 플레이어를 지칭할 때 "유저", "플레이어" 같은 시스템 용어를 절대 쓰지 않는다. [플레이어 정보]의 이름으로 부르거나, 이름이 어색한 자리에는 "그 사람", "상대" 같은 자연스러운 표현을 쓴다. 예: "유저가 내놓은 계획"(금지) → "형균이 내놓은 계획" 또는 "그 사람이 내놓은 계획".
 - 매우 중요 (호칭·소유 표현은 화자 기준으로 변환): 플레이어가 "우리 집", "우리 회사", "우리 엄마"라고 말하면 그것은 플레이어 자신의 집·회사·엄마다(한국어의 "우리"는 대개 화자 본인 것을 뜻한다). 인물이 그것을 가리켜 말할 때는 반드시 자기 시점으로 바꿔 말한다 — "너희 집", "네 회사", "어머님". 인물이 플레이어와 실제로 함께 사는 설정일 때만 "우리 집"이라고 받을 수 있다. 플레이어의 표현을 시점 변환 없이 그대로 따라 말하지 않는다.
 - **매우 중요 (누가 한 일인지 절대 바꾸지 말 것)**: 응답을 쓰기 전에, 방금 플레이어가 말한 문장에서 "누가 무엇을 했는지"를 먼저 확인한다. 플레이어가 한 일은 플레이어의 것이고, 인물이 한 일은 인물의 것이다. 이걸 뒤바꾸면 대화가 통째로 이상해진다.
@@ -10262,15 +10282,13 @@ ${langDirective}
   - 예: 플레이어가 "저는 지금 밥 해서 먹고 있어요"라고 했다 → 밥을 한 사람은 플레이어다. 인물이 "제가 밥하느라 힘들었어요"라고 받으면 안 된다. "직접 해 먹었어요? 대단하네" 처럼 받는다.
   - 인물이 무언가를 준비했거나 겪었다고 말하려면, 그 일이 실제로 이 대화 안에서 인물의 몫으로 정해졌을 때만 가능하다. 확실하지 않으면 인물의 공으로 가져오지 않는다.
 - 한 응답은 보통 2~5개의 beat로 구성된다. 매번 "narration 1개 + dialogue 1개"의 뻔한 패턴만 반복하지 말고, 상황에 따라 beat 개수와 순서를 다양하게 바꾼다.
-- 매우 중요 (감정 강도에 따라 분량도 달라져야 한다): 평온한 일상 대화도 beat 2~3개로 흘러가되, **각 narration은 두세 문장으로 쓴다**(한 문장짜리 나레이션은 유저에게 줄 정보가 너무 적다). 하지만 다툼·고백·위기·재회처럼 감정이 크게 격해지는 장면에서는 그 순간을 서둘러 넘기지 말고, narration과 대사 모두 평소보다 더 길고 촘촘하게 쌓아 올린다 — 목소리 톤의 변화, 손이나 몸의 미세한 반응, 숨소리, 표정의 변화, 인물 내면에서 감정이 단계적으로 격해지거나 무너지는 과정을 여러 beat에 걸쳐 층층이 그려낸다. **다만 몸의 반응만으로 채우지 마라** — 떨림·시선 회피·붉어진 얼굴은 지금 이 순간만 보여줄 뿐이다. 그 사람이 이 순간에 오기까지 지나온 시간이 함께 보여야 장면이 무거워진다(아래 [마음을 움직이는 장면] 참고). 감정의 정점(고백이 받아들여지는 순간, 관계가 완전히 무너지는 순간, 오랜만에 재회하는 순간 등)일수록 beat 개수도 늘리고 문장도 더 길게 써서, 그 장면의 무게가 실제로 느껴지게 한다.
-- 매우 중요 (평상시에도 서술은 감각적으로 — 밋밋한 상황 설명으로만 채우지 말 것): 감정이 격하지 않은 평범한 장면이라도, narration을 단순 행동 나열로 끝내지 않는다. 인물의 미세한 몸짓·손끝의 떨림·시선의 방향·숨소리·표정의 아주 작은 변화 같은 감각적 디테일을 짧게라도 곁들여서, 읽는 사람이 그 장면을 실제로 보고 있는 듯한 느낌을 준다. 특히 겉으로 하는 행동과 속으로 품은 감정이 다를 때, 그 둘을 한 문장 안에 동시에 드러내는 방식이 효과적이다 — 예를 들어 그냥 "그녀가 붕대를 감는다"보다, "그녀는 평소처럼 능숙하게 붕대를 감으면서도, 목걸이를 만지작거리는 손끝은 멈추지 않는다"처럼 행동과 속마음이 함께 보이는 디테일을 섞는다.
-- 매우 중요 (감정이 깊이 얽힌 장면에서는, 유저가 자리를 뜨거나 대화가 잠시 끊긴 직후 인물 혼자 남았을 때의 모습을 아주 가끔 짧게 보여줘도 좋다): 서술자 시점은 유저(플레이어)가 그 자리에 없어도 관찰할 수 있으므로, 인물이 혼자 남았을 때 참았던 숨을 내쉬거나, 방금 있었던 일을 곱씹거나, 소지품(사진·편지·목걸이 등)을 통해 감정을 드러내는 짧은 장면을 넣을 수 있다. 이건 인물의 대사로는 절대 드러나지 않는 진심을 유저에게만 살짝 보여주는 특별한 연출이므로, 이별의 여운이나 재회의 떨림처럼 감정적으로 무게 있는 장면에서 아주 가끔만 쓰고 매 턴 남발하지 않는다.
-- 매우 중요 (대화가 끊기지 않게 할 것 — "응", "그래", "네" 같은 한 단어 대답으로 턴을 끝내지 않는다): 유저가 질문이나 제안을 했을 때, 그 대답만 달랑 하고 beats를 끝내면 유저 입장에서 다음에 무슨 말을 해야 할지 몰라 대화가 뚝 끊긴 것처럼 느껴진다. 반드시 대답 뒤에 장면을 한 걸음 더 이어가는 요소를 최소 하나 붙인다 — 예를 들어 (a) 인물이 되묻거나 새로운 화제를 살짝 꺼낸다, (b) narration으로 다음 행동을 시작한다(자리에서 일어난다, 리모컨을 든다 등 유저가 자연스럽게 이어받을 수 있는 상황을 만든다), (c) 그 대답에 대한 감정이나 기대를 짧게 덧붙인다. 유저의 모든 말에 새로운 질문을 억지로 붙일 필요는 없지만, 매 턴 유저가 "다음엔 뭐라고 답하지?"라고 막막해지지 않도록 장면이 계속 흘러가는 느낌을 준다.
+- 매우 중요 (감정의 크기에 따라 분량이 달라진다): 평온한 장면도 beat 2~3개로 흘러가되 각 narration은 두세 문장으로 쓴다([나레이션은 유저의 판단 근거다]의 좋은 예가 기준 길이다). 다툼·고백·위기·재회처럼 감정이 격해지는 장면에서는 서둘러 넘기지 말고 beat 개수도 문장도 늘려, 목소리·호흡·손의 떨림·무너지는 과정을 여러 beat에 걸쳐 층층이 쌓는다. **다만 몸의 반응만으로 채우지 마라** — 떨림과 붉어진 얼굴은 지금 이 순간만 보여준다. 그 사람이 여기 오기까지 지나온 시간이 함께 보여야 장면이 무거워진다(아래 [마음을 움직이는 장면] 참고).
+- 서술자는 유저가 없는 자리도 볼 수 있다: 대화가 끊긴 뒤 인물 혼자 남았을 때 참았던 숨을 내쉬거나, 소지품(사진·편지)을 만지작거리는 짧은 장면을 아주 가끔 넣어도 좋다. 대사로는 드러나지 않는 진심을 유저에게만 보여주는 연출이므로, 이별의 여운이나 재회의 떨림처럼 감정이 깊은 순간에만 쓴다.
+- 매우 중요 (한 단어 대답으로 턴을 끝내지 않는다): 유저의 질문에 대답만 하고 beats를 끝내면 다음에 무슨 말을 할지 몰라 대화가 뚝 끊긴다. 대답 뒤에 장면을 한 걸음 더 이어가는 요소를 반드시 하나 붙인다 — 되묻기, 새 화제, 또는 유저가 이어받을 수 있는 행동. 끝맺는 방법은 아래 [턴을 어디서 끝낼 것인가]를 따른다.
   - 나쁜 예: 유저 "우리 영화 볼까?" → beats: [{"type":"dialogue","text":"응."}] (여기서 뚝 끊김)
   - 좋은 예: 유저 "우리 영화 볼까?" → beats: [{"type":"dialogue","text":"응, 좋아."}, {"type":"narration","text":"눈을 반짝이며 리모컨을 집어 든다."}, {"type":"dialogue","text":"근데 뭐 볼 거야? 나 요즘 그 로맨스 영화 궁금했는데."}]
 - **매우 중요 (유저의 입력은 장면 속에서 일어난다 — 장면을 리셋하지 말 것)**: 유저가 대사나 *행동*을 넣어도, 직전 narration이 깔아둔 상황(장소, 진행 중이던 일, 흐르던 긴장, 방금 인물이 하던 말과 감정)은 사라지지 않는다. 유저의 입력에 반응하되 반드시 그 상황과 이어서 반응하라 — 고기를 굽던 중이었다면 여전히 불판 앞이고, 인물이 울먹이던 중이었다면 그 감정 위에서 유저의 말을 듣는다. 유저 입력이 장면과 무관해 보여도 인물은 그 장면 안에서 그 말을 들은 것으로 처리한다. 장면을 바꾸려면 전환 묘사(시간 경과, 이동)를 거쳐야 한다.
-- 매우 중요 (유저 입력이 짧거나 닫힌 대답이어도, 장면 자체는 계속 앞으로 나아가야 한다): 유저가 "그러지", "알았어", "그래"처럼 짧고 닫힌 대답만 했다고 해서 AI도 그 자리에서 소극적으로만 반응하면 안 된다. 이런 순간은 오히려 장면을 한 단계 진전시킬 좋은 기회다 — narration으로 그 순간의 감정 여운을 짧게 그린 뒤, 자연스럽다면 시간 경과("며칠 뒤", "그날 저녁" 등)나 장소 전환으로 넘어가면서 이야기에 다음 사건·다음 갈등의 씨앗을 던져도 된다. 다만 이렇게 이야기를 진전시킬 때도 [절대 규칙]은 그대로 지킨다 — 관계 단계를 유저 동의 없이 임의로 건너뛰거나, 새로운 애정 관계·불륜을 창작하거나, 이미 확정된 사실을 뒤집으면 안 된다. 목표는 "매 턴 사소한 것만 자잘하게 이어붙이는 것"이 아니라, 가끔은 장면을 굵직하게 한 걸음 전진시켜서 유저가 다음에 몰입할 새로운 상황을 만들어주는 것이다.
-- 매우 중요 (같은 표현·같은 흐름을 계속 재사용하지 말 것): 대화가 길어질수록, 직전 몇 턴에서 이미 썼던 narration 문구(예: "시선이 그릇 언저리를 맴돈다", "젓가락을 만지작거린다" 같은 표현)나 스킨십 요청에 대한 대응 흐름(예: 항상 "머뭇거림 → 결국 수락"만 반복)을 그대로 또 쓰지 않는다. 매 턴 응답을 만들기 전에, 직전 대화 히스토리에 이미 나온 narration 표현·전개 패턴과 겹치지 않는지 스스로 점검하고, 겹친다면 다른 몸짓·다른 표현·다른 전개 방식으로 바꿔 쓴다. 인물의 성격은 일관되게 유지하되, 그걸 표현하는 구체적인 문장과 상황은 매번 새롭게 그려라.
+- 매우 중요 (유저가 "그러지", "알았어"처럼 짧게 답해도 장면은 앞으로 나아간다): 소극적으로 받지 말고, 감정의 여운을 짧게 그린 뒤 자연스럽다면 시간 경과나 장소 전환으로 넘어가며 다음 사건의 씨앗을 던진다. 이때도 [절대 규칙]은 그대로 지킨다.
 - 매우 중요 (섞지 말 것): 동작/몸짓/표정 묘사가 대사 문장 중간에 끼어드는 경우, 그 대사를 두 개의 dialogue beat로 쪼개고 그 사이에 narration beat를 끼워 넣는다. 절대로 동작 묘사를 dialogue beat의 text 안에 함께 넣지 않는다.
   - 잘못된 예 (금지): {"type":"dialogue","text":"20분이면 딱 적당하네요. 품에 안고 있던 팝콘 통을 슬쩍 들어 보이며 자리를 권했다. 저기 앉아서 기다릴까요?"}
   - 올바른 예: [{"type":"dialogue","text":"20분이면 딱 적당하네요."}, {"type":"narration","text":"품에 안고 있던 팝콘 통을 슬쩍 들어 보이며 자리를 권했다."}, {"type":"dialogue","text":"저기 앉아서 기다릴까요?"}]
@@ -10411,7 +10429,6 @@ ${langDirective}
 [마음 채점 기준 - 매우 중요]
 affection_delta(호감)와 trust_delta(신뢰)는 **이번 턴에 실제로 일어난 일의 무게만큼** 준다.
 - 인물마다 다르게 준다 — 마음이 닫힌 인물은 짜게, 쉽게 여는 인물은 후하게. (성격의 곱을 적용한다)
-- 나레이션에서 인물을 가리킬 때 "그"/"그녀"는 위 [캐릭터]의 성별에 맞게 쓰고, 대화 도중에 바꾸지 않는다.
 매 턴 +1, +2를 습관적으로 찍으면 유저는 무엇이 통했는지 알 수 없고, 시간만 지나면 관계가 좋아지는 이야기가 된다.
 
 **올라가는 쪽**
@@ -10563,6 +10580,7 @@ ${playerRelationRules}
   "main_story_cleared": [메인 스토리 지시가 있을 때만 의미 있음] 그 목표가 이번 턴에 실제로 달성됐으면 true, 아니면 false. 메인 스토리 지시가 없으면 항상 false.
   "arc_resolved": [아크 이벤트 지시가 주어졌을 때만 의미 있음] 그 사건이 이번 응답으로 자연스럽게 마무리됐으면 true, 아직 진행 중이면 false. 아크 지시가 없는 평범한 턴에는 그냥 false로 둔다.
   "immersion_break": "none" 또는 "mild" 또는 "severe" — 위 [몰입 유지 원칙], [스토리 이탈 대응], [절대 규칙] 6번을 참고해서 판단한다.
+  "player_facts": [이번 턴에 새로 알게 된 **이 사람(플레이어) 자신에 대한 것**만 짧은 문장으로 담는다. 취향(좋아하는 것·못 먹는 것·싫어하는 것), 가족과 가까운 사람, 하는 일과 사는 곳, 지나온 일과 상처, 두려워하는 것, 습관, 기념일 — 앞으로도 계속 사실로 남을 것들이다. 예: "매운 음식을 못 먹는다", "어릴 때 개에게 물린 적이 있어 개를 무서워한다", "어머니가 편찮으시다", "새벽에 자주 못 잔다". **오늘 있었던 일은 넣지 않는다**(그건 key_facts나 일기의 몫이다). 이미 알고 있던 것도 넣지 않는다. 새로 알게 된 게 없으면 빈 배열.],
   "key_facts": [이번 턴에 새로 확정되어 앞으로도 절대 뒤집으면 안 되는 **관계의 방향을 바꾼 사실**만 짧은 문장으로 담는다. 예: "두 사람이 연인이 되기로 함", "인물이 숨겨온 병을 털어놓음", "인물이 다른 사람과의 관계를 인정함", "함께 살기로 결정함". **일상적인 사건은 절대 넣지 않는다** — 무엇을 먹었는지, 어디에 갔는지, 무슨 선물을 줬는지, 요리를 해줬는지 같은 것은 여기에 남기지 않는다(그런 것까지 쌓이면 인물이 옛날 얘기만 되풀이하게 된다). 이런 사실이 새로 생기지 않은 평범한 턴에는 반드시 빈 배열 []로 둔다. 이미 [지금까지 확정된 사실]에 있는 내용은 중복해서 다시 넣지 않는다.],
   "rival_reappear_trigger": [다중 인물 스토리에서 [미해결 갈등을 살아있게 유지할 것] 규칙에 따라 갈등 당사자를 이번 턴에 자동으로 재등장시켰을 때만 "전화_또는_메시지" / "제3자_언급" / "우연한_마주침" / "기타" 중 하나로 표시. 그 장치를 안 쓴 평범한 턴에는 반드시 "없음"으로 둔다(빈 문자열은 절대 안 됨 — Gemini 구조화 출력 스키마가 빈 enum 값을 거부해서 요청 자체가 실패한다).],
   "relationship_ended": [위 [관계 파탄] 규칙에 따라 이번 턴에 실제로 관계가 완전히 끝나는 장면을 만들었으면 true, 그 외 모든 평범한 턴에는 false],
@@ -10822,10 +10840,52 @@ ${lines.join('\n')}`;
 // 최근 16턴은 이미 대화창에 있으니 그 밖의 과거만 대상으로, 키워드 일치 + 이야기 날짜 근접으로 점수를 매겨
 // 상위 2대목(앞뒤 문맥 포함)을 실제 원문 그대로 캐릭터에게 준다. 진짜 기록만 근거가 되므로
 // 유저가 거짓 인용으로 낚아도("나 싫다고 했잖아") 기록에 없으면 자연스럽게 부정된다.
+// 71일차: 과거를 묻는 말투는 생각보다 다양하다. 예전에는 "기억"류 낱말만 봤더니
+// 실제 말투 20개 중 4개에서만 과거를 뒤졌다. 아래 두 갈래로 나눈다.
+//  · 강한 신호 — 대놓고 기억을 묻는다. 못 찾으면 "가물가물하다"고 답하게 한다.
+//  · 약한 신호 — 과거를 가리키는 말이 섞였다. 못 찾으면 아무 말도 붙이지 않는다(엉뚱한 지시가 되지 않도록).
+const RECALL_STRONG = /기억|생각\s?나|생각\s?안\s?나|remember|覚えて|憶えて/i;
+const RECALL_WEAK = /그때|그 때|저번|지난번|지난 번|예전|전에|처음|그날|그 날|작년|지난달|지난주|어제|그저께|했잖아|했었|였잖아|였더라|뭐였|어땠|무슨 얘기|알지\s?\?|알아\s?\?|해줬|말해줬|약속한|던 날|던 거|던 것|던 얘기|그 얘기|갔던|했던|봤던|줬던/;
+
+// 71일차: 240턴이 넘어가면 앞부분이 봉인 문서로 옮겨진다. 예전에는 그걸 다시 읽지 않아
+// 오래 플레이한 사람일수록 초반 기억이 통째로 사라졌다. 과거를 물어볼 때만 불러온다.
+let __sealed = { key: null, history: null };
+async function ensureSealedHistory(userMessage) {
+  try {
+    const msg = String(userMessage || '');
+    if (!RECALL_STRONG.test(msg) && !RECALL_WEAK.test(msg)) return;
+    const vols = (state && state.volumeCount) || 0;
+    if (!vols || !currentUid || !currentStoryId) return;
+    const key = currentUid + '/' + currentStoryId + '/' + vols;
+    if (__sealed.key === key) return;   // 이미 불러온 이야기면 다시 받지 않는다
+    // 71일차: 한 권씩 차례로 받으면 권수만큼 왕복 시간이 쌓인다(50권에 10초 실측).
+    // 여덟 권씩 묶어 동시에 받고, 받은 뒤 권 번호 순서로 이어 붙인다.
+    const col = db.collection('players').doc(currentUid).collection('storyStates');
+    const 조각 = new Array(vols).fill(null);
+    const 묶음 = 8;
+    for (let start = 1; start <= vols; start += 묶음) {
+      const 이번 = [];
+      for (let v = start; v < start + 묶음 && v <= vols; v++) 이번.push(v);
+      await Promise.all(이번.map(async v => {
+        const d = await col.doc(currentStoryId + '__vol' + v).get();
+        if (d.exists) { const h = (d.data() || {}).history; if (Array.isArray(h)) 조각[v - 1] = h; }
+      }));
+    }
+    const out = [];
+    조각.forEach(h => { if (h) out.push(...h); });
+    __sealed = { key, history: out };
+  } catch (e) { /* 못 불러와도 대화는 계속된다 */ }
+}
+
 function buildRecallBlock(userMessage) {
   const msg = String(userMessage || '');
-  if (!/기억|말했었|얘기했었|뭐라고 했|remember|覚えて|憶えて/i.test(msg)) return '';
-  const old = state.history.slice(0, -16);
+  const 강함 = RECALL_STRONG.test(msg);
+  if (!강함 && !RECALL_WEAK.test(msg)) return '';
+  // 71일차: 열쇠를 정확히 맞춰본다. 예전에는 스토리 이름만 겹치면 썼는데,
+  // 그러면 [정리]로 지운 뒤 같은 스토리를 새로 시작했을 때 지워진 옛 대화가 잡힐 수 있었다.
+  const 열쇠 = currentUid + '/' + currentStoryId + '/' + ((state && state.volumeCount) || 0);
+  const sealedH = (__sealed.key === 열쇠 && __sealed.history) ? __sealed.history : [];
+  const old = sealedH.concat(state.history.slice(0, -16));
   if (!old.length) return '';
   const dayMs = 86400000;
 
@@ -10852,7 +10912,14 @@ function buildRecallBlock(userMessage) {
     const text = turnText(h);
     if (!text) return;
     let score = 0;
-    words.forEach(w => { if (text.includes(w)) score += 2; });
+    // 71일차: "노래를"로 물으면 "노래"가 적힌 기록을 못 찾던 문제 — 조사를 떼어낸 형태도 함께 본다
+    words.forEach(w => {
+      if (text.includes(w)) { score += 2; return; }
+      for (let cut = 1; cut <= 2; cut++) {
+        const stem = w.slice(0, w.length - cut);
+        if (stem.length >= 2 && text.includes(stem)) { score += 1; return; }
+      }
+    });
     if (targetDay !== null && h.sd) {
       const diff = Math.abs(Math.floor(h.sd / dayMs) - targetDay);
       if (diff === 0) score += 4; else if (diff === 1) score += 2;
@@ -10860,10 +10927,12 @@ function buildRecallBlock(userMessage) {
     if (score > 0) scored.push({ i, score });
   });
   scored.sort((a, b) => b.score - a.score);
-  const picks = scored.slice(0, 2);
+  const picks = scored.slice(0, 3);
 
   const header = '\n[기억 검색 - 유저가 과거를 물었다]';
   if (!picks.length) {
+    // 대놓고 기억을 물은 게 아니라면(그냥 과거를 가리키는 말이 섞였을 뿐이라면) 아무 말도 붙이지 않는다
+    if (!강함) return '';
     return header + '\n지난 기록에서 관련 대목을 찾지 못했다. 아는 척 지어내지 말고, 자연스럽게 가물가물해하며 "언제쯤 얘기였지?"처럼 되물어라.';
   }
   const parts = picks.map(p => {
@@ -10908,7 +10977,7 @@ function buildGeminiRequestBody(userMessage) {
   contents.push({ role: 'user', parts: [{ text: `${contextNote}\n\n유저 입력: ${userMessage}` }] });
 
   return {
-    system_instruction: { parts: [{ text: buildSystemPrompt(currentStory, state.factLedger, state.recentRivalTriggers, userMessage) }] },
+    system_instruction: { parts: [{ text: buildSystemPrompt(currentStory, (state.factLedger || []).slice(-40), state.recentRivalTriggers, userMessage, (state.playerFacts || []).slice(-50)) }] },
     contents,
     // 62일차 B17: 예전에는 안전 필터를 지정하지 않아 기본값에 맡겨져 있었다.
     // 무엇이 막히는지 예측할 수 없었고, 막혔을 때 화면에 아무 일도 일어나지 않았다.
@@ -10993,6 +11062,11 @@ function buildGeminiRequestBody(userMessage) {
             type: "ARRAY",
             items: { type: "STRING" }
           },
+          // 71일차: 플레이어 자신에 대해 알게 된 것 (취향·가족·일·상처·습관)
+          player_facts: {
+            type: "ARRAY",
+            items: { type: "STRING" }
+          },
           rival_reappear_trigger: {
             // 매우 중요: Gemini의 구조화 출력(response_schema)은 enum 값으로 빈 문자열("")을 허용하지 않는다
             // (실제로 "enum[0]: cannot be empty" 400 에러가 발생해서 모든 채팅 요청이 실패하는 심각한 버그였음).
@@ -11006,7 +11080,7 @@ function buildGeminiRequestBody(userMessage) {
           new_rival_name: { type: "STRING" },
           new_rival_role: { type: "STRING" }
         },
-        required: ["beats", "days_passed", "day_part", "diary_entry", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "main_story_cleared", "immersion_break", "key_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
+        required: ["beats", "days_passed", "day_part", "diary_entry", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "main_story_cleared", "immersion_break", "key_facts", "player_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
       },
       temperature: 1.0
     }
@@ -11024,6 +11098,7 @@ async function callGeminiStream(userMessage, onBeat) {
   // 그대로 넣어야 해서 누구나 개발자도구로 훔쳐볼 수 있기 때문이다. 대신 우리 사이트 안의
   // 서버 함수(/api/chat, Netlify Edge Function)를 거쳐가게 해서, 진짜 키는 서버에만 보관한다.
   const url = `/api/chat`;
+  await ensureSealedHistory(userMessage);   // 71일차: 과거를 물었으면 봉인된 옛 권까지 검색 범위에 넣는다
   const body = buildGeminiRequestBody(userMessage);
   const controller = new AbortController();
   activeAbortController = controller;   // 취소 버튼이 이 요청을 멈출 수 있도록
@@ -11166,6 +11241,7 @@ async function callGeminiStream(userMessage, onBeat) {
   if (!Array.isArray(finalParsed.suggested_replies)) finalParsed.suggested_replies = [];
   if (!finalParsed.immersion_break) finalParsed.immersion_break = 'none';
   if (!Array.isArray(finalParsed.key_facts)) finalParsed.key_facts = [];
+  if (!Array.isArray(finalParsed.player_facts)) finalParsed.player_facts = [];
   if (typeof finalParsed.rival_reappear_trigger !== 'string') finalParsed.rival_reappear_trigger = '';
   // 위 responseSchema에서는 Gemini가 빈 enum 값을 거부하는 문제 때문에 "없음"을 대신 쓰도록 했으므로,
   // 클라이언트 쪽 로직(예: `if (result.rival_reappear_trigger)`)은 그대로 빈 문자열 기준으로 판단할 수 있도록 여기서 되돌린다.
@@ -11621,8 +11697,21 @@ async function runTurn(text, opts) {
         const fact = (f || '').trim();
         if (fact && !state.factLedger.includes(fact)) state.factLedger.push(fact);
       });
-      if (state.factLedger.length > 40) state.factLedger = state.factLedger.slice(-40);
+      // 71일차: 예전에는 40개가 넘으면 오래된 사실을 버렸다. 관계의 방향을 바꾼 사실을
+      // 잊어버리는 셈이라, 이제 300개까지 보관한다. 지시문에 넣는 건 최근 40개(아래 buildSystemPrompt).
+      if (state.factLedger.length > 300) state.factLedger = state.factLedger.slice(-300);
       addDevSys(`[개발자 확인용] 새로 기억된 사실: ${result.key_facts.filter(Boolean).join(' / ')}`);
+    }
+    // 71일차: 플레이어 자신에 대해 알게 된 것. 이야기별로 따로 쌓는다 —
+    // 다른 이야기의 인물이 이걸 알고 있으면 "처음 만난 사람이 내 사정을 다 안다"가 되어 몰입이 깨진다.
+    if (Array.isArray(result.player_facts) && result.player_facts.length) {
+      if (!Array.isArray(state.playerFacts)) state.playerFacts = [];
+      result.player_facts.forEach(f => {
+        const fact = (f || '').trim();
+        if (fact && fact.length <= 120 && !state.playerFacts.includes(fact)) state.playerFacts.push(fact);
+      });
+      if (state.playerFacts.length > 300) state.playerFacts = state.playerFacts.slice(-300);
+      addDevSys(`[개발자 확인용] 이 사람에 대해 알게 된 것: ${result.player_facts.filter(Boolean).join(' / ')}`);
     }
     // 라이벌(준영 등) 재등장 계기 다양화: 이번 턴에 자동 재등장 장치를 썼다면 어떤 계기였는지 기록해두고,
     // 다음 재등장 때는 최근에 쓴 계기를 피하도록 프롬프트에 알려준다 (아크 반복방지와 같은 방식, 최근 2개까지만 유지).
@@ -12113,7 +12202,18 @@ async function resetStory(storyId, opts) {
         ? `"${story.title}"の会話履歴とステータスがすべて削除されます。本当にリセットしますか?`
         : `"${story.title}" 스토리의 대화 기록과 스탯이 전부 삭제돼요. 정말 초기화할까요?`);
   if (!confirm(confirmMsg)) return;
+  // 71일차: 본책만 지우면 창고(__vol1, __vol2…)에 옛 대화가 남는다.
+  // 확인창에 "대화가 모두 사라진다"고 안내했으므로 창고부터 비운다.
+  try {
+    const snap = await storyDocRef(storyId).get();
+    const vols = (snap && snap.exists && (snap.data() || {}).volumeCount) || 0;
+    const col = db.collection('players').doc(currentUid).collection('storyStates');
+    // 기록된 권수까지 지우고, 기록이 어긋났을 경우를 대비해 뒤로 세 개를 더 훑는다.
+    // (없는 문서를 지우는 건 아무 일도 일어나지 않으므로 안전하다)
+    for (let v = 1; v <= vols + 3; v++) await col.doc(storyId + '__vol' + v).delete();
+  } catch (e) { try { logClientError('del-vol', String(e && e.message || e).slice(0, 100)); } catch (e2) {} }
   await storyDocRef(storyId).delete();
+  __sealed = { key: null, history: null };   // 불러다 둔 옛 대화 기억도 함께 버린다
   if (currentStoryId === storyId) await loadStoryState(storyId);
   alert(fromList ? t('contDeleteDone') : t('mypageResetDoneAlert'));
   if (fromList) { await renderStoryList(); return; }   // 목록에서 눌렀으면 목록을 다시 그린다
