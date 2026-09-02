@@ -1106,7 +1106,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-02.24</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-02.25</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -2134,7 +2134,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-09-02.24';
+window.__BUILD = 'v2026-09-02.25';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -9988,9 +9988,12 @@ function maybeTriggerArc(state, story) {
 
   // 68일차 아크 고도화: 스토리에 예정 사건(arcEvents)이 남아 있으면 창고 대신 그것부터 순서대로 편성.
   const planned = (currentStory && currentStory.arcEvents) || [];
-  const nextPlanned = planned[as.clearedArcs || 0];
+  // 71일차: 창고 아크까지 합쳐 센 clearedArcs로 고르면, 이미 진행 중이던 스토리는
+  // 전용 사건의 앞부분을 건너뛰거나 아예 하나도 못 본다. 전용 사건만 세는 번호를 따로 둔다.
+  // (예전 저장 데이터에는 이 값이 없어 0부터 시작하므로, 진행 중이던 사람도 첫 사건부터 만난다)
+  const nextPlanned = planned[as.plannedArcIdx || 0];
   if (nextPlanned) {
-    as.activeArc = { type: 'normal', major: '이 이야기의 예정된 사건', mid: nextPlanned.t, sub: nextPlanned.h, customTitle: nextPlanned.t };
+    as.activeArc = { type: 'normal', major: '이 이야기의 예정된 사건', mid: nextPlanned.t, sub: nextPlanned.h, customTitle: nextPlanned.t, planned: true };
     return;
   }
   const chosen = pickRandomFrom(pool);
@@ -11759,6 +11762,8 @@ async function runTurn(text, opts) {
           state.arcState.threshold = randomArcThreshold();
           // 함께 넘긴 일이 하나 쌓였다. 미니 이벤트와 라이벌 아크는 한 턴에 끝나므로 세지 않는다.
           state.arcState.clearedArcs = (state.arcState.clearedArcs || 0) + 1;
+          // 71일차: 방금 넘긴 게 이 이야기의 전용 사건이었다면 그 번호도 하나 올린다
+          if (arc.planned) state.arcState.plannedArcIdx = (state.arcState.plannedArcIdx || 0) + 1;
           if (!state.arcState.arcLog) state.arcState.arcLog = [];
           state.arcState.arcLog.push(arc.customTitle || arc.mid);
           addArcProgressNotice();
