@@ -1,10 +1,13 @@
 # 비밀값 검사 예외 (68일차) — 아래 두 개는 설계상 브라우저에 공개되는 키라서
 # 페이지 안에 적혀 있는 게 정상이다. 진짜 비밀(FIREBASE_SA_B64, PAYPAL_SECRET 등)은 계속 검사된다.
 [build.environment]
-  SECRETS_SCAN_OMIT_KEYS = "FIREBASE_WEB_API_KEY,PAYPAL_CLIENT_ID"
+  # 71일차: VAPID_PUBLIC 추가 — 푸시 알림용 '공개' 열쇠다. 브라우저에 알려줘야 하는 값이라
+  # index.html 안에 적혀 있는 것이 정상인데, 이 예외가 없으면 Netlify가 "비밀이 샜다"며 배포를 막는다.
+  # (비밀 열쇠 VAPID_PRIVATE는 여기 없다 — 계속 검사된다)
+  SECRETS_SCAN_OMIT_KEYS = "FIREBASE_WEB_API_KEY,PAYPAL_CLIENT_ID,VAPID_PUBLIC"
   # 아래는 Firebase '웹' 키 — 브라우저에 공개되는 게 정상인 값이라 추측 탐지에서 제외.
   # 이 값 하나만 예외이므로, 진짜 비밀 키가 실수로 올라오면 여전히 차단된다.
-  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyAhq9SwaK0OLlXxsjilqimx9JPgsgP2zGQ"
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyAhq9SwaK0OLlXxsjilqimx9JPgsgP2zGQ,BKuPaGDSItrw00M53JYP-05MuP-uyhqhbHIH1gO-qaGpQJRde0-Ud7FIL19zZluzhX3l1GYpBxwmSWXCDPDM82g"
 
 [[edge_functions]]
   path = "/api/chat"
