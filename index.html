@@ -478,6 +478,44 @@
   }
   @media (prefers-reduced-motion: reduce) { .chat-art { transition: none; } }
 
+  /* 71일차: 대화창 밀어넣기 — 그림만 남긴다 */
+  #screen-chat.art-only > *:not(.chat-art):not(#art-restore) { opacity: 0; pointer-events: none; }
+  #screen-chat > *:not(.chat-art) { transition: opacity .35s ease; }
+  /* 글씨를 읽히게 하려고 씌워둔 어두운 막을 걷는다 — 그림 본래 색이 나온다 */
+  #screen-chat.art-only .chat-art::after { opacity: 0; }
+  .chat-art::after { transition: opacity .35s ease; }
+  #screen-chat.art-only .chat-art { background-position: center 8%; }
+  /* 언어 버튼은 채팅 화면 바깥(#app 바로 아래)에 있어서 위 규칙에 안 걸린다.
+     :has() 선택자는 오래된 브라우저에서 안 먹으므로, body에 표시를 달아 확실히 감춘다 */
+  body.art-only #lang-switcher { opacity: 0; pointer-events: none; }
+  #lang-switcher { transition: opacity .35s ease; }
+
+  /* 밀어넣기 버튼 — 입력창 위 오른쪽에 조용히 붙어 있다.
+     위쪽의 `#screen-chat > *:not(.chat-art)` 규칙이 position:relative를 강제하므로,
+     id로 더 힘센 규칙을 써서 되돌린다 (886줄 주석의 함정과 같은 자리). */
+  #screen-chat > #art-peek { position: absolute; z-index: 5; }
+  #screen-chat > #art-restore { position: absolute; z-index: 6; }
+  #art-peek {
+    position: absolute; right: 10px; bottom: 92px; z-index: 2;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(7,10,16,.55); border: 1px solid var(--hair);
+    color: var(--faint); font-size: 15px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .2s, color .2s; opacity: .55;
+  }
+  #art-peek:hover { opacity: 1; color: var(--brass); }
+  /* 그림만 보이는 동안 아무 데나 누르면 되돌아온다 */
+  #art-restore {
+    position: absolute; inset: 0; z-index: 3; display: none;
+    background: none; border: none; cursor: pointer;
+  }
+  #screen-chat.art-only #art-restore { display: block; }
+  #art-restore span {
+    position: absolute; left: 0; right: 0; bottom: 26px; text-align: center;
+    font-size: 11.5px; color: rgba(236,232,242,.65); text-shadow: 0 1px 6px rgba(0,0,0,.9);
+    pointer-events: none;
+  }
+
   #chat { flex: 1; min-height: 0; overflow-y: auto; padding: var(--s5) var(--s4); display: flex; flex-direction: column; gap: var(--s5); }
   .turn { display: flex; flex-direction: column; gap: 5px; animation: fadeUp .28s ease both; }
   .turn-player { align-items: flex-end; }
@@ -573,6 +611,17 @@
     font-size: var(--t-sm); color: var(--dim); line-height: 1.7;
   }
   .safety-notice-icon { color: var(--warn); flex-shrink: 0; display: flex; padding-top: 2px; }
+  /* 71일차: 장면 공유 버튼 — 평소엔 거의 안 보이다가 카드에 손이 닿으면 드러난다 */
+  .scene-card { position: relative; }
+  .share-scene {
+    position: absolute; right: 6px; bottom: 4px;
+    background: none; border: none; cursor: pointer; padding: 4px 6px;
+    color: var(--faint); font-size: 13px; line-height: 1; opacity: .35;
+    transition: opacity .2s, color .2s;
+  }
+  .scene-card:hover .share-scene, .share-scene:focus { opacity: 1; color: var(--brass); }
+  @media (hover: none) { .share-scene { opacity: .5; } }
+
   .revive-offer {
     align-self: center; max-width: 94%; width: 320px; margin: var(--s4) 0;
     display: flex; flex-direction: column; align-items: center; text-align: center;
@@ -925,7 +974,7 @@
         <div class="hc hc-memory"><div class="hc-cap" data-i18n="heroCardMemTitle">기억 속 순간</div><div class="hc-quote" data-i18n="heroCardMemQuote">“바닷가에서 들려준 노래”</div><div class="hc-date" data-i18n="heroCardMemDate">23일 전의 대화</div></div>
       </div>
       <div class="hero-feats">
-        <div class="hf"><b data-i18n="heroFeat1T">기억하는 대화</b><span data-i18n="heroFeat1B">당신과의 모든 대화를 기억하고 이어갑니다.</span></div>
+        <div class="hf"><b data-i18n="heroFeat1T">무료로도 전부 기억</b><span data-i18n="heroFeat1B">몇 달 전에 흘린 말도, 날짜까지 짚어 꺼냅니다.</span></div>
         <div class="hf"><b data-i18n="heroFeat2T">자유로운 입력</b><span data-i18n="heroFeat2B">정해진 선택지 없이, 내 방식대로 표현하세요.</span></div>
         <div class="hf"><b data-i18n="heroFeat3T">변화하는 관계</b><span data-i18n="heroFeat3B">대화할수록 깊어지는 감정, 새로운 이야기.</span></div>
       </div>
@@ -1060,6 +1109,9 @@
   <div class="screen" id="screen-chat">
     <!-- 52일차: 대화 중 캐릭터가 화면에서 사라지던 문제. 아트를 뒤에 깔고 위에 반투명 면을 얹는다. -->
     <div class="chat-art" id="chat-art" aria-hidden="true"></div>
+    <!-- 71일차: 대화창 밀어넣기 — 그림만 보기 -->
+    <button type="button" id="art-peek" onclick="toggleArtOnly(true)" title="그림만 보기" data-i18n-title="artPeek" data-i18n-aria="artPeek" aria-label="그림만 보기">⤢</button>
+    <button type="button" id="art-restore" onclick="toggleArtOnly(false)" aria-label="대화로 돌아가기"><span data-i18n="artBack">아무 곳이나 누르면 대화로 돌아가요</span></button>
     <header>
       <button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-charlist')">←</button>
       <div style="flex:1; display:flex; align-items:center; gap:10px; min-width:0;">
@@ -1096,6 +1148,7 @@
     <div class="pad" style="padding-bottom:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-profile')" data-i18n="mypageEditProfileBtn">내 정보 수정</button>
       <div class="legal-links" style="margin:10px 2px 2px;"><a onclick="event.preventDefault(); openLegal('terms')" data-i18n="legalTermsLink">이용약관</a> · <a onclick="event.preventDefault(); openLegal('privacy')" data-i18n="legalPrivacyLink">개인정보처리방침</a> · <a onclick="event.preventDefault(); openLegal('refund')" data-i18n="legalRefundLink">환불 정책</a></div>
+      <div id="push-row" style="margin-top:14px;"></div>
       <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="logout()" data-i18n="mypageLogoutBtn">로그아웃</button>
       <button type="button" onclick="deleteAccount()" style="display:block; width:100%; margin-top:14px; background:none; border:none; color:var(--faint); font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-decoration:underline; cursor:pointer;" data-i18n="mypageDeleteAccountBtn">회원탈퇴</button>
     </div>
@@ -1106,7 +1159,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-02.25</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-02.29</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1351,6 +1404,17 @@ const I18N = {
     mypageNoStories: '아직 시작한 인연이 없어요. 목록에서 첫 인연을 만나보세요.',
     tabConnections: '인연', tabAlbum: '앨범', tabMe: '내 정보',
     contSectionTitle: '이어하기',
+    artPeek: '그림만 보기',
+    artBack: '아무 곳이나 누르면 대화로 돌아가요',
+    pushOnBtn: '알림 받기',
+    pushOffBtn: '알림 끄기',
+    pushDesc: '이틀 넘게 대화가 없으면, 인연이 먼저 연락을 보내요. 저녁에 한 번만 가고 사흘에 한 번을 넘지 않아요.',
+    pushDenied: '알림이 차단돼 있어요. 브라우저 주소창 옆 자물쇠에서 알림을 허용해 주세요.',
+    pushUnsupported: '이 브라우저는 알림을 지원하지 않아요.',
+    pushIosGuide: '아이폰은 공유 버튼 → [홈 화면에 추가]로 설치한 뒤에 알림을 받을 수 있어요.',
+    pushFailed: '알림을 켜지 못했어요. 잠시 후 다시 시도해 주세요.',
+    shareScene: '이 장면 공유하기',
+    shareFailed: '공유하지 못했어요. 잠시 후 다시 시도해 주세요.',
     contNudge: '✉ 먼저 연락이 와 있어요',
     onboardTitle: '대화하는 법, 딱 세 가지만',
     onboardLine1: '그냥 쓰면 — 상대에게 하는 말이 됩니다.',
@@ -1368,11 +1432,11 @@ const I18N = {
     heroTitle2: '대화로 시작되는<br>가장 사적인 로맨스',
     heroSub2: '당신의 말을 기억하고, 감정과 서사가 변하는 AI 연애 시뮬레이션.',
     heroCardName: '서연', heroCardNow: '지금', heroCardMsg: '오늘도 기다리고 있었어요.',
-    heroCardMemTitle: '기억 속 순간', heroCardMemQuote: '“바닷가에서 들려준 노래”', heroCardMemDate: '23일 전의 대화',
-    heroFeat1T: '기억하는 대화', heroFeat1B: '당신과의 모든 대화를 기억하고 이어갑니다.',
+    heroCardMemTitle: '기억 속 순간', heroCardMemQuote: '“바닷가에서 들려준 노래”', heroCardMemDate: '석 달 전의 대화',
+    heroFeat1T: '무료로도 전부 기억', heroFeat1B: '몇 달 전에 흘린 말도, 날짜까지 짚어 꺼냅니다.',
     heroFeat2T: '자유로운 입력', heroFeat2B: '정해진 선택지 없이, 내 방식대로 표현하세요.',
     heroFeat3T: '변화하는 관계', heroFeat3B: '대화할수록 깊어지는 감정, 새로운 이야기.',
-    heroPricing: '무료로 시작 — 매일 10회 무료 대화 · 가입 시 코인 50개 · 코인 $0.99부터 · 프리미엄 월 $9.99',
+    heroPricing: '무료로 시작 — 매일 10회 무료 대화 · 가입 시 코인 50개 · 기억은 요금제와 무관 · 코인 $0.99부터 · 프리미엄 월 $9.99',
     contGoBtn: '대화 ▸',
     contNewSection: '새 인연',
     timeJustNow: '방금',
@@ -1395,7 +1459,7 @@ const I18N = {
     testCoinEnough: '아직 코인이 충분해요. (잔액 {c}개) 다 쓰신 뒤에 다시 받아주세요.',
     testCoinFail: '지금은 받을 수 없어요. 잠시 뒤 다시 시도해 주세요.',
     subHeader: '구독', subTitle: '프리미엄 구독', subPriceLabel: '월 $9.99',
-    subBullets: '· 하루 무료 대화 한도 없이 무제한 대화<br/>· 앞으로 추가될 프리미엄 전용 스토리 우선 이용 (추후 적용)',
+    subBullets: '· 하루 무료 대화 한도 없이 무제한 대화<br/>· 앞으로 추가될 프리미엄 전용 스토리 우선 이용 (추후 적용)<br/>· <b>기억은 구독 항목이 아닙니다</b> — 무료 회원도 지난 대화를 전부 그대로 간직해요',
     subFooterNote: '구독은 언제든 해지할 수 있어요. 결제는 PayPal을 통해 안전하게 처리돼요.',
     subStatusActiveBadge: '구독 중', subStatusActiveText: '무제한으로 대화할 수 있어요.',
     subStatusInactiveBadge: '미구독', subStatusInactiveTextPrefix: '하루 ', subStatusInactiveTextSuffix: '개 무료 대화 이후엔 코인이 필요해요.',
@@ -1574,6 +1638,17 @@ const I18N = {
     mypageNoStories: 'No connections started yet. Meet your first one from the list.',
     tabConnections: 'Connections', tabAlbum: 'Album', tabMe: 'Me',
     contSectionTitle: 'Continue',
+    artPeek: 'View artwork',
+    artBack: 'Tap anywhere to return',
+    pushOnBtn: 'Turn on notifications',
+    pushOffBtn: 'Turn off notifications',
+    pushDesc: 'If two days pass without a word, they reach out first. Evenings only, and never more than once every three days.',
+    pushDenied: 'Notifications are blocked. Allow them from the lock icon next to the address bar.',
+    pushUnsupported: 'This browser does not support notifications.',
+    pushIosGuide: 'On iPhone, add this to your Home Screen first (Share \u2192 Add to Home Screen) to receive notifications.',
+    pushFailed: "Couldn't turn on notifications. Please try again.",
+    shareScene: 'Share this scene',
+    shareFailed: "Couldn't share. Please try again.",
     contNudge: '✉ They reached out first',
     onboardTitle: 'How to talk — just three things',
     onboardLine1: 'Type normally — it becomes what you say to them.',
@@ -1591,11 +1666,11 @@ const I18N = {
     heroTitle2: 'The most personal romance<br>begins with a conversation',
     heroSub2: 'An AI romance that remembers your words — where feelings and stories truly change.',
     heroCardName: 'Seoyeon', heroCardNow: 'now', heroCardMsg: 'I was waiting for you today, too.',
-    heroCardMemTitle: 'A remembered moment', heroCardMemQuote: '“The song you played by the sea”', heroCardMemDate: 'from 23 days ago',
-    heroFeat1T: 'It remembers', heroFeat1B: 'Every conversation is remembered and carried on.',
+    heroCardMemTitle: 'A remembered moment', heroCardMemQuote: '“The song you played by the sea”', heroCardMemDate: 'from three months ago',
+    heroFeat1T: 'Remembers everything — free too', heroFeat1B: 'Something you said months ago, recalled with the date.',
     heroFeat2T: 'Say it your way', heroFeat2B: 'No fixed choices — express yourself freely.',
     heroFeat3T: 'Relationships evolve', heroFeat3B: 'Feelings deepen and new stories unfold as you talk.',
-    heroPricing: 'Start free — 10 free chats daily · 50 bonus coins on signup · Coins from $0.99 · Premium $9.99/mo',
+    heroPricing: 'Start free — 10 free chats daily · 50 bonus coins on signup · Memory on every plan · Coins from $0.99 · Premium $9.99/mo',
     contGoBtn: 'Chat ▸',
     contNewSection: 'New connections',
     timeJustNow: 'just now',
@@ -1618,7 +1693,7 @@ const I18N = {
     testCoinEnough: 'You still have plenty. (balance: {c}) Come back when you run low.',
     testCoinFail: 'Not available right now. Please try again shortly.',
     subHeader: 'Subscription', subTitle: 'Premium subscription', subPriceLabel: '$9.99/mo',
-    subBullets: '· Unlimited chats, no daily free-message limit<br/>· Priority access to upcoming premium-only stories (coming later)',
+    subBullets: '· Unlimited chats, no daily free-message limit<br/>· Priority access to upcoming premium-only stories (coming later)<br/>· <b>Memory is not a paid feature</b> — free members keep every past conversation too',
     subFooterNote: 'You can cancel anytime. Payments are processed securely via PayPal.',
     subStatusActiveBadge: 'Subscribed', subStatusActiveText: 'You can chat without limits.',
     subStatusInactiveBadge: 'Not subscribed', subStatusInactiveTextPrefix: 'After ', subStatusInactiveTextSuffix: ' free messages a day, you\'ll need coins.',
@@ -1797,6 +1872,17 @@ const I18N = {
     mypageNoStories: 'まだ始めた縁がありません。リストから最初の縁に出会ってみてください。',
     tabConnections: '縁', tabAlbum: 'アルバム', tabMe: 'マイ',
     contSectionTitle: '続きから',
+    artPeek: 'イラストだけ見る',
+    artBack: 'どこかを押すと会話に戻ります',
+    pushOnBtn: '通知を受け取る',
+    pushOffBtn: '通知をオフにする',
+    pushDesc: '二日以上会話がないと、相手から先に連絡が来ます。夜に一度だけ、三日に一度を超えません。',
+    pushDenied: '通知がブロックされています。アドレスバーの鍵アイコンから許可してください。',
+    pushUnsupported: 'このブラウザは通知に対応していません。',
+    pushIosGuide: 'iPhoneでは共有ボタン →「ホーム画面に追加」でインストールすると通知を受け取れます。',
+    pushFailed: '通知をオンにできませんでした。しばらくしてからもう一度お試しください。',
+    shareScene: 'この場面を共有',
+    shareFailed: '共有できませんでした。しばらくしてからもう一度お試しください。',
     contNudge: '✉ 先に連絡が来ています',
     onboardTitle: '会話のしかたは、3つだけ',
     onboardLine1: 'そのまま書くと — 相手への言葉になります。',
@@ -1813,11 +1899,11 @@ const I18N = {
     heroTitle2: '会話から始まる<br>いちばん私的なロマンス',
     heroSub2: 'あなたの言葉を記憶し、感情と物語が変わっていくAI恋愛シミュレーション。',
     heroCardName: 'ソヨン', heroCardNow: 'たった今', heroCardMsg: '今日も待っていました。',
-    heroCardMemTitle: '記憶の中の瞬間', heroCardMemQuote: '「海辺で聴かせてくれた歌」', heroCardMemDate: '23日前の会話',
-    heroFeat1T: '記憶する会話', heroFeat1B: 'あなたとのすべての会話を記憶し、続けていきます。',
+    heroCardMemTitle: '記憶の中の瞬間', heroCardMemQuote: '「海辺で聴かせてくれた歌」', heroCardMemDate: '三か月前の会話',
+    heroFeat1T: '無料でもすべて記憶', heroFeat1B: '数か月前にこぼした一言も、日付まで添えて思い出します。',
     heroFeat2T: '自由な入力', heroFeat2B: '決まった選択肢はなく、自分の言葉で表現できます。',
     heroFeat3T: '変化する関係', heroFeat3B: '会話するほど深まる感情、新しい物語。',
-    heroPricing: '無料で開始 — 毎日10回無料チャット · 登録時コイン50枚 · コインは$0.99から · プレミアム月額$9.99',
+    heroPricing: '無料で開始 — 毎日10回無料チャット · 登録時コイン50枚 · 記憶はプランを問わず · コインは$0.99から · プレミアム月額$9.99',
     contGoBtn: '会話 ▸',
     contNewSection: '新しい縁',
     timeJustNow: 'たった今',
@@ -1840,7 +1926,7 @@ const I18N = {
     testCoinEnough: 'まだコインは十分あります。(残高{c}枚) 使い切ってからまたどうぞ。',
     testCoinFail: '今は受け取れません。しばらくしてからお試しください。',
     subHeader: '購読', subTitle: 'プレミアム購読', subPriceLabel: '月額$9.99',
-    subBullets: '· 1日の無料会話制限なしで無制限に会話<br/>· 今後追加されるプレミアム専用ストーリーへの優先アクセス(今後対応)',
+    subBullets: '· 1日の無料会話制限なしで無制限に会話<br/>· 今後追加されるプレミアム専用ストーリーへの優先アクセス(今後対応)<br/>· <b>記憶は有料機能ではありません</b> — 無料会員も過去の会話をすべてそのまま保てます',
     subFooterNote: '購読はいつでも解約できます。決済はPayPalを通じて安全に処理されます。',
     subStatusActiveBadge: '購読中', subStatusActiveText: '無制限に会話できます。',
     subStatusInactiveBadge: '未購読', subStatusInactiveTextPrefix: '1日', subStatusInactiveTextSuffix: '件の無料会話の後はコインが必要です。',
@@ -2100,6 +2186,8 @@ auth.onAuthStateChanged(async (user) => {
   // 동선 3(67일차): 재방문·가입 직후 모두 랜딩 재경유(2.5초 자막)를 없애고 바로 다음 화면으로.
   // 세계관 연출은 첫 방문 랜딩과 스토리 진입 연출('시간을 거슬러…')이 담당한다.
   goTo(hasProfile ? 'screen-charlist' : 'screen-profile');
+  // 71일차: 푸시 알림을 눌러 들어왔으면 그 인연의 대화로 바로 데려간다
+  if (hasProfile) openStoryFromUrl();
 });
 
 // =====================================================
@@ -2134,7 +2222,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-09-02.25';
+window.__BUILD = 'v2026-09-02.29';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -8757,6 +8845,8 @@ async function loadStoryState(storyId) {
   if (!state.arcState) state.arcState = defaultArcState(); // 아크 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (!state.collectionStatus) state.collectionStatus = 'active'; // 인연 앨범/5슬롯 시스템 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (!Array.isArray(state.playerFacts)) state.playerFacts = [];   // 71일차: 플레이어 신상 장부 도입 전 데이터 보정
+  // 71일차: 알림 문구에 쓸 인물 이름. 서버는 스토리 정의를 모르므로 여기서 적어 둔다.
+  try { if (currentStory && currentStory.cast && currentStory.cast[0]) state.castName = currentStory.cast[0].name; } catch (e) {}
   if (!Array.isArray(state.factLedger)) state.factLedger = []; // 기억 유지(factLedger) 도입 전에 저장된 기존 진행 데이터를 위한 보정
   if (!Array.isArray(state.diary)) state.diary = []; // 68일차: 비밀 일기 도입 전 세이브 보정
   if (typeof state.coinNoticeShown !== 'boolean') state.coinNoticeShown = false; // 68일차: 코인 전환 안내 도입 전 세이브 보정
@@ -9128,9 +9218,258 @@ function addCharTurn(beats, story, isOpening) {
   turn.appendChild(sceneCard);
   resetLastMedium();
   (beats || []).forEach(b => renderBeat(sceneCard, b, story));
+  attachShareBtn(sceneCard);   // 71일차: 장면 공유
   $('chat').appendChild(turn);
   $('chat').scrollTop = $('chat').scrollHeight;
   return turn;
+}
+
+// 71일차: 대화창을 걷어내고 인물 그림만 남긴다. 그림이 없는 스토리에서는 버튼을 숨긴다.
+function toggleArtOnly(on) {
+  const sc = $('screen-chat');
+  if (!sc) return;
+  if (on && !$('chat-art').classList.contains('on')) return;   // 깔린 그림이 없으면 할 일이 없다
+  sc.classList.toggle('art-only', !!on);
+  document.body.classList.toggle('art-only', !!on);   // 채팅 화면 바깥의 언어 버튼까지 함께 감추기 위한 표시
+}
+
+// 그림이 있을 때만 밀어넣기 버튼을 보여준다
+function syncArtPeek() {
+  const b = $('art-peek');
+  if (!b) return;
+  b.style.display = $('chat-art').classList.contains('on') ? 'flex' : 'none';
+}
+
+// ===== 71일차: 푸시 알림 =====
+// 이 열쇠는 공개돼도 되는 값이다(브라우저에 알려줘야 하는 값). 비밀 열쇠는 서버에만 있다.
+const VAPID_PUBLIC_KEY = 'BKuPaGDSItrw00M53JYP-05MuP-uyhqhbHIH1gO-qaGpQJRde0-Ud7FIL19zZluzhX3l1GYpBxwmSWXCDPDM82g';
+
+// 아이폰은 "홈 화면에 추가"를 해야만 알림을 받을 수 있다(사파리 정책).
+function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+function isStandalone() { return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
+function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+
+function urlB64ToUint8(base64) {
+  const pad = '='.repeat((4 - base64.length % 4) % 4);
+  const raw = atob((base64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+async function enablePush() {
+  try {
+    if (!pushSupported()) { alert(t('pushUnsupported')); return false; }
+    if (isIOS() && !isStandalone()) { alert(t('pushIosGuide')); return false; }
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { alert(t('pushDenied')); return false; }
+
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlB64ToUint8(VAPID_PUBLIC_KEY)
+      });
+    }
+    const j = sub.toJSON();
+    await playerDocRef().set({
+      pushOn: true,
+      pushEndpoint: j.endpoint,
+      pushKey: j.keys.p256dh,
+      pushAuth: j.keys.auth,
+      pushLang: currentLang,
+      pushTz: new Date().getTimezoneOffset(),   // 분 단위. 한국이면 -540
+      pushAt: Date.now()
+    }, { merge: true });
+    return true;
+  } catch (e) {
+    try { logClientError('push-on', String(e && e.message || e).slice(0, 100)); } catch (e2) {}
+    alert(t('pushFailed'));
+    return false;
+  }
+}
+
+async function disablePush() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) await sub.unsubscribe();
+  } catch (e) {}
+  try { await playerDocRef().set({ pushOn: false }, { merge: true }); } catch (e) {}
+}
+
+async function togglePush(on) {
+  const ok = on ? await enablePush() : (await disablePush(), true);
+  await renderPushRow();
+  return ok;
+}
+
+// 마이페이지의 알림 줄을 지금 상태에 맞게 다시 그린다
+async function renderPushRow() {
+  const el = $('push-row');
+  if (!el) return;
+  if (!pushSupported()) { el.innerHTML = '<span style="color:var(--faint)">' + esc(t('pushUnsupported')) + '</span>'; return; }
+  if (isIOS() && !isStandalone()) {
+    el.innerHTML = '<span style="color:var(--faint)">' + esc(t('pushIosGuide')) + '</span>';
+    return;
+  }
+  let 켜짐 = false;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    켜짐 = Notification.permission === 'granted' && !!(await reg.pushManager.getSubscription());
+  } catch (e) {}
+  el.innerHTML = '<button type="button" class="btn secondary" style="width:100%">' +
+    esc(켜짐 ? t('pushOffBtn') : t('pushOnBtn')) + '</button>' +
+    '<div style="font-size:11px; color:var(--text-faint); margin-top:6px; line-height:1.6;">' +
+    esc(t('pushDesc')) + '</div>';
+  el.querySelector('button').onclick = () => togglePush(!켜짐);
+}
+
+// 알림을 누르고 들어왔으면 그 인연으로 바로 데려간다
+function openStoryFromUrl() {
+  try {
+    const id = new URLSearchParams(location.search).get('story');
+    if (!id || !STORIES[id]) return false;
+    history.replaceState(null, '', location.pathname);   // 주소를 깔끔하게 되돌린다
+    enterChat(id);   // 진행 중이던 대화로 바로 들어간다
+    return true;
+  } catch (e) { return false; }
+}
+
+// ===== 71일차: 장면 공유 =====
+// 대화 한 장면을 그림 한 장으로 만들어 내보낸다. 폰에서는 공유창이 열리고, PC에서는 내려받는다.
+const SHARE_W = 1080;
+
+// 글자를 정해진 폭에 맞춰 줄로 나눈다 (한국어는 단어 단위로 끊기지 않으므로 글자 단위로 잰다)
+function wrapLines(ctx, text, maxW) {
+  const out = [];
+  let line = '';
+  for (const ch of String(text)) {
+    if (ch === '\n') { out.push(line); line = ''; continue; }
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxW && line) { out.push(line); line = ch; }
+    else line = test;
+  }
+  if (line) out.push(line);
+  return out;
+}
+
+// 화면의 장면 카드에서 대사·나레이션을 순서대로 읽어온다
+function readScene(card) {
+  const out = [];
+  card.querySelectorAll('.line, .speaker-tag').forEach(el => {
+    const text = (el.textContent || '').trim();
+    if (!text) return;
+    if (el.classList.contains('speaker-tag')) { out.push({ kind: 'name', text }); return; }
+    out.push({ kind: el.classList.contains('narration') ? 'narration' : 'dialogue', text });
+  });
+  return out;
+}
+
+function drawSceneImage(card, story) {
+  const css = getComputedStyle(document.documentElement);
+  const V = (n, d) => (css.getPropertyValue(n) || '').trim() || d;
+  const 배경 = V('--ink', '#0C0F1E'), 글자 = V('--paper', '#ECE8F2');
+  const 흐린 = V('--dim', '#9AA2B2'), 강조 = V('--brass', '#C9A227');
+  const serif = '"Gowun Batang","Noto Serif KR",serif';
+
+  const pad = 72, maxW = SHARE_W - pad * 2;
+  const measure = document.createElement('canvas').getContext('2d');
+
+  const 조각 = readScene(card).slice(0, 14);
+  // 먼저 높이를 계산한다
+  const 줄들 = [];
+  let h = pad + 96;   // 제목 자리
+  조각.forEach(p => {
+    if (p.kind === 'name') { measure.font = '600 30px ' + serif; }
+    else if (p.kind === 'narration') { measure.font = 'italic 34px ' + serif; }
+    else { measure.font = '38px ' + serif; }
+    // \uD654\uBA74\uC5D0 \uC774\uBBF8 \uB530\uC634\uD45C\uAC00 \uBD99\uC5B4 \uC788\uC73C\uBA74 \uB610 \uC50C\uC6B0\uC9C0 \uC54A\uB294\uB2E4
+    const \uB530\uC634\uD45C\uBD99\uC74C = /^[\u201C\u2018"']/.test(p.text);
+    const body = (p.kind === 'dialogue' && !\uB530\uC634\uD45C\uBD99\uC74C) ? '\u201C' + p.text + '\u201D' : p.text;
+    const ls = wrapLines(measure, body, maxW);
+    줄들.push({ kind: p.kind, lines: ls });
+    h += ls.length * (p.kind === 'name' ? 42 : 54) + (p.kind === 'name' ? 8 : 26);
+  });
+  h += pad + 90;   // 바닥 서명 자리
+
+  const cv = document.createElement('canvas');
+  cv.width = SHARE_W; cv.height = Math.max(600, Math.min(4000, h));
+  const c = cv.getContext('2d');
+
+  c.fillStyle = 배경; c.fillRect(0, 0, cv.width, cv.height);
+  // 위아래 얇은 금선
+  c.fillStyle = 강조; c.globalAlpha = .5;
+  c.fillRect(pad, pad - 28, 90, 2); c.globalAlpha = 1;
+
+  let y = pad + 34;
+  c.fillStyle = 강조; c.font = '600 40px ' + serif; c.textBaseline = 'top';
+  c.fillText(story && story.title ? story.title : 'LUNIQUE', pad, y);
+  y += 78;
+
+  줄들.forEach(p => {
+    if (p.kind === 'name') {
+      c.fillStyle = 강조; c.font = '600 30px ' + serif;
+      p.lines.forEach(l => { c.fillText(l, pad, y); y += 42; });
+      y += 8;
+    } else if (p.kind === 'narration') {
+      c.fillStyle = 흐린; c.font = 'italic 34px ' + serif;
+      p.lines.forEach(l => { c.fillText(l, pad, y); y += 54; });
+      y += 26;
+    } else {
+      c.fillStyle = 글자; c.font = '38px ' + serif;
+      p.lines.forEach(l => { c.fillText(l, pad, y); y += 54; });
+      y += 26;
+    }
+  });
+
+  // 바닥 — 어디서 온 그림인지
+  const fy = cv.height - 72;
+  c.fillStyle = 강조; c.globalAlpha = .3; c.fillRect(pad, fy - 24, cv.width - pad * 2, 1); c.globalAlpha = 1;
+  c.fillStyle = 강조; c.font = '600 26px ' + serif;
+  c.fillText('LUNIQUE \u00B7 \uC778\uC5F0\uC220\uC0AC', pad, fy);
+  c.fillStyle = 흐린; c.font = '24px ' + serif;
+  const 주소 = location.host;
+  c.fillText(주소, cv.width - pad - c.measureText(주소).width, fy + 2);
+  return cv;
+}
+
+async function shareScene(card) {
+  try {
+    const cv = drawSceneImage(card, currentStory);
+    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+    if (!blob) { alert(t('shareFailed')); return; }
+    const file = new File([blob], 'lunique.png', { type: 'image/png' });
+    const 제목 = (currentStory && currentStory.title) || 'LUNIQUE';
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 제목, text: 제목 + ' \u00B7 LUNIQUE' });
+      return;
+    }
+    // 공유창을 못 쓰는 환경(대부분의 PC)에서는 그림으로 내려받는다
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'lunique_' + Date.now() + '.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;   // 유저가 공유창을 닫은 것뿐이다
+    try { logClientError('share', String(e && e.message || e).slice(0, 100)); } catch (e2) {}
+    alert(t('shareFailed'));
+  }
+}
+
+// 장면 카드에 공유 버튼을 하나 붙인다 (이미 있으면 그냥 둔다)
+function attachShareBtn(card) {
+  if (!card || card.querySelector('.share-scene')) return;
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'share-scene';
+  b.title = t('shareScene');
+  b.setAttribute('aria-label', t('shareScene'));
+  b.textContent = '\u2934';
+  b.onclick = (ev) => { ev.stopPropagation(); shareScene(card); };
+  card.appendChild(b);
 }
 
 // 관계 단계가 바뀐 순간에만 채팅창에 띄우는 연출 (48일차 B14).
@@ -11481,6 +11820,7 @@ async function runTurn(text, opts) {
         $('chat').appendChild(charTurn);
       }
       renderBeat(sceneCard, beat, currentStory);
+      attachShareBtn(sceneCard);   // 71일차: 장면 공유
       $('chat').scrollTop = $('chat').scrollHeight;
     });
 
@@ -11980,6 +12320,7 @@ function preloadStoryArt(story) {
 
 function applyChatArt(story) {
   const el = $('chat-art');
+  setTimeout(syncArtPeek, 0);   // 71일차: 그림이 있을 때만 밀어넣기 버튼을 보여준다
   if (!el) return;
   const withArt = (story && story.cast || []).find(c => AVATAR_IMAGE[c.key]);
   if (withArt) {
@@ -12192,6 +12533,7 @@ async function renderMypage() {
   }
   blocks.forEach(b => container.appendChild(b));
   $('mypage-slot-status').textContent = `${t('mypageSlotStatusPrefix')}${activeSlotCount} / ${MAX_STORY_SLOTS}`;
+  renderPushRow();   // 71일차: 알림 켜기/끄기 줄
 }
 
 // 테스트 중 대화 기록이 꼬였을 때 깨끗하게 처음부터 다시 시작하기 위한 초기화 버튼.

@@ -27,3 +27,14 @@
   for = "/manifest.webmanifest"
   [headers.values]
     Content-Type = "application/manifest+json"
+
+# 푸시 알림 발송기 (71일차) — 매시 정각에 돌면서, 유저의 현지 시각이 저녁 8시인 사람에게만 보낸다.
+# 나라가 달라도 각자 저녁에 받게 된다. 실제 발송 조건은 push.js 안에 있다.
+[functions."push"]
+  schedule = "0 * * * *"
+
+# 손으로 한 번 돌려보고 싶을 때 쓰는 주소 (평소엔 쓸 일 없음)
+[[redirects]]
+  from = "/api/push-run"
+  to = "/.netlify/functions/push"
+  status = 200
