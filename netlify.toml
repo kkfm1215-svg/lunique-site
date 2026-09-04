@@ -36,8 +36,9 @@
 [functions."push"]
   schedule = "0 * * * *"
 
-# 손으로 한 번 돌려보고 싶을 때 쓰는 주소 (평소엔 쓸 일 없음)
+# 설정 확인 창구 (71일차) — 정해진 시각에 도는 함수는 주소로 못 부른다(403). 확인용을 따로 둔다.
+# 실제로 보내지 않고 "지금이면 몇 명에게 갈지"만 알려주므로, 주소가 노출돼도 안전하다.
 [[redirects]]
   from = "/api/push-run"
-  to = "/.netlify/functions/push"
+  to = "/.netlify/functions/push-run"
   status = 200

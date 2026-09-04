@@ -138,11 +138,17 @@ const MSG = {
 };
 
 // ───────── 본체 ─────────
-exports.handler = async () => {
+// 71일차: 확인 전용 창구(push-run.js)에서도 쓸 수 있게 본체를 함수로 뺀다.
+//   opts.dryRun 이 true면 **실제로 보내지 않고** 대상만 세어서 돌려준다.
+async function run(opts) {
+  const 미리보기 = !!(opts && opts.dryRun);
   const 결과 = { 대상: 0, 보냄: 0, 건너뜀: 0, 정리: 0, 실패: 0 };
+  if (미리보기) { 결과.모드 = '미리보기(실제로 보내지 않음)'; 결과.보낼사람 = 0; }
   try {
-    if (!process.env.VAPID_PRIVATE || !process.env.FIREBASE_SA_B64) {
-      return { statusCode: 200, body: JSON.stringify({ skipped: '환경변수 미설정' }) };
+    const 없는것 = ['VAPID_PUBLIC', 'VAPID_PRIVATE', 'VAPID_SUBJECT', 'FIREBASE_SA_B64']
+      .filter(k => !process.env[k]);
+    if (없는것.length) {
+      return { statusCode: 200, body: JSON.stringify({ 설정안됨: 없는것 }) };
     }
     const tok = await googleToken('https://www.googleapis.com/auth/datastore');
     const users = await pushUsers(tok);
@@ -157,7 +163,8 @@ exports.handler = async () => {
         // 이 유저의 현지 시각이 저녁 8시인가 (tzOffset은 분 단위, 브라우저가 준 값)
         const off = int(f, 'pushTz');            // 예: 한국이면 -540
         const localHour = new Date(now - off * 60000).getUTCHours();
-        if (localHour !== SEND_HOUR) { 결과.건너뜀++; continue; }
+        // 미리보기는 "지금이 저녁 8시인가"를 따지지 않는다 — 아니면 늘 0명으로만 나와 확인이 안 된다
+        if (!미리보기 && localHour !== SEND_HOUR) { 결과.건너뜀++; continue; }
 
         if (now - int(f, 'pushLastAt') < COOLDOWN_MS) { 결과.건너뜀++; continue; }
 
@@ -188,6 +195,12 @@ exports.handler = async () => {
           storyId: 후보.id
         });
 
+        if (미리보기) {
+          // 실제 발송·기록 없이, 지금 조건이면 이 사람에게 갔을 것이라는 사실만 센다
+          결과.보낼사람++;
+          if (!결과.예시) 결과.예시 = JSON.parse(payload).title;
+          continue;
+        }
         const status = await sendPush({ endpoint, p256dh, auth }, payload);
         if (status === 404 || status === 410) {
           // 브라우저가 구독을 버린 경우 — 우리 쪽 기록도 정리한다
@@ -209,4 +222,9 @@ exports.handler = async () => {
     return { statusCode: 200, body: JSON.stringify({ error: String(e && e.message || e).slice(0, 200) }) };
   }
   return { statusCode: 200, body: JSON.stringify(결과) };
-};
+}
+
+// 정해진 시각에 도는 입구 (netlify.toml에 매시 정각으로 적혀 있다)
+exports.handler = async () => run({});
+// 확인 전용 창구(push-run.js)가 가져다 쓰는 입구
+exports.run = run;
