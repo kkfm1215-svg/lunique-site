@@ -69,7 +69,21 @@
     </div>
     <div class="card" style="margin-bottom:4px;"><div class="k">가입자 성별</div><div style="color:var(--dim); font-size:13px; margin-top:6px;" id="c-gender">–</div></div>
 
-    <div class="sect">AI 대화 비용 <span style="color:var(--faint); letter-spacing:0;">— gemini-3.5-flash-lite 단가 기준 추정</span></div>
+    <div class="sect">무검열 AI 테스트 <span style="color:var(--faint); letter-spacing:0;">— 적어둔 계정만 GPU 서버로 보냅니다. 나머지는 그대로 구글입니다.</span></div>
+    <div class="card" style="margin-bottom:18px;">
+      <div id="ai-state" style="margin-bottom:12px; font-size:14px;">불러오는 중…</div>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+        <input id="ai-url" placeholder="GPU 주소 (테스트_시작 창에 나온 https://... 주소)" spellcheck="false"
+          style="flex:1 1 340px; min-width:260px; background:#0E0B1A; color:var(--paper); border:1px solid var(--line); border-radius:8px; padding:9px 12px; font-size:13px;">
+        <input id="ai-emails" placeholder="대상 계정 (쉼표로 구분)" spellcheck="false"
+          style="flex:1 1 240px; min-width:200px; background:#0E0B1A; color:var(--paper); border:1px solid var(--line); border-radius:8px; padding:9px 12px; font-size:13px;">
+        <button onclick="setAI(true)">켜기</button>
+        <button class="ghost" onclick="setAI(false)">끄기</button>
+      </div>
+      <div id="ai-msg" style="margin-top:10px; font-size:12px; color:var(--dim); min-height:16px;"></div>
+    </div>
+
+    <div class="sect">AI 대화 비용 <span style="color:var(--faint); letter-spacing:0;">— gemini-3.5-flash-lite단가 기준 추정</span></div>
     <div class="cards">
       <div class="card"><div class="k">오늘 나눈 대화</div><div class="v" id="u-today-turns">–<small>턴</small></div></div>
       <div class="card"><div class="k">오늘 예상 비용</div><div class="v" id="u-today-cost">–</div></div>
@@ -136,6 +150,48 @@ async function load() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('who').style.display = 'block';
   document.getElementById('board').style.display = 'block';
+  loadAI();
+}
+
+// ===== 73일차: 무검열 AI 갈림길 =====
+async function aiApi(payload) {
+  const tok = await firebase.auth().currentUser.getIdToken();
+  const r = await fetch('/api/admin', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.status);
+  return j;
+}
+function showAI(j) {
+  const el = document.getElementById('ai-state');
+  if (j.enabled) {
+    el.innerHTML = '<span style="color:var(--good, #7FB77E);">● 켜져 있습니다</span> — '
+      + (j.emails || []).map(e => '<b>' + e + '</b>').join(', ') + ' 만 무검열 AI로 갑니다';
+  } else {
+    el.innerHTML = '<span style="color:var(--dim);">○ 꺼져 있습니다</span> — 모두 구글 제미나이로 갑니다';
+  }
+  if (j.url) document.getElementById('ai-url').value = j.url;
+  if (j.emails && j.emails.length) document.getElementById('ai-emails').value = j.emails.join(', ');
+}
+async function loadAI() {
+  try { showAI(await aiApi({ action: 'getAI' })); }
+  catch (e) { document.getElementById('ai-state').textContent = '상태를 못 읽었습니다: ' + e.message; }
+}
+async function setAI(on) {
+  const msg = document.getElementById('ai-msg');
+  msg.textContent = '저장 중…';
+  try {
+    const j = await aiApi({
+      action: 'setAI', enabled: on,
+      url: document.getElementById('ai-url').value,
+      emails: document.getElementById('ai-emails').value.split(',').map(s => s.trim()).filter(Boolean)
+    });
+    showAI(j);
+    msg.textContent = on ? '켰습니다. 사이트에 반영되기까지 최대 1분 걸립니다.' : '껐습니다. 최대 1분 뒤 모두 구글로 돌아갑니다.';
+  } catch (e) { msg.textContent = '실패: ' + e.message; }
 }
 
 function render(j) {

@@ -62,6 +62,42 @@ exports.handler = async (event) => {
   const admin = await verifyAdmin(idToken);
   if (!admin) return bad(403, 'admin only');
 
+  // ===== 73일차: 무검열 AI 갈림길 스위치 =====
+  // 대화 서버(gemini-proxy)가 Firestore의 config/localAI 를 보고 판단한다.
+  // 여기서 그 문서를 읽고 쓴다 — 문서만 고치면 되므로 **다시 배포할 필요가 없다.**
+  let req = {};
+  try { req = JSON.parse(event.body || '{}'); } catch (e) {}
+  if (req.action === 'getAI' || req.action === 'setAI') {
+    const base = 'https://firestore.googleapis.com/v1/projects/' + sa().project_id + '/databases/(default)/documents/config/localAI';
+    const tok = await googleToken();
+    const H = { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' };
+    if (req.action === 'getAI') {
+      const r = await fetch(base, { headers: H });
+      if (r.status === 404) return ok({ enabled: false, url: '', emails: [] });
+      const f = (await r.json()).fields || {};
+      return ok({
+        enabled: !!(f.enabled && f.enabled.booleanValue === true),
+        url: (f.url && f.url.stringValue) || '',
+        emails: (((f.emails || {}).arrayValue || {}).values || []).map(v => v.stringValue || ''),
+        updatedAt: (f.updatedAt && f.updatedAt.stringValue) || ''
+      });
+    }
+    const url = String(req.url || '').trim().replace(/\/+$/, '');
+    const emails = (Array.isArray(req.emails) ? req.emails : [])
+      .map(s => String(s).trim().toLowerCase()).filter(Boolean).slice(0, 20);
+    const on = !!req.enabled;
+    if (on && (!/^https:\/\/[\w.-]+/.test(url) || !emails.length)) return bad(400, 'GPU 주소와 대상 계정이 필요합니다');
+    const body = { fields: {
+      enabled: { booleanValue: on }, url: { stringValue: on ? url : '' },
+      emails: { arrayValue: { values: emails.map(e => ({ stringValue: e })) } },
+      updatedAt: { stringValue: new Date().toISOString() }
+    } };
+    const mask = ['enabled', 'url', 'emails', 'updatedAt'].map(k => 'updateMask.fieldPaths=' + k).join('&');
+    const w = await fetch(base + '?' + mask, { method: 'PATCH', headers: H, body: JSON.stringify(body) });
+    if (!w.ok) return bad(502, '저장 실패: ' + (await w.text()).slice(0, 150));
+    return ok({ enabled: on, url: on ? url : '', emails });
+  }
+
   try {
     const now = Date.now();
     const d7 = now - 7 * 86400000;
