@@ -209,7 +209,16 @@ function toOpenAIBody(g) {
     stream: true, stream_options: { include_usage: true },
     chat_template_kwargs: { enable_thinking: false }
   };
-  if (gc.responseSchema) { b.guided_json = toJsonSchema(gc.responseSchema); b.guided_decoding_backend = 'xgrammar'; }
+  if (gc.responseSchema) {
+    const schema = toJsonSchema(gc.responseSchema);
+    // 73일차 실측: vLLM 최신 버전은 guided_json 을 무시한다.
+    // 그러면 모델이 형식을 제멋대로 내서 바깥 괄호가 빠지고 medium 같은 항목이 통째로 빠진다
+    // (실제로 JSON.parse 가 터졌다). 새 이름이 structured_outputs 다.
+    // 옛 버전 서버와도 쓰려고 둘 다 보낸다 — 모르는 쪽은 무시하므로 충돌하지 않는 것을 확인했다.
+    b.structured_outputs = { json: schema };
+    b.guided_json = schema;
+    b.guided_decoding_backend = 'xgrammar';
+  }
   return b;
 }
 
