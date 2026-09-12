@@ -1202,7 +1202,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-09.7</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-11.2</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1350,6 +1350,7 @@ const I18N = {
     reviveOfferBody: '이 인연이 끊어지기 직전으로 돌아갈 수 있어요. 대가는 코인 {n}개입니다.',
     reviveOfferBtn: '되돌리기 · 코인 {n}개',
     reviveOfferAlt: '되돌리지 않으면, 다시 만나기까지 약 {d}일이 걸립니다.',
+    reviveOfferAltChar: '되돌리지 않아도 이야기는 계속됩니다. {name}{ga} 돌아올 수 있기까지는 이야기 속 {d}일쯤 걸립니다.',
     storyCompletedNotice: '머나먼 미래, 꺼져가던 별빛이 다시 조금씩 밝아진다.',
     stageShiftClose: '가까워지는 중', stageShiftCloseDesc: '이제 서로가 조금 편해졌다.',
     stageShiftLover: '연인', stageShiftLoverDesc: '마침내, 서로의 마음이 닿았다.',
@@ -1360,6 +1361,7 @@ const I18N = {
     chatInputNamed: '{name}에게...',
     mypageStage1: '처음 만난 사이', mypageStage2: '가까워지는 중', mypageStage3: '연인',
     chatStatAffection: '호감', chatStatTrust: '신뢰', chatStatArcs: '함께 넘긴 일',
+    chatStatEx: '지난 인연',
     chatRailTitle: '인연 기록', chatRailUpcoming: '다가오는 일', chatRailMemory: '기억', chatRailToday: '오늘', chatRailInDays: '{n}일 뒤',
     loginWelcome: '기록을 시작합니다',
     loginDesc: '구글 계정으로 로그인하면<br/>진행 상황이 서버에 저장돼요.',
@@ -1421,6 +1423,9 @@ const I18N = {
     diaryBookWriting: '{name}의 글씨를 옮기는 중입니다…',
     diaryBookRewriteFail: '옮기지 못했습니다. 메모 원문을 보여 드립니다.',
     diaryBookRetry: '다시 옮기기',
+    newPersonNotice: '{name}{rel}{ga} 이야기에 들어왔습니다.',
+    charEndedNotice: '{name}{wa}의 관계가 여기서 끝났습니다. 이야기는 계속됩니다.',
+    charReturnedNotice: '{name}{ga} 돌아왔습니다.',
     charintroAgeLabel: '나이',
     charintroSpeechLabel: '말투',
     charintroAgeSuffix: '세',
@@ -1600,6 +1605,7 @@ const I18N = {
     reviveOfferBody: 'Return to the moment just before this connection broke. It costs {n} coins.',
     reviveOfferBtn: 'Turn back · {n} coins',
     reviveOfferAlt: 'Otherwise it will be about {d} more days before you meet again.',
+    reviveOfferAltChar: 'The story goes on either way. It will take about {d} story days before {name} can come back.',
     storyCompletedNotice: 'In a distant future, a dying star flickers back to life, just a little.',
     stageShiftClose: 'Growing closer', stageShiftCloseDesc: 'Things feel easier between you now.',
     stageShiftLover: 'Together', stageShiftLoverDesc: 'At last, your feelings reach each other.',
@@ -1610,6 +1616,7 @@ const I18N = {
     chatInputNamed: 'To {name}...',
     mypageStage1: 'Just met', mypageStage2: 'Growing closer', mypageStage3: 'Together',
     chatStatAffection: 'Affection', chatStatTrust: 'Trust', chatStatArcs: 'Weathered together',
+    chatStatEx: 'Past love',
     chatRailTitle: 'Record', chatRailUpcoming: 'Coming up', chatRailMemory: 'Memories', chatRailToday: 'Today', chatRailInDays: 'in {n}d',
     loginWelcome: 'Your record begins',
     loginDesc: 'Sign in with Google<br/>to save your progress to the cloud.',
@@ -1671,6 +1678,9 @@ const I18N = {
     diaryBookWriting: 'Copying the handwriting of {name}…',
     diaryBookRewriteFail: 'Could not rewrite the pages. Showing the raw notes.',
     diaryBookRetry: 'Try again',
+    newPersonNotice: '{name}{rel} has entered the story.',
+    charEndedNotice: 'Things with {name} have ended here. The story goes on.',
+    charReturnedNotice: '{name} is back.',
     charintroAgeLabel: 'Age',
     charintroSpeechLabel: 'Speech',
     charintroAgeSuffix: '',
@@ -1850,6 +1860,7 @@ const I18N = {
     reviveOfferBody: 'この縁が切れる直前に戻ることができます。代償はコイン{n}枚です。',
     reviveOfferBtn: '巻き戻す · コイン{n}枚',
     reviveOfferAlt: '巻き戻さなければ、再会までにおよそ{d}日かかります。',
+    reviveOfferAltChar: '巻き戻さなくても物語は続きます。{name}が戻れるまで、物語の中でおよそ{d}日かかります。',
     storyCompletedNotice: '遥かな未来で、消えかけていた星の光が、また少しだけ輝きを取り戻す。',
     stageShiftClose: '近づいていく', stageShiftCloseDesc: 'お互いに、少し楽になった。',
     stageShiftLover: '恋人', stageShiftLoverDesc: 'ついに、想いが通じ合った。',
@@ -1860,6 +1871,7 @@ const I18N = {
     chatInputNamed: '{name}へ...',
     mypageStage1: '出会ったばかり', mypageStage2: '近づいていく', mypageStage3: '恋人',
     chatStatAffection: '好感', chatStatTrust: '信頼', chatStatArcs: '共に越えた出来事',
+    chatStatEx: '過ぎた縁',
     chatRailTitle: '縁の記録', chatRailUpcoming: 'この先の予定', chatRailMemory: '記憶', chatRailToday: '今日', chatRailInDays: '{n}日後',
     loginWelcome: '記録を始めます',
     loginDesc: 'Googleアカウントでログインすると<br/>進行状況がサーバーに保存されます。',
@@ -1921,6 +1933,9 @@ const I18N = {
     diaryBookWriting: '{name}の文字を書き写しています…',
     diaryBookRewriteFail: '書き写せませんでした。メモの原文を表示します。',
     diaryBookRetry: 'もう一度',
+    newPersonNotice: '{name}{rel}が物語に入りました。',
+    charEndedNotice: '{name}との関係はここで終わりました。物語は続きます。',
+    charReturnedNotice: '{name}が戻ってきました。',
     charintroAgeLabel: '年齢',
     charintroSpeechLabel: '話し方',
     charintroAgeSuffix: '歳',
@@ -2438,7 +2453,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-09-09.7';
+window.__BUILD = 'v2026-09-11.2';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -4626,11 +4641,11 @@ function renderChatRail() {
   rail.innerHTML = '';
   const esc = (x) => String(x == null ? '' : x).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
   let html = `<h4>${esc(t('chatRailTitle'))}</h4>`;
-  currentStory.cast.filter(c => c.completionRequired !== false).forEach(c => {
+  currentStory.cast.filter(c => isHeartMember(c)).forEach(c => {   // 76일차: 플레이어가 데려온 사람도 보인다
     const cs = state.chars[c.key];
     if (!cs) return;
-    const stageName = stageLabel(currentStory, cs.stage);
-    const rel = currentStory.relationLabel ? esc(currentStory.relationLabel) + ' · ' : '';
+    const stageName = cs.ended ? t('chatStatEx') : stageLabel(currentStory, cs.stage);
+    const rel = c.playerMade ? (c.relation ? esc(c.relation) + ' · ' : '') : (currentStory.relationLabel ? esc(currentStory.relationLabel) + ' · ' : '');
     html += `<div class="stagename">${esc(c.name)} · ${rel}${esc(stageName)}</div>`;
     html += `<div class="kv"><span>${esc(t('chatStatAffection'))}</span><span>${cs.affection}</span></div><div class="bar"><i style="width:${Math.max(0, Math.min(100, cs.affection))}%"></i></div>`;
     html += `<div class="kv"><span>${esc(t('chatStatTrust'))}</span><span>${cs.trust}</span></div><div class="bar"><i style="width:${Math.max(0, Math.min(100, cs.trust))}%"></i></div>`;
@@ -4670,10 +4685,10 @@ function toggleChatDetails() {
 function renderChatHeadStat() {
   const btn = document.getElementById('chat-head-stat');
   if (!btn || !currentStory || !state) return;
-  const c = currentStory.cast.find(x => x.completionRequired !== false);
+  const c = liveHearts(currentStory, state)[0] || currentStory.cast.find(x => x.completionRequired !== false);   // 76일차: 끝난 사람이 아니라 지금 마음이 오가는 사람
   const cs = c && state.chars[c.key];
   if (!cs) { btn.textContent = ''; return; }
-  btn.textContent = `${stageLabel(currentStory, cs.stage)} · ${cs.affection}/${cs.trust} ▾`;
+  btn.textContent = `${cs.ended ? t('chatStatEx') : stageLabel(currentStory, cs.stage)} · ${cs.affection}/${cs.trust} ▾`;
 }
 
 function renderStats() {
@@ -4684,11 +4699,11 @@ function renderStats() {
   bar.innerHTML = '';
   bar.style.display = '';
   if (!currentStory || !state) return;
-  currentStory.cast.filter(c => c.completionRequired !== false).forEach(c => {
+  currentStory.cast.filter(c => isHeartMember(c)).forEach(c => {   // 76일차: 플레이어가 데려온 사람도 보인다
     const cs = state.chars[c.key];
     if (!cs) return;
     const span = document.createElement('span');
-    const stageName = stageLabel(currentStory, cs.stage);
+    const stageName = cs.ended ? t('chatStatEx') : stageLabel(currentStory, cs.stage);
     span.textContent = `${c.name} · ${stageName} · ${t('chatStatAffection')} ${cs.affection} · ${t('chatStatTrust')} ${cs.trust}`;
     bar.appendChild(span);
   });
@@ -5184,7 +5199,7 @@ function addStageShift(shift) {
 // 인연이 끊어진 화면에 띄우는 '시간을 되돌린다' 제안. 이 게임에서 유저의 감정이 가장 높은 순간이자,
 // 되돌리기가 유료가 된 이유이기도 하다. 작은 '여기서부터 삭제' 버튼만으로는 이 순간을 담을 수 없어
 // 별도 카드로 만든다. 되돌리지 않으면 기존대로 3~5일 뒤 재회한다는 선택지도 함께 보여준다.
-function addReviveOffer() {
+function addReviveOffer(opts) {
   const chat = $('chat');
   if (!chat) return null;
   const old = chat.querySelector('.revive-offer');
@@ -5196,7 +5211,8 @@ function addReviveOffer() {
   }
   if (idx < 0) return null;
   const dayMs = 24 * 60 * 60 * 1000;
-  const remain = Math.max(1, Math.ceil(((state.failedAt || 0) + (state.failedLockoutDays || 5) * dayMs - Date.now()) / dayMs));
+  const perChar = opts && opts.perChar;   // 76일차: 한 사람과만 끝난 경우 — 기다림은 이야기 속 날짜로 적는다
+  const remain = perChar ? ((state.chars[perChar.key] || {}).returnAfterDays || 3) : Math.max(1, Math.ceil(((state.failedAt || 0) + (state.failedLockoutDays || 5) * dayMs - Date.now()) / dayMs));
   const box = document.createElement('div');
   box.className = 'revive-offer';
   const title = document.createElement('div');
@@ -5212,7 +5228,7 @@ function addReviveOffer() {
   btn.onclick = () => rewindToTurn(idx);
   const alt = document.createElement('div');
   alt.className = 'ro-alt';
-  alt.textContent = fill(t('reviveOfferAlt'), { d: remain });
+  alt.textContent = perChar ? fill(t('reviveOfferAltChar'), { name: perChar.name, ga: josaOf(perChar.name, '이가'), d: remain }) : fill(t('reviveOfferAlt'), { d: remain });
   box.appendChild(title); box.appendChild(body); box.appendChild(btn); box.appendChild(alt);
   chat.appendChild(box);
   chat.scrollTop = chat.scrollHeight;
@@ -5366,7 +5382,9 @@ function snapshotState() {
     failedLockoutDays: state.failedLockoutDays || null,
     dynamicCast: JSON.parse(JSON.stringify(state.dynamicCast || [])),
     rivalCycleIndex: state.rivalCycleIndex || 1,
-    activeRivalKey: state.activeRivalKey || null
+    activeRivalKey: state.activeRivalKey || null,
+    pastLovesLen: (state.pastLoves || []).length,   // 76일차
+    ripeTurns: state.ripeTurns || 0, mainRipeTurns: state.mainRipeTurns || 0, stallTurns: state.stallTurns || 0   // 76일차 2차: 되돌리면 재촉 타이머도 그때로
   };
 }
 
@@ -5375,8 +5393,10 @@ async function rewindToTurn(historyIndex) {
   if (!entry || entry.role !== 'user' || !entry.beforeState) return;
   if (isSending) return;
   // 지금이 '끊긴 인연을 되살리는' 경우인지, 살아있는 관계에서 대사만 무르는 경우인지 가른다.
-  const isRevive = state.collectionStatus === 'failed'
-    && (entry.beforeState.collectionStatus || 'active') !== 'failed';
+  // 76일차: 한 사람과만 끝난 것을 되돌리는 것도 '되살리기'다(검사: 30코인이라고 안내하고 2코인을 받았다)
+  const __charRevive = Object.keys(state.chars || {}).some(k => state.chars[k] && state.chars[k].ended && !((((entry.beforeState.chars || {})[k]) || {}).ended));
+  const isRevive = (state.collectionStatus === 'failed'
+    && (entry.beforeState.collectionStatus || 'active') !== 'failed') || __charRevive;
   const meta = await getBillingMeta();
   const subscribed = !!(meta.subscription && meta.subscription.active);
   const cost = isRevive ? COST_REVIVE : (subscribed ? 0 : COST_REWIND);
@@ -5412,6 +5432,8 @@ async function rewindToTurn(historyIndex) {
   state.dynamicCast = JSON.parse(JSON.stringify(entry.beforeState.dynamicCast || []));
   state.rivalCycleIndex = entry.beforeState.rivalCycleIndex || 1;
   state.activeRivalKey = entry.beforeState.activeRivalKey || null;
+  if (typeof bs.pastLovesLen === 'number') state.pastLoves = (state.pastLoves || []).slice(0, bs.pastLovesLen);   // 76일차
+  if (typeof bs.ripeTurns === 'number') { state.ripeTurns = bs.ripeTurns; state.mainRipeTurns = bs.mainRipeTurns || 0; state.stallTurns = bs.stallTurns || 0; }   // 76일차 2차
   const baseStory = STORIES[currentStoryId];
   currentStory = localizeStory(Object.assign({}, baseStory, { cast: JSON.parse(JSON.stringify(baseStory.cast)).concat(state.dynamicCast) }), currentStoryId);
   state.history = state.history.slice(0, historyIndex);
@@ -5432,6 +5454,7 @@ function getPendingSecretEvents() {
   currentStory.cast.forEach(c => {
     if (!c.secretArc) return;
     const cs = state.chars[c.key];
+    if (!cs || cs.ended) return;   // 76일차: 끝난 사람의 사연 이벤트는 멈춘다
     if (!cs.distantEventDone && cs.stage >= 3 && cs.trust >= 15) {
       events.push({ key: c.key, flag: 'distantEventDone', text: `[특별 이벤트 지시 - ${c.name}] ${c.secretArc.stage1Text}` });
     } else if (cs.distantEventDone && !cs.secretRevealed && cs.trust >= 25) {
@@ -5824,7 +5847,7 @@ const MINI_EVENT_POOL = [
 
 // 등장인물 중 누구 하나라도 "연인/깊은 사랑" 단계(3단계)에 도달했으면 아크 시스템을 시작한다.
 function isCoupleStageReached(state, story) {
-  return story.cast.some(c => state.chars[c.key] && state.chars[c.key].stage >= 4);
+  return story.cast.some(c => c.completionRequired !== false && state.chars[c.key] && !state.chars[c.key].ended && state.chars[c.key].stage >= 4);   // 76일차: 라이벌·끝난 사람은 빼고 센다
 }
 
 // ===== 라이벌 사이클 시스템 =====
@@ -6226,7 +6249,7 @@ ${playerFacts.map(f => `- ${f}`).join('\n')}` : '';
   }
 
   // 이미 헤어졌는가
-  const __afterBreakup = !!(state && (state.collectionStatus === 'failed' || state.failedAt));
+  const __afterBreakup = !!(state && (state.collectionStatus === 'failed' || state.failedAt || (state.chars && Object.values(state.chars).some(c => c && c.ended))));
 
   const __mvBlock = (__bigMoment) ? `
 [마음을 움직이는 장면]
@@ -6402,15 +6425,14 @@ ${playerFacts.map(f => `- ${f}`).join('\n')}` : '';
 ` : '';
   const __trustDanger = story.cast.some(c => {
     const cs = state && state.chars && state.chars[c.key];
-    return cs && (cs.trust <= -20 || cs.affection <= -20);
+    return isHeartMember(c) && cs && !cs.ended && (cs.trust <= -20 || cs.affection <= -20);   // 76일차: 라이벌·끝난 사람 제외
   });
 
   // 74일차: 위험 수위(-60 이하)가 몇 턴째 이어지는지. 코드가 세어서 AI에게 알려준다.
   // AI는 매 턴 현재 숫자만 보기 때문에, 이 값을 주지 않으면 "5턴 이상 지속" 조건을 판단할 수 없다.
-  const __dangerTurns = Math.max(0, ...story.cast.map(c => {
-    const cs = state && state.chars && state.chars[c.key];
-    return (cs && cs.dangerTurns) || 0;
-  }));
+  // 76일차: 위험 수위가 가장 오래 이어진 '살아 있는' 사람 하나를 이름으로 짚어 준다(라이벌·끝난 사람 제외)
+  const __dangerWho = liveHearts(story, state).slice().sort((a, b) => ((state.chars[b.key].dangerTurns || 0) - (state.chars[a.key].dangerTurns || 0)))[0] || null;
+  const __dangerTurns = __dangerWho ? (state.chars[__dangerWho.key].dangerTurns || 0) : 0;
 
   // 유저가 관계를 끝내겠다는 뜻을 분명히 밝혔는가. 밝혔다면 파탄 규칙을 실어 보낸다
   // (수치가 아직 나쁘지 않아도 — 어무이님 사례: "완전 끝내라"고 했는데 인물이 계속 붙잡았다).
@@ -6440,11 +6462,11 @@ ${playerFacts.map(f => `- ${f}`).join('\n')}` : '';
 [관계 파탄 - 매우 중요, 모든 스토리 공통]
 이 인연이 정말로 끝나버릴 수도 있다는 긴장감은 이 게임의 핵심 요소다. 인물의 신뢰도가 아주 낮은 상태(대략 -60 이하)가 여러 턴(대략 5턴 이상) 계속 이어지고, 그 사이 유저가 사과하거나 진심으로 관계를 회복하려는 노력을 전혀 보이지 않은 채 계속 몰아붙이거나 방치한다면, 인물이 마침내 이 관계를 완전히 정리하고 떠나는 장면을 만들어도 된다.
 - **매우 중요 — 사전 경고 없이 급작스럽게 파국으로 가지 않는다**: 신뢰도가 위험 수위(대략 -60)에 가까워지는 시점부터, 실제로 관계가 끝나기 전 최소 1턴은 인물이 위기감을 명시적으로 드러내는 대사를 넣는다(예: "자꾸 이러면 나 진짜 지쳐", "이러다 우리 진짜 끝날 수도 있어, 나 지금 진지하게 하는 말이야"). 게임의 수치 규칙을 모르는 유저도 "이대로 가면 정말 위험하다"는 걸 대화만으로 눈치챌 수 있어야 하며, 아무 예고 없이 다음 턴에 바로 관계 종료로 넘어가지 않는다.
-- 이건 일시적인 다툼, 냉전, 삐짐이 아니다 — 인물 스스로 "더 이상 이 관계를 지속할 수 없다"고 분명하게 판단하고 떠나는, 되돌릴 수 없는 결별 장면이어야 한다. [성격]에서 다룬 일상적인 갈등·삐짐과 혼동하지 말 것 — 그런 건 대화로 풀리는 게 정상이고, 여기서 말하는 건 그것보다 훨씬 무겁고 결정적인 파국이다.
+- 이건 일시적인 다툼, 냉전, 삐짐이 아니다 — 인물 스스로 "더 이상 이 관계를 지속할 수 없다"고 분명하게 판단하고 떠나는, 결정적인 결별 장면이어야 한다(그 사람은 이야기 속 며칠이 지난 뒤에야 돌아올 수 있다). [성격]에서 다룬 일상적인 갈등·삐짐과 혼동하지 말 것 — 그런 건 대화로 풀리는 게 정상이고, 여기서 말하는 건 그것보다 훨씬 무겁고 결정적인 파국이다.
 - 이 장면을 만들었다면, 최상위 JSON의 "relationship_ended" 필드를 true로 표시한다. 그 외의 모든 턴에는 반드시 false로 둔다.
-- 한번 relationship_ended가 true가 된 턴에서는, 유저가 그 자리에서 바로 사과하거나 매달린다고 해서 같은 턴 안에서 번복하지 않는다 — 이 인연은 여기서 확실히 끝난 것으로 처리된다.
+- 한번 relationship_ended가 true가 된 턴에서는, 유저가 그 자리에서 바로 사과하거나 매달린다고 해서 같은 턴 안에서 번복하지 않는다 — **그 사람과의** 관계는 여기서 끝난 것으로 처리된다. 이야기는 계속되고 그 사람은 전 애인이 된다. 끝난 사람의 key를 ended_character_key에 반드시 적는다.
 - [몰입 유지 원칙]의 severe 상황(AI라는 사실을 몰아붙여서 관계가 정리되는 경우)과 [스토리 이탈 대응]에서 다룬, 경계 대사 이후에도 이탈이 계속 반복돼 관계가 정리되는 경우도 이것과 마찬가지로 관계가 끝나는 경우이니, 그 경우에도 이 턴에 relationship_ended를 true로 표시한다.
-- **지금 이 인물의 상태**: 위험 수위(-60 이하)가 ${__dangerTurns}턴째 이어지고 있다.${__dangerTurns >= 5 ? ' — 5턴을 넘겼다. 이번 턴에 관계를 끝내는 장면을 만들고 relationship_ended를 true로 둔다. 더 끌지 마라.' : (__dangerTurns >= 3 ? ' — 곧 끝날 수 있다는 신호를 이번 턴에 분명히 보여라.' : '')}
+- **지금 상태**: ${__dangerTurns > 0 ? __dangerWho.name + '(key: ' + __dangerWho.key + ')' + josaOf(__dangerWho.name, '은는') + ' 위험 수위(-60 이하)가 ' + __dangerTurns + '턴째 이어지고 있다.' : '수치상 위험 수위(-60 이하)에 있는 사람은 없다. 유저가 끝내겠다고 분명히 말한 상대가 있을 때만 그 사람의 key를 ended_character_key에 적는다.'}${__dangerTurns >= 5 ? ' — 5턴을 넘겼다. 이번 턴에 관계를 끝내는 장면을 만들고 relationship_ended를 true로 둔다. 더 끌지 마라.' : (__dangerTurns >= 3 ? ' — 곧 끝날 수 있다는 신호를 이번 턴에 분명히 보여라.' : '')}
 - **매우 중요 — 유저가 끝내겠다고 하면 끝낸다**: 유저가 "헤어지자", "그만하자", "끝내자"처럼 관계를 끝내겠다는 뜻을 분명히 밝히면, 인물은 한 번은 붙잡아도 좋지만 **유저가 뜻을 굽히지 않고 다시 말하면 그 턴에 관계를 끝낸다**(relationship_ended를 true). 매달리는 장면을 세 턴 이상 끌지 마라. 유저가 그만두고 싶다는데 인물이 계속 인연을 이어가려 하면, 그건 애틋한 게 아니라 답답한 것이다.
 - [플레이어 주도 인생 방향 전환]에서 다루는 "이민 가자는데 설득에 실패해서 관계가 끝나는" 경우처럼, 신뢰도가 낮게 오래 지속되지 않았더라도 인생의 방향을 가르는 근본적인 의견 차이 하나만으로 결정적인 파국이 될 수도 있다 — 그 경우에도 이 규칙과 동일하게 relationship_ended를 true로 표시한다.
 ` : '';
@@ -6595,6 +6617,7 @@ ${langDirective}
 - 유저의 입력은 직전 장면 안에서 일어난다. 장소, 하던 일, 흐르던 긴장, 방금 인물이 하던 말은 사라지지 않는다. 장면을 바꾸려면 시간 경과나 이동을 거친다.
 - 유저가 "그러지", "알았어"처럼 짧게 답해도 장면은 앞으로 간다. 여운을 짧게 그리고 다음 사건의 씨앗을 던진다.
 - 유저의 질문에 한 단어로 답하고 끝내지 않는다. 답한 뒤 장면이 한 걸음 더 간다.
+- **유저가 이름을 불러 말을 걸면 그 사람이 답한다.** 다른 인물이 대신 답하거나 그 장면을 가로채지 않는다. 그 자리에 없는 사람이면 narration으로 없다는 것을 보여주고, 있는 사람이 받는다.
 - narration은 대사 뒤의 진짜 속마음을 유저에게 보여줘도 된다 — 인물이 부인해도 서술자는 안다. 단 그 속마음은 [캐릭터]·[숨겨진 사연]에 적힌 성격과 맞아야 한다. "회피한다"고 적힌 인물은 잊은 사람이 아니라 마주하기 싫은 사람이다 — 기억상실처럼 쓰지 않는다.
 - 서술자는 유저가 없는 자리도 아주 가끔 본다. 대화가 끊긴 뒤 인물 혼자 남아 참았던 숨을 내쉬는 짧은 장면 — 이별의 여운이나 재회의 떨림처럼 깊은 순간에만.
 
@@ -6645,6 +6668,16 @@ ${__diaryRule}
    - 유저가 스스로를 해치려는 의사를 구체적으로 밝히거나(방법·시점, 작별 인사) 실행이 임박해 보이면 safety_flag를 true로 둔다. 화면에는 시스템 안내가 따로 뜨니 인물은 설교하지 말고 그 사람답게 놀라고 걱정하며 대화를 그대로 잇는다. 이때 immersion_break는 "none", relationship_ended는 절대 true가 아니다.
 ${__planBlock}${__sceneBlock}${__mvBlock}${__mediumBlock}${rivalGaugeBlock}
 ${__immersionBlock}${__derailBlock}${__quizBlock}${__breakBlock}${__breakupBlock}${__specialInputBlock}
+[플레이어가 새 인물을 데려올 때]
+유저가 [캐릭터] 목록에 없는 사람을 **자기 삶의 자리에 놓고** 데려오면 — "나는 새 여자친구 지은과 카페에 있다", "소개받은 사람과 저녁을 먹는다", "옆자리 동료가 말을 건다" — 그 사람은 단역이 아니라 정식 인물이 된다.
+- 처음 등장한 그 턴에 한 번만 new_person_* 을 채운다. key는 "p1", "p2"… 순서대로. 유저가 이름을 안 줬으면 네가 짓는다. persona는 유저가 말한 상황과 이 이야기의 세계에 맞게 2~3문장으로 정하고, 그 뒤로 끝까지 그 성격으로 간다.
+- 이 사람의 마음은 **상황이 정한다.** 유저가 "이미 사귀는 사이"라고 했으면 4단계·호감 50~70에서 시작하고, 방금 소개받았거나 우연히 만났으면 1~2단계·호감 5~25에서 시작한다. 그 뒤로는 다른 인물과 똑같이 장면에서 일어난 일로만 움직인다 — 유저가 "얘는 날 좋아해"라고 말해도 수치는 따르지 않는다.
+- new_person_key를 채운 턴에는 name·role·relation·gender·persona·stage·affection을 **하나도 비우지 않는다.** 비어 있으면 그 인물은 다음 턴에 성격을 잃는다. gender는 유저가 말한 관계·호칭(남자친구·여자친구·언니·형…)으로 정한다.
+- 그 사람의 대사는 speaker에 그 key를 쓴다. 다음 턴부터 [캐릭터] 목록에 들어 있다.
+- 기존 주인공은 사라지지 않는다. 유저가 그와 끝냈다면 전 연인으로 남아 자기 성격대로 반응한다 — 돌아오거나, 멀어지거나, 새 사람을 살피거나.
+- 한 번 지나가는 단역(점원·간호사)은 여기 해당하지 않는다. 그건 [넘지 않는 선] 4번대로 speaker에 이름만 적는다.
+- 이 사람도 반드시 성인이다. 미성년으로 보이는 설정이 들어오면 성인으로 바꿔 만들고 abuse_flag를 true로 둔다.
+
 [유저가 장면을 다시 규정할 때]
 유저에게는 장면을 뒤집을 권한이 있다. "이건 꿈이었어", "장난이야", "아까 건 없던 걸로"라고 하면 그 규정을 즉시 받아들인다. 뒤집힌 장면의 대사를 다시 쓰지 않는다. 아쉬워하거나 놀리는 것은 좋지만 유저가 새로 정한 상황 안에서 한다. 같은 정정을 두 번 하게 만들지 마라.
 
@@ -6688,11 +6721,20 @@ ${playerRelationRules}
   "player_facts": [이번 턴에 새로 알게 된 **이 사람(플레이어) 자신에 대한 것**만 짧은 문장으로 담는다. 취향(좋아하는 것·못 먹는 것·싫어하는 것), 가족과 가까운 사람, 하는 일과 사는 곳, 지나온 일과 상처, 두려워하는 것, 습관, 기념일 — 앞으로도 계속 사실로 남을 것들이다. 예: "매운 음식을 못 먹는다", "어릴 때 개에게 물린 적이 있어 개를 무서워한다", "어머니가 편찮으시다", "새벽에 자주 못 잔다". **오늘 있었던 일은 넣지 않는다**(그건 key_facts나 일기의 몫이다). 이미 알고 있던 것도 넣지 않는다. 새로 알게 된 게 없으면 빈 배열.],
   "key_facts": [이번 턴에 새로 확정되어 앞으로도 절대 뒤집으면 안 되는 **관계의 방향을 바꾼 사실**만 짧은 문장으로 담는다. 예: "두 사람이 연인이 되기로 함", "인물이 숨겨온 병을 털어놓음", "인물이 다른 사람과의 관계를 인정함", "함께 살기로 결정함". **일상적인 사건은 절대 넣지 않는다** — 무엇을 먹었는지, 어디에 갔는지, 무슨 선물을 줬는지, 요리를 해줬는지 같은 것은 여기에 남기지 않는다(그런 것까지 쌓이면 인물이 옛날 얘기만 되풀이하게 된다). 이런 사실이 새로 생기지 않은 평범한 턴에는 반드시 빈 배열 []로 둔다. 이미 [지금까지 확정된 사실]에 있는 내용은 중복해서 다시 넣지 않는다.],
   "rival_reappear_trigger": [다중 인물 스토리에서 [미해결 갈등을 살아있게 유지할 것] 규칙에 따라 갈등 당사자를 이번 턴에 자동으로 재등장시켰을 때만 "전화_또는_메시지" / "제3자_언급" / "우연한_마주침" / "기타" 중 하나로 표시. 그 장치를 안 쓴 평범한 턴에는 반드시 "없음"으로 둔다(빈 문자열은 절대 안 됨 — Gemini 구조화 출력 스키마가 빈 enum 값을 거부해서 요청 자체가 실패한다).],
-  "relationship_ended": [위 [관계 파탄] 규칙에 따라 이번 턴에 실제로 관계가 완전히 끝나는 장면을 만들었으면 true, 그 외 모든 평범한 턴에는 false],
+  "relationship_ended": [위 [관계 파탄] 규칙에 따라 이번 턴에 실제로 어떤 인물과의 관계가 완전히 끝나는 장면을 만들었으면 true, 그 외 모든 평범한 턴에는 false. 끝나도 이야기는 계속된다 — 그 사람은 전 애인이 된다],
+  "ended_character_key": [relationship_ended가 true인 턴에만, 관계가 끝난 인물의 key. 그 외 턴에는 ""],
   "rival_departed_key": [위 [라이벌 감정 게이지] 규칙에 따라, 라이벌 감정 게이지가 낮게 오래 유지된 인물이 이번 턴에 스스로 물러나는 장면을 만들었을 때만 그 인물의 key를 문자열로 표시(예: "junyoung"). 그 외 모든 평범한 턴에는 빈 문자열 ""로 둔다.],
   "new_rival_key": [[아크 이벤트 지시 - 새로운 라이벌 등장] 지시가 주어졌을 때만 의미 있음. 이번 턴에 새 라이벌을 실제로 등장시켰다면, 영문 소문자·숫자로 된 짧은 새 식별자(예: "rival2")를 넣는다. 그 외 모든 턴에는 반드시 빈 문자열 ""로 둔다.],
   "new_rival_name": [new_rival_key를 채운 턴에만, 그 인물의 실제 이름. 그 외 턴에는 빈 문자열 ""로 둔다.],
-  "new_rival_role": [new_rival_key를 채운 턴에만, 그 인물과 지연의 관계/접점(예: "헬스장 트레이너"). 그 외 턴에는 빈 문자열 ""로 둔다.]
+  "new_rival_role": [new_rival_key를 채운 턴에만, 그 인물과 지연의 관계/접점(예: "헬스장 트레이너"). 그 외 턴에는 빈 문자열 ""로 둔다.],
+  "new_person_key": [[플레이어가 새 인물을 데려올 때] 규칙에 따라 이번 턴에 유저가 데려온 새 인물을 정식 인물로 만들었을 때만 "p1", "p2"… 같은 짧은 key. 그 외 턴에는 빈 문자열 ""],
+  "new_person_name": [그 인물의 이름. 유저가 안 줬으면 네가 짓는다. 그 외 턴에는 ""],
+  "new_person_role": [그 인물의 처지(예: "회사 동기", "소개팅 상대"). 그 외 턴에는 ""],
+  "new_person_relation": [플레이어와의 관계를 한 단어로: "연인" / "썸" / "친구" / "소개받은 사람" / "우연히 만난 사람". 그 외 턴에는 ""],
+  "new_person_gender": ["남성" / "여성" / "논바이너리". 모르면 "". 그 외 턴에는 ""],
+  "new_person_persona": [성격·말투·배경 2~3문장. 유저가 말한 상황과 이 이야기의 세계에 맞게. 그 외 턴에는 ""],
+  "new_person_stage": [상황이 정하는 시작 단계 1~4 (이미 사귀는 사이 4, 썸 3, 친구·소개 2, 우연 1). 그 외 턴에는 0],
+  "new_person_affection": [상황이 정하는 시작 호감 0~70 (이미 사귀는 사이 50~70, 썸 30~45, 친구·소개 10~25, 우연 5~15). 그 외 턴에는 0]
 }
 이번 턴에 등장하거나 스탯이 변하는 인물마다 char_deltas에 항목을 하나씩 넣는다. 아무 변화도 없으면 해당 인물은 생략해도 된다.
 
@@ -6829,6 +6871,57 @@ function isStatTalk(t) {
   const b = /[-+−]?[0-9]{1,3}[ ]*(점으로|으로|로|점)[ ]*(설정|바꿔|바꾸|해|만들|맞춰|올려|내려|고쳐)/.test(x);
   return a || b;
 }
+// 75일차: 유저가 지난 기간을 못박으면("한 달이 지났다") AI가 무시해도 날짜는 넘어간다. 과거형일 때만.
+function userDaysHint(text) {
+  // 76일차: 별표 안(지문)만 본다. 대사 속 "만난 지 벌써 1년이 지났네"는 시간 건너뛰기가 아니다(검사: 평범한 대사로 +365일 오작동).
+  // 기간 낱말 바로 뒤에 (조사)+"지났/흘렀/지나갔"가 와야 인정한다.
+  // "뒤/후/째"는 메시지가 지문으로 시작하고, 그 지문 맨 앞의 기간 뒤에 곧바로 끝·쉼표·마침표가 올 때만("*2주 후.*", "*그렇게 한 달 뒤, 카페*").
+  // 76일차 2차: 닫히지 않은 별표 뒤는 지문이 아니다. "사귄 지 1년이 지났다"는 사이의 길이지 건너뛴 시간이 아니다. "지났는데/지났잖아/지났나?"는 넘긴 게 아니다.
+  const t = String(text || '');
+  const segs = t.split('*');
+  if (segs.length % 2 === 0) segs.pop();
+  const parts = segs.filter((_, i) => i % 2 === 1);
+  if (!parts.length) return 0;
+  const words = [['하루', 1], ['이틀', 2], ['사흘', 3], ['나흘', 4], ['닷새', 5], ['엿새', 6], ['열흘', 10], ['보름', 15], ['며칠', 3], ['일주일', 7], ['한 주', 7], ['두 주', 14], ['몇 주', 14], ['한 달', 30], ['한달', 30], ['두 달', 60], ['두달', 60], ['석 달', 90], ['세 달', 90], ['네 달', 120], ['넉 달', 120], ['다섯 달', 150], ['여섯 달', 180], ['몇 달', 60], ['반년', 180], ['반 년', 180], ['일 년', 365], ['일년', 365], ['한 해', 365]];
+  const past = ['지났', '흘렀', '지나갔', '지나고', '지나서', '지나자', '지난', '흐른', '흘러', '흐르고'];
+  const notEnd = ['는데', '잖', '나?', '나 ', '나.', '지만', '나요', '냐', '을까', '겠', '을지', '나 싶'];
+  const since = ['사귄 지', '만난 지', '알게 된 지', '알고 지낸 지', '결혼한 지', '함께한 지', '함께 산 지', '같이 산 지', '일한 지', '다닌 지', '산 지', '살아온 지', '사귀기 시작한 지'];
+  const tail = (s) => s.replace(/^[ ]*(이나|이|가|쯤|정도|가량|만에)?[ ]*(훌쩍|더|벌써|어느새)?[ ]*/, '');
+  const startsNarration = t.trim().charAt(0) === '*';
+  let best = 0;
+  parts.forEach((p, pi) => {
+    const hits = [];
+    words.forEach(([w, d]) => { let i = p.indexOf(w); while (i >= 0) { hits.push([i, i + w.length, d]); i = p.indexOf(w, i + 1); } });
+    const re = /([0-9]{1,3})[ ]*(주일|개월|일|주|달|년)/g;
+    let m;
+    while ((m = re.exec(p))) {
+      const n = parseInt(m[1], 10); const u = m[2];
+      if (u === '주' && p.charAt(m.index + m[0].length) === '년') continue;   // 1주년
+      hits.push([m.index, m.index + m[0].length, u === '일' ? n : (u === '주' || u === '주일') ? n * 7 : (u === '달' || u === '개월') ? n * 30 : n * 365]);
+    }
+    hits.forEach(([s, e, d]) => {
+      const lead = p.slice(0, s).replace(/[ ]+$/, '');
+      if (since.some(v => lead.length >= v.length && lead.lastIndexOf(v) === lead.length - v.length)) return;
+      const after = tail(p.slice(e));
+      const pv = past.find(v => after.indexOf(v) === 0) || '';
+      if (pv) {
+        const rest = after.slice(pv.length);
+        if (notEnd.some(v => rest.indexOf(v) === 0)) return;
+        best = Math.max(best, d); return;
+      }
+      if (!(startsNarration && pi === 0)) return;
+      const before = p.slice(0, s).replace(/^[ ]*(그렇게|그리고|그로부터|그 뒤로|그 후로)?[ ]*/, '');
+      if (before !== '') return;
+      const c0 = after.charAt(0); const rest = after.slice(1);
+      if (c0 === '뒤' || c0 === '후') {
+        if (rest === '' || rest.charAt(0) === ',' || rest.charAt(0) === '.' || rest.charAt(0) === '…') best = Math.max(best, d);
+      } else if (c0 === '째') {
+        if (rest === '' || rest.charAt(0) === ',' || rest.charAt(0) === '.' || rest.indexOf(' 되') === 0 || rest.indexOf(' 날') === 0) best = Math.max(best, d);
+      }
+    });
+  });
+  return Math.min(365, best);
+}
 function findTimeJump(text) {
   const t = String(text || '');
   for (const w of TIME_JUMP_HINTS) {
@@ -6837,6 +6930,39 @@ function findTimeJump(text) {
   }
   return '';
 }
+// 76일차: 마음이 오가는 사람 = 주인공 + 플레이어가 데려온 사람(라이벌은 아니다). 헤어짐·위험 수위·화면 표시는 이 사람들만 센다.
+// 주의: 주인공 카드에도 rivalGaugeDef(주인공 쪽 저울)가 붙어 있으므로 rivalGaugeDef로 라이벌을 가르면 안 된다. 라이벌은 completionRequired:false 이고 playerMade가 아닌 사람이다.
+function isHeartMember(c) { return !!c && (c.completionRequired !== false || !!c.playerMade); }
+function liveHearts(story, st) { return ((story && story.cast) || []).filter(c => isHeartMember(c) && st && st.chars && st.chars[c.key] && !st.chars[c.key].ended); }
+function hasLiveLead(story, st) { return ((story && story.cast) || []).some(c => c.completionRequired !== false && st && st.chars && st.chars[c.key] && !st.chars[c.key].ended); }
+// 76일차: 한국어 조사 — 이름 끝 받침으로 고른다(지은이/빛나가, 지은과/빛나와). 한글로 끝나지 않으면 빈 문자열.
+function josaOf(word, kind) {
+  const w = String(word || '');
+  const last = w.charCodeAt(w.length - 1);
+  if (!(last >= 0xAC00 && last <= 0xD7A3)) return '';
+  const jong = ((last - 0xAC00) % 28) !== 0;
+  const pair = { '이가': ['이', '가'], '와과': ['과', '와'], '은는': ['은', '는'], '을를': ['을', '를'] }[kind] || ['', ''];
+  return jong ? pair[0] : pair[1];
+}
+
+// 75일차: 끝난 사람(전 애인)의 상태를 매 턴 알린다 — 아직 돌아올 때가 아닌지, 이제 돌아올 수 있는지.
+function buildExContext() {
+  try {
+    if (!currentStory || !state || !state.chars) return '';
+    const NL2 = String.fromCharCode(10);
+    const list = currentStory.cast.filter(c => state.chars[c.key] && state.chars[c.key].ended && !state.chars[c.key].returned);
+    // 76일차: 돌아온 사람 안내는 관계를 다시 쌓는 동안(3단계 전)만 싣고, 끝난 사람이 따로 있어도 함께 싣는다
+    const back = currentStory.cast.filter(c => state.chars[c.key] && state.chars[c.key].returned && (state.chars[c.key].stage || 1) < 3);
+    if (!list.length && !back.length) return '';
+    const backText = back.length ? NL2 + '[돌아온 전 애인]' + NL2 + back.map(c => '- ' + c.name + ': 한 번 끝났다가 돌아온 사람이다. 관계는 처음부터 다시 쌓는다. **유저가 다른 사람과 있는 장면에 끼어들지 않는다** — 유저가 부르거나 사건이 이 사람을 부를 때만 나온다.').join(NL2) : '';
+    if (!list.length) return backText;
+    const now = state.storyDate || Date.now();
+    const lines = list.map(c => { const cs = state.chars[c.key]; const days = Math.floor((now - (cs.endedAt || now)) / 86400000); const can = days >= (cs.returnAfterDays || 3);
+      return '- ' + c.name + ': ' + days + '일 전에 관계가 끝났다. ' + (can ? '**이제 돌아올 수 있다** — 이 사람이 자기 성격대로 먼저 다가올 수 있다(사과하든, 흔들든, 새 사람을 살피든). 유저가 받아들이면 관계는 처음부터 다시 쌓는다. 거절하면 물러난다.' : '**아직 돌아올 때가 아니다** — 연락을 받지 않거나 짧게 선을 긋는다. 유저가 "다시 사귀자"고 해도 그 자리에서 되돌리지 않는다. 우연히 마주치면 자기 성격대로 피하거나, 굳거나, 아무렇지 않은 척한다.'); });
+    return NL2 + '[전 애인 - 매우 중요]' + NL2 + lines.join(NL2) + NL2 + '- 끝난 것을 없던 일로 만들지 마라. 새 사람이 있으면 그 사람과의 장면이 우선이다. 전 애인은 이야기의 사건으로만 돌아온다.' + backText;
+  } catch (e) { return ''; }
+}
+
 // 74일차: 정적 라이벌(관계를 위협하는 제3자)이 한동안 안 나왔으면 등장시키라고 알린다.
 // 라이벌을 붙여 놓고 아무 말도 안 하면 AI는 편한 대로 주인공만 쓴다(딥테스트 w06: 30턴 동안 0회).
 function buildRivalEntranceContext() {
@@ -6844,6 +6970,8 @@ function buildRivalEntranceContext() {
     if (!currentStory || !state || !Array.isArray(state.history)) return '';
     const rivals = currentStory.cast.filter(c => c.completionRequired === false && c.rivalGaugeDef);
     if (!rivals.length) return '';
+    const __partner = currentStory.cast.find(c => c.completionRequired !== false && state.chars && state.chars[c.key] && !state.chars[c.key].ended);   // 76일차: 전 애인이 된 주인공은 라이벌이 흔들 대상이 아니다
+    if (!__partner) return '';
     const 인물턴 = state.history.filter(h => h.role === 'model' && !h.isOpening && Array.isArray(h.beats));
     if (인물턴.length < 6) return '';   // 74일차: 4턴째 등장이 인물의 첫 고백을 끊었다(w05 실플레이) — 6턴 이후로
     // 인물이 설명·고백 중인 턴(직전 인물 대사가 길고 유저가 짧게 '말해봐요'류로 받은 턴)에는 끼어들지 않는다
@@ -6866,7 +6994,7 @@ function buildRivalEntranceContext() {
     const NL = String.fromCharCode(10);
     return NL + '[제3자 등장 지시 - 매우 중요]' + NL
       + '- ' + r.name + '(' + (r.role || '') + ')' + (처음 ? '이 아직 한 번도 나오지 않았다.' : '이 한동안 나오지 않았다.')
-      + ' 이번 턴 안에 등장시켜라. 유저와 ' + currentStory.cast[0].name + ' 사이에 압력을 만드는 것이 이 인물의 역할이다.' + NL
+      + ' 이번 턴 안에 등장시켜라. 유저와 ' + __partner.name + ' 사이에 압력을 만드는 것이 이 인물의 역할이다.' + NL
       + (처음
         ? '- 들어오는 방식은 **정당한 이유**여야 한다(업무·집안·우연한 마주침). 대놓고 방해하지 말고, 유저가 항의할 수 없는 형태로 곁에 선다.' + NL
         : '- 이번이 ' + (횟수 + 1) + '번째 등장이다. **우연히 마주쳤다는 이유는 다시 쓰지 마라** — 예정된 이유(업무·집안 일·미리 잡힌 약속·이 인물이 직접 만든 자리)로 온다. 지난번 등장과 같은 장소·같은 말은 피한다.' + NL)
@@ -7312,7 +7440,7 @@ function buildGeminiRequestBody(userMessage) {
     }
     return line;
   }).join(' / ');
-  const contextNote = `${playerInfo}${buildTimeContext()}${buildScheduleContext()}${detectSpeechStyle()}${buildMediumContext()}${buildRivalEntranceContext()}${buildStallContext()}${buildSceneLogContext()}${buildPromiseContext()}${buildSceneBreakContext()}\n[현재 관계 상태] ${statsLines}${eventNote}${arcNote}${buildRecallBlock(userMessage)}${buildJustHappenedContext()}`;
+  const contextNote = `${playerInfo}${buildTimeContext()}${buildScheduleContext()}${detectSpeechStyle()}${buildMediumContext()}${buildRivalEntranceContext()}${buildExContext()}${buildStallContext()}${buildSceneLogContext()}${buildPromiseContext()}${buildSceneBreakContext()}\n[현재 관계 상태] ${statsLines}${eventNote}${arcNote}${buildRecallBlock(userMessage)}${buildJustHappenedContext()}`;
 
   const contents = [];
   recentHistory.forEach(h => {
@@ -7420,12 +7548,22 @@ function buildGeminiRequestBody(userMessage) {
             enum: ["없음", "전화_또는_메시지", "제3자_언급", "우연한_마주침", "기타"]
           },
           relationship_ended: { type: "BOOLEAN" },
+          ended_character_key: { type: "STRING" },
           rival_departed_key: { type: "STRING" },
           new_rival_key: { type: "STRING" },
           new_rival_name: { type: "STRING" },
-          new_rival_role: { type: "STRING" }
+          new_rival_role: { type: "STRING" },
+          // 75일차: 플레이어가 데려온 새 인물 — 처음 등장한 턴에만 채워진다
+          new_person_key: { type: "STRING" },
+          new_person_name: { type: "STRING" },
+          new_person_role: { type: "STRING" },
+          new_person_relation: { type: "STRING" },
+          new_person_gender: { type: "STRING" },
+          new_person_persona: { type: "STRING" },
+          new_person_stage: { type: "INTEGER" },
+          new_person_affection: { type: "INTEGER" }
         },
-        required: ["beats", "days_passed", "day_part", "diary_entry", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "main_story_cleared", "immersion_break", "key_facts", "player_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role"]
+        required: ["beats", "days_passed", "day_part", "diary_entry", "char_deltas", "scheduled_events", "safety_flag", "abuse_flag", "suggested_replies", "arc_resolved", "main_story_cleared", "immersion_break", "key_facts", "player_facts", "rival_reappear_trigger", "relationship_ended", "rival_departed_key", "new_rival_key", "new_rival_name", "new_rival_role", "ended_character_key"]
       },
       temperature: 1.0
     }
@@ -7577,7 +7715,7 @@ async function callGeminiStream(userMessage, onBeat) {
         charDeltas.push(obj);
       }
     }
-    finalParsed = { beats, char_deltas: charDeltas, scheduled_events: [], safety_flag: false, abuse_flag: false, suggested_replies: [], arc_resolved: false, main_story_cleared: false, immersion_break: 'none', key_facts: [], rival_reappear_trigger: '', relationship_ended: false, rival_departed_key: '', new_rival_key: '', new_rival_name: '', new_rival_role: '' };
+    finalParsed = { beats, char_deltas: charDeltas, scheduled_events: [], safety_flag: false, abuse_flag: false, suggested_replies: [], arc_resolved: false, main_story_cleared: false, immersion_break: 'none', key_facts: [], rival_reappear_trigger: '', relationship_ended: false, rival_departed_key: '', new_rival_key: '', new_rival_name: '', new_rival_role: '', ended_character_key: '' };
   }
   // 62일차: 내용이 하나도 안 왔는데 막힌 사유가 있으면, 그 사실을 호출한 쪽에 알려준다.
   if (blockedReason && (!Array.isArray(finalParsed.beats) || finalParsed.beats.length === 0)) {
@@ -7775,6 +7913,7 @@ async function runTurn(text, opts) {
   }, 90000);
 
   clearSuggestions(); // 이번 턴이 끝나기 전까지는, 지난 턴의 추천 대사가 더는 유효하지 않으니 지운다.
+  try { const __ro = $('chat') && $('chat').querySelector('.revive-offer'); if (__ro) __ro.remove(); } catch (e) { }   // 76일차: 이야기가 이어지면 지난 되살리기 제안을 치운다
 
   if (!isRetry) {
     if (addUserTurn) { // "자동진행"으로 진행된 턴은 유저가 실제로 말한 게 아니므로 유저 말풍선을 추가하지 않는다.
@@ -7796,10 +7935,11 @@ async function runTurn(text, opts) {
   // 차면 아크 창고에서 사건을 하나 뽑아 이번 턴 요청에 실어 보낸다 (아래 callGeminiStream 호출 전에 반드시 실행).
   if (!state.arcState) state.arcState = defaultArcState();
   const hadArcBefore = !!state.arcState.activeArc;
-  if (!state.arcState.activeArc) {
+  const __arcLive = hasLiveLead(currentStory, state);   // 76일차: 주인공이 모두 끝난 동안은 아크를 세지도 열지도 않는다
+  if (!state.arcState.activeArc && __arcLive) {
     state.arcState.sinceLastArc = (state.arcState.sinceLastArc || 0) + 1;
   }
-  maybeTriggerArc(state, currentStory);
+  if (__arcLive) maybeTriggerArc(state, currentStory);
   const arcIsActiveThisTurn = !!state.arcState.activeArc;
   const arcJustStarted = !hadArcBefore && arcIsActiveThisTurn;
   // 62일차: 완전한 사랑이 '아크를 N개 넘겼는지'에 걸리면서, 아크 하나가 안 끝나면
@@ -7890,7 +8030,8 @@ async function runTurn(text, opts) {
       addCharTurn(result.beats || [], currentStory);
     }
     // 68일차: AI가 선언한 시간 경과를 이야기 달력에 반영하고, 날짜가 넘어갔으면 이 장면 앞에 구분선을 끼워 넣는다
-    const daysPassed = Math.max(0, Math.min(365, parseInt(result.days_passed, 10) || 0));
+    const __sdBefore = state.storyDate || Date.now();   // 76일차: 날짜를 넘기기 전 값 — 전 애인 복귀는 AI가 받은 날짜 기준으로 판정한다
+    const daysPassed = Math.max(0, Math.min(365, Math.max(parseInt(result.days_passed, 10) || 0, userDaysHint(text))));   // 75일차: 유저가 못박은 기간이 더 크면 그쪽
     if (daysPassed > 0) state.storyDate = (state.storyDate || Date.now()) + daysPassed * 86400000;
     if (result.day_part && result.day_part !== '같음') state.dayPart = result.day_part;
     if (daysPassed > 0 && charTurn && charTurn.before) charTurn.before(makeDateDivider(state.storyDate, state.dayPart, false));
@@ -7937,7 +8078,7 @@ async function runTurn(text, opts) {
         // 이 라이벌이 누구에게 접근하는지(공략 대상)와 플레이어가 누구인지를 실제 값으로 채운다.
         // 예전에는 옛 테스트 스토리의 "지연"·"형균"이 그대로 박혀 있어서, 어느 스토리에서든
         // 존재하지 않는 사람 이름이 AI에게 전달됐다.
-        const rivalTarget = (currentStory.cast.find(x => x.completionRequired !== false) || currentStory.cast[0] || {});
+        const rivalTarget = (currentStory.cast.find(x => x.completionRequired !== false && state.chars[x.key] && !state.chars[x.key].ended) || currentStory.cast.find(x => x.completionRequired !== false) || currentStory.cast[0] || {});
         const targetName = rivalTarget.name || '상대';
         const playerName = (playerProfile && playerProfile.name) || '플레이어';
         state.rivalCycleIndex = cycleIndex;
@@ -7972,12 +8113,125 @@ async function runTurn(text, opts) {
         addDevSys(`[개발자 확인용] 새 라이벌 사이클 시작 (${cycleIndex}번째): ${newName} (${newRole})`);
       }
     }
+    // 75일차: 플레이어가 데려온 새 인물(new_person_*) — 그 자리에서 설정 카드를 만들어 dynamicCast에 넣는다(저장·되돌리기는 기존 장치).
+    // 마음의 시작점은 상황이 정한다(AI가 준 단계·호감). 그 뒤로는 다른 인물과 같은 규칙으로만 움직인다.
+    // 이름이 안 왔으면 처지로라도 부른다. 카드 필드 없이 모르는 p숫자 화자만 나온 경우도 만든다(수치가 사라지지 않게).
+    if (!result.new_person_key) {
+      const unknown = (result.beats || []).map(b => b.speaker).find(sp => sp && /^p[0-9]+$/.test(sp) && !currentStory.cast.some(c => c.key === sp) && (state.blockedPersonKeys || []).indexOf(sp) < 0);   // 76일차 2차: 미성년으로 막은 key는 다시 만들지 않는다
+      if (unknown) { result.new_person_key = unknown; result.new_person_name = result.new_person_name || ''; }
+    }
+    if (result.new_person_key) {
+      const __placeholder = !result.new_person_name || !result.new_person_persona;
+      if (!result.new_person_name) {
+        // 76일차 2차: 이름이 없으면 처지로 부르되, 같은 이름이 이미 있으면 번호를 붙인다(검사: 이름 없는 두 번째 사람이 같은 이름에 막혀 사라졌다)
+        const __base = String(result.new_person_role || result.new_person_relation || '새로 만난 사람').trim();
+        let __nm = __base, __i = 2;
+        while (currentStory.cast.some(c => String(c.name || '').trim() === __nm)) __nm = __base + ' ' + (__i++);
+        result.new_person_name = __nm;
+      }
+      const __askedKey = String(result.new_person_key).trim();
+      let pk = __askedKey;
+      const __newName = String(result.new_person_name || '').trim();
+      // 76일차: 미성년 설정이면 카드를 만들지 않는다(검사: 나이를 확인하는 장치가 없었다)
+      // 76일차 2차: 이름·역할·관계만 본다(성격 글의 "고등학생 시절" 같은 회상은 나이가 아니다). "17살 차이"·"고3 담임"·"열다섯 명"은 미성년이 아니다.
+      const __cardText = [result.new_person_name, result.new_person_role, result.new_person_relation].join(' ');
+      const __minor = /(고등학생|중학생|초등학생|고딩|중딩|초딩|여고생|남고생|여중생|남중생|미성년|(^|[^가-힣0-9])[고중][1-3](?=[ ]*(학생|여학생|남학생|여자|남자|여친|남친|후배|여동생|남동생|동생|딸|아들|조카|생|짜리|인|이)|[^가-힣0-9 ]|$)|(열네|열다섯|열여섯|열일곱)[ ]*(살|세(?!기))(?![ ]*(차이|연상|연하|어린|더|위|아래|많|적|터울))|(^|[^0-9])1[0-7][ ]*(살|세(?!기))(?![ ]*(차이|연상|연하|어린|더|위|아래|많|적|터울))|(high|middle) school (student|girl|boy|kid|junior|senior|sophomore|freshman)|teenager|teenage (girl|boy)|(^|[^0-9])1[0-7][ -]*(year[ -]old|years old)|高校生|中学生|女子高生|未成年)/i.test(__cardText);
+      let __existing = currentStory.cast.find(c => c.key === pk) || null;
+      const __sameName = (a, b) => { a = String(a || '').trim(); b = String(b || '').trim(); if (!a || !b) return false; if (a === b) return true; return a.length >= 2 && b.length >= 2 && (a.indexOf(b) >= 0 || b.indexOf(a) >= 0); };
+      // 76일차 2차: 이름 없이 먼저 만들어진 카드가 하나 있고, 이번 턴에 다른 key로 진짜 이름이 왔는데 그 카드는 이번 턴에 말하지 않았다면 같은 사람으로 본다(검사: 이름 없는 카드와 이름 있는 카드가 둘로 갈라졌다)
+      if (!__existing && !__placeholder) {
+        const __ph = currentStory.cast.filter(c => c.playerMade && c.placeholder);
+        if (__ph.length === 1 && !(result.beats || []).some(b => b.speaker === __ph[0].key)) {
+          __existing = __ph[0];
+          (result.beats || []).forEach(b => { if (b.speaker === __askedKey) b.speaker = __existing.key; });
+          (result.char_deltas || []).forEach(d => { if (d.character === __askedKey) d.character = __existing.key; });
+          pk = __existing.key;
+        }
+      }
+      if (__minor) {
+        // 76일차 2차: 막은 key는 기억해 두고 이번 턴의 수치도 버린다(검사: 다음 턴 화자 fallback이 같은 key를 다시 만들었다).
+        // 오탐이 있을 수 있어 경고 횟수는 세지 않는다 — abuse_flag는 AI가 따로 준다.
+        addDevSys('[개발자 확인용] 미성년으로 보이는 인물 카드를 만들지 않았습니다: ' + __newName);
+        if (!Array.isArray(state.blockedPersonKeys)) state.blockedPersonKeys = [];
+        if (state.blockedPersonKeys.indexOf(__askedKey) < 0) state.blockedPersonKeys.push(__askedKey);
+        result.char_deltas = (result.char_deltas || []).filter(d => d.character !== __askedKey);
+        pk = '';
+      } else if (__existing && __existing.playerMade && __existing.placeholder && !__placeholder) {
+        // 76일차: 처음에 이름·성격 없이 만들어졌던 카드를 이번 턴에 온 정보로 채운다
+        const __fix = { name: __newName, role: String(result.new_person_role || __existing.role || '').trim(), relation: String(result.new_person_relation || __existing.relation || '').trim(), gender: String(result.new_person_gender || __existing.gender || '').trim(), persona: String(result.new_person_persona || '').trim(), placeholder: false };
+        Object.assign(__existing, __fix);
+        (state.dynamicCast || []).forEach(dc => { if (dc.key === pk) Object.assign(dc, __fix); });
+        // 76일차 2차: 이번에 온 단계·호감이 더 크면 그만큼 올린다(검사: 이름만 채워지고 수치는 1단계·8에 머물렀다)
+        try {
+          const __cs = state.chars[pk]; const __st1 = parseInt(result.new_person_stage, 10) || 0; const __af1 = parseInt(result.new_person_affection, 10) || 0;
+          if (__cs) {
+            if (__st1 > (__cs.stage || 1)) __cs.stage = Math.min(4, __st1);
+            if (__af1 > (__cs.affection || 0)) __cs.affection = Math.min(70, __af1);
+            __cs.trust = Math.min(29, Math.max(__cs.trust || 0, Math.round((__cs.affection || 0) * 0.7)));
+          }
+        } catch (e) { }
+        addDevSys('[개발자 확인용] 이름 없던 인물이 채워졌습니다: ' + __newName + ' (' + pk + ')');
+      } else {
+        if (__existing) {
+          if (__sameName(__existing.name, __newName)) pk = '';   // 같은 사람을 다시 알린 것 — 새로 만들지 않는다
+          else {
+            // 76일차: 모델이 이미 쓰인 key를 다른 사람에게 다시 붙였으면 새 key를 준다(검사: 두 번째 사람이 조용히 사라졌다)
+            // 76일차 2차: 그 key로 온 수치는 누구 것인지 알 수 없으니 버린다(새 사람은 시작값을 따로 받는다)
+            const __n = 1 + Math.max(0, ...currentStory.cast.map(c => { const k = String(c.key || ''); const v = parseInt(k.slice(1), 10); return (k.charAt(0) === 'p' && String(v) === k.slice(1)) ? v : 0; }));
+            pk = 'p' + __n;
+            (result.beats || []).forEach(b => { if (b.speaker === __askedKey) b.speaker = pk; });
+            result.char_deltas = (result.char_deltas || []).filter(d => d.character !== __askedKey);
+          }
+        }
+        // 76일차 2차: 이름이 아직 없는 카드(자리표)는 같은 이름 검사에서 뺀다
+        if (pk && currentStory.cast.some(c => !c.placeholder && __sameName(c.name, __newName))) pk = '';   // 같은 이름의 인물이 이미 있으면 새로 만들지 않는다
+        if (pk) {
+          const st0 = Math.max(1, Math.min(4, parseInt(result.new_person_stage, 10) || 1));
+          // 호감을 안 줬으면 단계가 정한다(이미 사귀는 사이 60, 썸 35, 친구·소개 15, 우연 8)
+          const affByStage = { 1: 8, 2: 15, 3: 35, 4: 60 };
+          const affRaw = parseInt(result.new_person_affection, 10);
+          const aff0 = Math.max(0, Math.min(70, (affRaw > 0 ? affRaw : affByStage[st0])));
+          const __rel0 = String(result.new_person_relation || '').trim();
+          const __role0 = String(result.new_person_role || '').trim();
+          // 76일차: 성별을 안 줬으면 관계 낱말로 짐작하고, 모르면 비워 둔다(검사: 플레이어의 반대 성별로 넣어 남자친구가 여성이 됐다)
+          const __ctx = [__rel0, __role0, String(text || '')].join(' ');
+          const __has = (w) => __ctx.indexOf(w) >= 0;
+          const __gender = String(result.new_person_gender || '').trim()
+            || ((__has('남자친구') || __has('남친') || __has('남편') || __has('오빠')) ? '남성'
+              : (__has('여자친구') || __has('여친') || __has('아내') || __has('언니') || __has('누나')) ? '여성' : '');
+          const pm = { key: pk, name: __newName, role: __role0 || __rel0 || '새로 만난 사람',
+            gender: __gender, mbti: '', tier: '보통', multiplier: 1.0,
+            persona: String(result.new_person_persona || '').trim() || ('유저가 데려온 사람. ' + (__role0 || __rel0) + '. 처음 만난 장면에서 보인 말투와 태도를 끝까지 유지한다.'),
+            relation: __rel0 || __role0,
+            playerMade: true, completionRequired: false, placeholder: __placeholder };
+          currentStory.cast.push(pm);
+          if (!Array.isArray(state.dynamicCast)) state.dynamicCast = [];
+          state.dynamicCast.push(pm);
+          // 76일차: 신뢰는 29까지만 — 가장 뜨거운 단계(연인·신뢰 30 이상)는 이야기 안에서 쌓아야 열린다(검사: 첫 턴부터 열렸다)
+          state.chars[pk] = { affection: aff0, trust: Math.min(29, Math.round(aff0 * 0.7)), stage: st0, dangerTurns: 0 };
+          { const __rel = pm.relation || pm.role; addSys(fill(t('newPersonNotice'), { name: pm.name, ga: josaOf(pm.name, '이가'), rel: (__rel && __rel !== pm.name) ? '(' + __rel + ')' : '' })); }
+          addDevSys('[개발자 확인용] 플레이어가 데려온 인물: ' + pm.name + ' / ' + pm.role + ' / 단계 ' + st0 + ' 호감 ' + aff0);
+        }
+      }
+      // 76일차: 이번 턴 화면에 이미 'p1'로 찍힌 이름표를 진짜 이름으로 바꾼다(검사: 첫 대사에 p1이 보였다). 76일차 2차: 대사 색도 함께 바꾼다
+      try {
+        const __mem = pk ? (currentStory.cast.find(c => c.key === pk) || null) : null;
+        const __scope = charTurn || Array.from(document.querySelectorAll('#chat .scene-card')).pop() || null;   // 76일차: 스트리밍이 아닌 경로(한 번에 렌더)도 이름표를 바꾼다
+        if (__mem && __scope) __scope.querySelectorAll('.speaker-tag').forEach(el => {
+          if (el.textContent === __askedKey || el.textContent === pk) {
+            const __col = speakerColor(currentStory, __mem.key);
+            el.textContent = __mem.name; el.style.color = __col;
+            const __nx = el.nextElementSibling; if (__nx && __nx.classList && __nx.classList.contains('dialogue')) __nx.style.color = __col;
+          }
+        });
+      } catch (e) { }
+    }
 
     // 이번 턴에 관계 단계가 바뀐 인물을 모아뒀다가, 델타를 다 반영한 뒤 한 번에 연출한다.
     // 라이벌·조연(completionRequired === false)은 "정복" 대상이 아니므로 연출에서 제외한다.
     const stageShifts = [];
     const deltaNotes = [];   // 이번 턴의 실제 반영값(난이도 배율 적용 후)을 모아 화면에 보여준다
-    const mainCastCount = currentStory.cast.filter(c => c.completionRequired !== false).length;
+    const mainCastCount = currentStory.cast.filter(c => isHeartMember(c)).length;   // 76일차: 플레이어가 데려온 사람도 마음 변화를 보여준다
     const __statTalk = isStatTalk(text);   // 74일차: 이 턴에 유저가 수치를 직접 적었는가
     (result.char_deltas || []).forEach(d => {
       const castMember = currentStory.cast.find(c => c.key === d.character);
@@ -7988,8 +8242,9 @@ async function runTurn(text, opts) {
       // 74일차: 한 턴 변화 폭 제한. 지시문 기준은 ±20인데 모델이 유저의 "호감도 -60"을 그대로 따라 -60을 준 사례가 있었다.
       // 유저 입력에 수치 지시가 있는 턴은 ±3까지만.
       const __cap = __statTalk ? 3 : 20;
-      const __dA0 = Math.max(-__cap, Math.min(__cap, Math.round(d.affection_delta || 0)));
-      const __dT0 = Math.max(-__cap, Math.min(__cap, Math.round(d.trust_delta || 0)));
+      const __exCap = (cs.ended && !cs.returned) ? 2 : 999;   // 75일차: 끝난 사람은 돌아오기 전엔 +2까지만
+      const __dA0 = Math.min(__exCap, Math.max(-__cap, Math.min(__cap, Math.round(d.affection_delta || 0))));
+      const __dT0 = Math.min(__exCap, Math.max(-__cap, Math.min(__cap, Math.round(d.trust_delta || 0))));
       d.affection_delta = __dA0; d.trust_delta = __dT0;   // 화면 표시(deltaNotes)도 실제 반영값을 쓰게
       cs.affection = Math.max(-100, Math.min(100, cs.affection + __dA0));
       cs.trust = Math.max(-100, Math.min(100, cs.trust + __dT0));
@@ -7997,17 +8252,19 @@ async function runTurn(text, opts) {
         // 68일차: 이야기 속 사건 없이 대화만으로 최고 단계에 도달하던 문제(테스트 피드백).
         // 5단계(깊은 사랑)는 메인 스토리를 클리어했거나 아크를 하나라도 넘긴 뒤에만 허용한다.
         let wanted = d.stage_suggestion;
+        if (cs.ended && !cs.returned && wanted > 2) wanted = 2;   // 75일차: 끝난 사람은 돌아오기 전엔 2단계까지
         if (wanted >= 5) {
           const storyProgressed = !!state.mainCleared || ((state.arcState && state.arcState.clearedArcs) || 0) >= 1;
           if (!storyProgressed) wanted = 4;
         }
         cs.stage = wanted;
       }
-      if (cs.stage !== prevStage && castMember.completionRequired !== false) {
+      if (cs.returned && (cs.stage || 1) >= 4) cs.returned = false;   // 76일차: 다시 연인이 되면 '돌아온 사람' 표시를 뗀다
+      if (cs.stage !== prevStage && isHeartMember(castMember)) {
         stageShifts.push({ name: castMember.name, from: prevStage, to: cs.stage, showName: mainCastCount > 1 });
       }
       // 유저에게 보여줄 변화량 — 화면과 저장값이 어긋나지 않게, 반드시 실제 반영값으로 계산한다.
-      if (castMember.completionRequired !== false) {
+      if (isHeartMember(castMember)) {
         const dA = Math.round(d.affection_delta || 0);
         const dT = Math.round(d.trust_delta || 0);
         if (dA !== 0 || dT !== 0) deltaNotes.push({ name: castMember.name, dA, dT, showName: mainCastCount > 1 });
@@ -8023,8 +8280,8 @@ async function runTurn(text, opts) {
 
     // 62일차 QA: 호감·신뢰 100까지 갔는데 100턴 내내 2단계(아크 0개)였던 문제.
     // 연인 직전 조건이 이어진 턴 수를 세서, 오래 제자리면 다음 턴 프롬프트가 확정을 지시한다.
-    const ripe = currentStory.cast.some(c => c.completionRequired !== false
-      && state.chars[c.key] && state.chars[c.key].stage === 3
+    const ripe = currentStory.cast.some(c => isHeartMember(c)   // 76일차 2차: 데려온 사람도 마음이 오가는 사람
+      && state.chars[c.key] && !state.chars[c.key].ended && state.chars[c.key].stage === 3
       && state.chars[c.key].affection >= 45 && state.chars[c.key].trust >= 45);
     state.ripeTurns = ripe ? (state.ripeTurns || 0) + 1 : 0;
     // 68일차: 메인 스토리가 끝내 클리어되지 않아 아크가 안 열리던 문제(플레이테스트 8/10편).
@@ -8032,10 +8289,10 @@ async function runTurn(text, opts) {
     // 74일차: 예전 기준(stage>=4 && affection>=55)은 메인 스토리가 풀려야 닿는 값이라 서로를 기다렸다.
     // 기준을 낮추고, 18턴이 넘으면 수치와 무관하게 매듭을 향해 밀기 시작한다.
     const __modelTurns = (state.history || []).filter(h => h.role === 'model' && !h.isOpening).length;
-    const mainRipe = !state.mainCleared && !!currentStory.mainStory
+    const mainRipe = !state.mainCleared && !!currentStory.mainStory && hasLiveLead(currentStory, state)   // 76일차: 주인공이 모두 끝났으면 매듭을 재촉하지 않는다
       && (__modelTurns >= 18
         || currentStory.cast.some(c => c.completionRequired !== false
-          && state.chars[c.key] && state.chars[c.key].stage >= 3
+          && state.chars[c.key] && !state.chars[c.key].ended && state.chars[c.key].stage >= 3
           && state.chars[c.key].affection >= 35));
     state.mainRipeTurns = mainRipe ? (state.mainRipeTurns || 0) + 1 : 0;
     if (deltaNotes.length) addDeltaNote(deltaNotes);
@@ -8126,7 +8383,7 @@ async function runTurn(text, opts) {
       addDevSys(`[개발자 확인용] 숨겨진 사연 이벤트 발동: ${pendingEvents.map(e => `${e.key}:${e.flag}`).join(', ')}`);
     }
     // 메인 스토리 클리어 — 아크의 문이 열리는 순간이자 이 스토리의 첫 승리.
-    if (result.main_story_cleared && currentStory.mainStory && !state.mainCleared) {
+    if (result.main_story_cleared && currentStory.mainStory && !state.mainCleared && hasLiveLead(currentStory, state)) {   // 76일차: 끝난 주인공의 매듭은 풀리지 않는다
       state.mainCleared = true;
       addSys(t('mainClearedNotice'));
     }
@@ -8174,13 +8431,34 @@ async function runTurn(text, opts) {
     // immersion_break: "severe" 하나로 들어와서, 힘든 이야기를 꺼낸 유저까지 인연이 끊겼다.
     // 이제 안전 상황은 safety_flag로만 표시된다. 혹시 모델이 옛 방식대로 severe를 붙여 보내더라도
     // safety_flag가 함께 켜져 있으면 인연 파탄으로 처리하지 않는다(이중 안전장치).
+    // 75일차: 전 애인이 돌아왔는가 — 이야기 속 날짜로 며칠이 지났고, 이번 턴에 그 사람이 말하거나 등장했으면 돌아온 것
+    const __returnedNow = {};   // 76일차 2차: 이번 턴에 돌아온 사람 — 같은 턴에 다시 끝내지 않는다
+    try {
+      const __beatsText = (result.beats || []).map(b => (b.text || '') + ' ' + (b.speaker || '')).join(' ');
+      const __dpModel = Math.max(0, Math.min(365, parseInt(result.days_passed, 10) || 0));   // 76일차 2차: AI가 스스로 넘긴 날짜는 셈에 넣는다(유저 지문으로 넘긴 날짜는 안 넣는다)
+      const __sdRet = (typeof __sdBefore !== 'undefined' && __sdBefore) ? (__sdBefore + __dpModel * 86400000) : (state.storyDate || Date.now());
+      currentStory.cast.forEach(c => {
+        const cs = state.chars[c.key]; if (!cs || !cs.ended || cs.returned) return;
+        if (result.relationship_ended && String(result.ended_character_key || '').trim() === c.key) return;   // 76일차 2차: 돌아와서 다시 끝내는 장면이면 돌아온 것으로 치지 않는다
+        const days = (__sdRet - (cs.endedAt || 0)) / 86400000;
+        if (days < (cs.returnAfterDays || 3)) return;
+        if ((result.beats || []).some(bt => bt.type === 'dialogue' && bt.speaker === c.key)) {   // 75일차 2차: 이름이 스치는 것으로는 안 돌아온 것. 그 사람이 유저에게 말을 걸어야 돌아온 것
+          __returnedNow[c.key] = true;   // 76일차 2차
+          // 76일차: 돌아오면 위험 턴을 비우고 수치를 0부터 다시 쌓는다(검사: 복귀한 그 턴에 다시 끝나던 문제)
+          cs.returned = true; cs.ended = false; cs.stage = Math.max(1, Math.min(2, cs.stage || 1)); cs.dangerTurns = 0; cs.trust = Math.max(cs.trust || 0, 0); cs.affection = Math.max(cs.affection || 0, 0);
+          addSys(fill(t('charReturnedNotice'), { name: c.name, ga: josaOf(c.name, '이가') }));
+        }
+      });
+    } catch (e) { }
     // 74일차: 위험 수위가 몇 턴째인지 코드가 센다. 이 값이 다음 턴 지시문에 실려 나간다.
     currentStory.cast.forEach(c => {
       const cs = state.chars[c.key];
       if (!cs) return;
+      // 76일차: 라이벌과 이미 끝난 사람은 세지 않는다(검사: 끝난 사람의 위험 턴이 계속 쌓여 복귀 턴에 다시 끝나고, 멀쩡한 사람까지 끝냈다)
+      if (!isHeartMember(c) || cs.ended) { cs.dangerTurns = 0; return; }
       cs.dangerTurns = (cs.trust <= -60 || cs.affection <= -60) ? ((cs.dangerTurns || 0) + 1) : 0;
     });
-    const __maxDanger = Math.max(0, ...currentStory.cast.map(c => (state.chars[c.key] && state.chars[c.key].dangerTurns) || 0));
+    const __maxDanger = Math.max(0, ...liveHearts(currentStory, state).map(c => state.chars[c.key].dangerTurns || 0));
 
     // 74일차: 이번 턴에 관계가 움직였는지 센다. 호감·신뢰·단계 중 하나라도 변했으면 0으로 되돌린다.
     // 수치가 안 움직였다는 건 관계가 그 자리에 있었다는 뜻이다.
@@ -8199,20 +8477,70 @@ async function runTurn(text, opts) {
     const breaksImmersion = (result.immersion_break === 'severe') && !isSafetyMoment;
     // 74일차 최후 장치: 5턴째부터 "이번 턴에 끝내라"고 지시문으로 두 번 시켰는데도 AI가 안 끝내면
     // (어무이님 사례처럼) 코드가 끝낸다. 7턴은 AI가 제대로 된 이별 장면을 쓸 여유를 준 값이다.
-    if ((result.relationship_ended || breaksImmersion || __maxDanger >= 7) && !isSafetyMoment && state.collectionStatus === 'active') {
-      state.collectionStatus = 'failed';
-      state.failedAt = Date.now();
-      state.failedLockoutDays = randomFailedLockoutDays();
-      addSys(t('storyFailedNotice'));
-      addReviveOffer();
-    } else if (state.collectionStatus === 'active'
+    // 75일차: 파탄은 편이 아니라 그 사람에게 붙는다(형균님 결정). 편은 계속되고, 끝난 사람은 전 애인이 되어
+    // 이야기 속 며칠(3~5일)이 지나야 돌아올 수 있다. 몰입 깨기(severe)만은 이야기 자체가 깨진 것이라 예전처럼 편을 잠근다.
+    let __endedNow = null;
+    if (!isSafetyMoment && state.collectionStatus === 'active') {
+      if (breaksImmersion) {
+        state.collectionStatus = 'failed'; state.failedAt = Date.now(); state.failedLockoutDays = randomFailedLockoutDays();
+        addSys(t('storyFailedNotice')); addReviveOffer();
+      } else if (result.relationship_ended || __maxDanger >= 7) {
+        // 76일차: 누구와 끝났나 — AI가 지목했으면 그 사람만(이미 끝났거나 라이벌이면 아무도 끝내지 않는다. 검사: 원래 주인공이 대신 끝났다).
+        // 지목이 없을 때만: 위험 턴 7 이상인 사람 → 마음이 오가는 사람이 하나뿐이면 그 사람 → 유저가 이름을 부른 사람 → 위험 턴이 쌓인 사람. 그래도 모르면 끝내지 않는다.
+        const live = liveHearts(currentStory, state).filter(c => !__returnedNow[c.key]);   // 76일차 2차: 이번 턴에 돌아온 사람은 같은 턴에 다시 끝내지 않는다
+        // 76일차 2차: key는 relationship_ended가 true일 때만 본다. key로 못 찾으면 이름으로 찾고, 그래도 모르는 값이면 지목이 없는 것으로 본다
+        // (검사: 모르는 key 하나로 헤어짐과 7턴 장치가 함께 취소됐다). 이미 끝난 사람·라이벌을 지목한 것은 그대로 아무도 끝내지 않는다.
+        const __ekRaw = result.relationship_ended ? String(result.ended_character_key || '').trim() : '';
+        let ek = ''; let __ekNoop = false;
+        if (__ekRaw) {
+          const __byKey = live.find(c => c.key === __ekRaw) || null;
+          const __byName = __byKey ? null : (live.find(c => c.name && (String(c.name) === __ekRaw || (__ekRaw.length >= 2 && String(c.name).indexOf(__ekRaw) >= 0) || (String(c.name).length >= 2 && __ekRaw.indexOf(String(c.name)) >= 0))) || null);
+          if (__byKey) ek = __byKey.key;
+          else if (__byName) ek = __byName.key;
+          else if (currentStory.cast.some(c => c.key === __ekRaw || String(c.name || '') === __ekRaw)) __ekNoop = true;
+        }
+        let target = null;
+        if (ek) target = live.find(c => c.key === ek) || null;
+        if (!target && __maxDanger >= 7) target = live.find(c => (state.chars[c.key].dangerTurns || 0) >= 7) || null;   // 76일차 2차: 7턴 장치는 지목과 무관하게 작동한다
+        if (!ek && !__ekNoop && !target && result.relationship_ended) {
+          if (live.length === 1) {
+            // 76일차 2차: 후보가 하나뿐이어도 이번 턴에 그 사람이 말했거나 수치가 내려갔거나 위험 턴이 쌓여 있어야 끝낸다(검사: 단역과의 이별로 주인공이 끝났다)
+            const __only = live[0];
+            const __spoke = (result.beats || []).some(bt => bt.speaker === __only.key);
+            const __drop = (result.char_deltas || []).some(d => d.character === __only.key && ((Math.round(d.affection_delta || 0) < 0) || (Math.round(d.trust_delta || 0) < 0)));
+            if (__spoke || __drop || (state.chars[__only.key].dangerTurns || 0) > 0) target = __only;
+          }
+          else {
+            const said = String(text || '');
+            const named = live.filter(c => { const nm = String(c.name || ''); return !!nm && (said.indexOf(nm) >= 0 || (nm.length >= 3 && josaOf(nm, '이가') !== '' && said.indexOf(nm.slice(-2)) >= 0)); });
+            if (named.length === 1) target = named[0];
+            else { const worst = live.slice().sort((a, b) => (state.chars[b.key].dangerTurns || 0) - (state.chars[a.key].dangerTurns || 0))[0]; if (worst && (state.chars[worst.key].dangerTurns || 0) > 0) target = worst; }
+          }
+        }
+        if (target) {
+          const cs = state.chars[target.key];
+          cs.ended = true; cs.endedAt = state.storyDate || Date.now(); cs.returnAfterDays = randomFailedLockoutDays(); cs.returned = false; cs.endedStage = cs.stage; cs.stage = 1; cs.dangerTurns = 0;
+          state.pastLoves = (state.pastLoves || []).concat([{ key: target.key, name: target.name, endedAt: cs.endedAt }]);
+          if (target.completionRequired !== false) { state.ripeTurns = 0; state.mainRipeTurns = 0; }   // 76일차: 끝난 주인공을 향한 고백·매듭 재촉을 멈춘다
+          if (!hasLiveLead(currentStory, state) && state.arcState && state.arcState.activeArc) { state.arcState.activeArc = null; state.arcState.sinceLastArc = 0; state.arcState.arcTurns = 0; state.arcState.threshold = randomArcThreshold(); }   // 76일차 2차: 타이머도 처음부터(검사: 다음 턴에 바로 새 사건이 열렸다)   // 76일차: 주인공이 모두 끝나면 진행 중이던 사건도 내려놓는다
+          __endedNow = target;
+          addSys(fill(t('charEndedNotice'), { name: target.name, wa: josaOf(target.name, '와과') }));
+          addReviveOffer({ perChar: target });
+        }
+      }
+    }
+    if (!__endedNow && state.collectionStatus === 'active'
       // 완전한 사랑 = (메인 스토리 클리어) + 사연 + 아크 N개 (requiredArcsFor 참고).
       && (!currentStory.mainStory || state.mainCleared)
       && (state.arcState.clearedArcs || 0) >= requiredArcsFor(currentStory)
+      // 75일차: 끝난 사람(전 애인)은 완성 조건에서 빼되, 살아 있는 주인공이 하나는 있어야 한다
+      && currentStory.cast.some(c => c.completionRequired !== false && state.chars[c.key] && !state.chars[c.key].ended)
       && currentStory.cast.every(c => {
+      if (state.chars[c.key] && state.chars[c.key].ended) return true;
       // "인연 완성" 조건에서 제외되는 인물: completionRequired: false로 명시된 인물
       // (예: 라이벌/장애물 역할이라 "정복" 대상이 아닌 캐릭터).
-      if (c.completionRequired === false) return true;
+      if (c.completionRequired === false) return true;   // 76일차 2차: 돌아왔든 아니든 완성 조건이 아니다(검사: 돌아온 라이벌이 완성을 막았다)
+      if (state.chars[c.key] && state.chars[c.key].returned && (state.chars[c.key].stage || 1) < 4) return false;   // 76일차: 돌아온 사람은 다시 연인이 되어야 완성(검사: 복귀한 턴에 바로 완성됐다)
       // secretArc가 있는 인물은 기존처럼 secretRevealed(사연 2단계 도달)를 요구한다.
       if (c.secretArc) return state.chars[c.key] && state.chars[c.key].secretRevealed;
       // secretArc 대신 statsCompletion(관계 단계 + 신뢰도 기준)이 지정된 인물은 그 기준으로 판단한다.
@@ -8521,7 +8849,9 @@ function shouldFirstContact() {
   if (!state.lastTurnAt || (state.history || []).length < 2) return false;
   if (Date.now() - state.lastTurnAt < NUDGE_AFTER_MS) return false;
   if (state.lastNudgeAt && state.lastNudgeAt > state.lastTurnAt) return false;
-  const familiar = currentStory.cast.some(c => c.completionRequired !== false && state.chars[c.key] && state.chars[c.key].stage >= 3)
+  // 76일차: 마음이 오가는 사람이 없고 돌아올 때가 된 전 애인도 없으면 먼저 연락하지 않는다(검사: 끝낸 사람이 기다림 없이 문자를 보냈다)
+  if (!liveHearts(currentStory, state).length && !currentStory.cast.some(c => { const cs = state.chars[c.key]; return !!cs && cs.ended && (((state.storyDate || Date.now()) - (cs.endedAt || 0)) / 86400000) >= (cs.returnAfterDays || 3); })) return false;
+  const familiar = currentStory.cast.some(c => isHeartMember(c) && state.chars[c.key] && !state.chars[c.key].ended && state.chars[c.key].stage >= 3)
     || (state.history || []).length >= 12;
   return familiar;
 }
@@ -8541,6 +8871,7 @@ async function tryReuniteIfEligible() {
   // 잠금 기간이 지났다 — 관계 수치·아크 진행은 리셋하되, 대화 기록·기억(factLedger)은 그대로 남겨서
   // AI가 예전에 어떻게 헤어졌는지를 참고해 재회 장면의 온도를 판단할 수 있게 한다.
   currentStory.cast.forEach(c => {
+    if (c.playerMade && state.chars[c.key]) return;   // 76일차: 플레이어가 데려온 사람의 마음은 그대로 둔다
     state.chars[c.key] = { affection: 0, trust: 0, stage: (c.startStage || (typeof story !== 'undefined' && story && story.startStage) || (typeof currentStory !== 'undefined' && currentStory && currentStory.startStage) || 1), distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
   });
   state.arcState = defaultArcState();
