@@ -118,7 +118,7 @@
   #lang-switcher {
     position: absolute; top: var(--s3); right: var(--s4); z-index: 50;
     display: flex; border: 1px solid var(--hair); border-radius: var(--r1);
-    background: rgba(7,10,16,.85); overflow: hidden;
+    background: #070A10; overflow: hidden;   /* 84일차: 반투명이라 뒤 글자가 비쳐 뭉개져 보였다 — 불투명으로 */
   }
   #lang-switcher button {
     border: none; background: transparent; color: var(--faint);
@@ -408,6 +408,14 @@
   .intro-portrait .cover-thumb { min-height: 0; padding: 14px 18px; gap: 8px; }
   .intro-portrait .cover-thumb .ct-title { font-size: 20px; -webkit-line-clamp: 2; }
   .intro-portrait .cover-thumb .ct-sub { font-size: 12px; }
+  /* 82일차: 목록 카드의 고전 한 줄(41편) · 추천 카드와 소개 화면의 둘째 줄(원전 3편의 지금 제목) */
+  .char-info .card-classic { color: var(--text-faint); font-family: var(--serif); font-size: 10.5px; line-height: 1.5; letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: -3px; }
+  .fp-info .fp-sub { color: var(--text-faint); font-family: var(--serif); font-size: 11px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .intro-sub2 { display: block; font-size: 12px; line-height: 1.5; color: var(--text-faint); margin-top: 3px; font-family: var(--serif); letter-spacing: 0; }
+  /* 82일차: 추천·스포트라이트의 좁은 표지 칸(64·72px)에서 원전 이름이 낱말 가운데서 끊기지 않게 */
+  .fp-art .cover-thumb { padding: 6px 2px; gap: 3px; }
+  .fp-art .cover-thumb .ct-title { font-size: 11px; letter-spacing: -.02em; }
+  .fp-art .cover-thumb .ct-sub { font-size: 8.5px; }
   .intro-fold {
     border: 1px solid var(--hair-soft); border-radius: var(--r0);
     margin-bottom: 7px; overflow: hidden;
@@ -567,6 +575,9 @@
   body.art-only #lang-switcher { opacity: 0; pointer-events: none; }
   body.in-chat #lang-switcher { opacity: 0; pointer-events: none; }   /* 80일차: 대화 화면 머리줄의 단계 표시(흔들림 · 6/4 ▾)와 겹쳐서 감춘다 */
   #lang-switcher { transition: opacity .35s ease; }
+  /* 84일차: 불투명하게 해도 화면을 내리면 맨 윗줄 오른쪽 끝을 계속 덮는다(폰에서 최대 95px).
+     자리·여백을 건드리면 폰 배치가 바뀌므로, 화면을 내린 동안에는 버튼이 물러나고 맨 위로 올리면 돌아오게 한다. */
+  #lang-switcher.away { opacity: 0; pointer-events: none; }
 
   /* 밀어넣기 버튼 — 입력창 위 오른쪽에 조용히 붙어 있다.
      위쪽의 `#screen-chat > *:not(.chat-art)` 규칙이 position:relative를 강제하므로,
@@ -794,6 +805,12 @@
   .coin-card .cc-l { display: flex; flex-direction: column; gap: 3px; }
   .coin-card .cc-sub { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: var(--faint); text-transform: uppercase; }
   .coin-card .cc-r { display: flex; align-items: center; gap: var(--s3); }
+  /* 84일차: '가장 이득' 배지가 1200 칸으로 옮겨 가자, 배지가 줄에서 자리를 차지해 폰에서 설명이 두 줄로 접혔다
+     (400px 에서 3px, 360px 에서 43px 모자랐다). 배지를 칸 오른쪽 위 구석에 띄워 자리를 차지하지 않게 한다 —
+     설명은 한 줄 그대로, 칸 높이도 78px 그대로다. 글자가 접히지 않게 배지 자체도 한 줄로 고정한다. */
+  .coin-card { position: relative; }
+  .coin-card .cc-r { flex: 0 0 auto; }
+  .coin-card .cc-r .diff-badge { position: absolute; top: 5px; right: 12px; white-space: nowrap; }
   .coin-card .cc-price { font-family: var(--serif); font-size: var(--t-lg); color: var(--brass); }
   #coin-uses { margin: var(--s5) 0 var(--s3); border-top: 1px solid var(--hair); padding-top: var(--s4); }
   #coin-uses .cu-title { font-size: var(--t-meta); color: var(--faint); letter-spacing: .08em; text-transform: uppercase; margin-bottom: var(--s3); }
@@ -871,26 +888,26 @@
   #screen-landing { position: relative; overflow: hidden; justify-content: flex-end; }
   /* 62일차: 히어로 이미지는 세 이름 중 무엇이든 받는다 — 형균님 업로드가 hero.jpg.png로 올라간 실사례.
      여러 겹 배경이라 없는 파일은 투명하게 넘어가고 있는 것이 보인다. */
+  /* 84일차: 이 칸은 79일차부터 #screen-landing > .hero-bg { display: none } 으로 꺼져 있어 그림을 받지도 않는다.
+     hero 세 이름을 여기에도 남겨 두면 나중에 다시 켤 때 1.7MB 가 되살아나므로 함께 뺐다. */
   .hero-bg { position: absolute; inset: 0; background:
-    url('images/hero.jpg') center 30% / cover no-repeat,
-    url('images/hero.jpg.png') center 30% / cover no-repeat,
-    url('images/hero.png') center 30% / cover no-repeat,
     radial-gradient(800px 500px at 75% 20%, rgba(140,118,210,.25), transparent 60%), var(--ink); }
   .hero-scrim { position: absolute; inset: 0; background:
     linear-gradient(90deg, rgba(6,8,17,.92) 0%, rgba(6,8,17,.55) 45%, rgba(6,8,17,.15) 75%, rgba(6,8,17,.45) 100%),
     linear-gradient(0deg, rgba(6,8,17,.9) 0%, transparent 40%); }
   /* 79일차 배경 안 ①: 달의 서가. 첫 화면이 세로로 스크롤돼도 배경이 끊기지 않게 겹 전부를 화면 칸 자체의 배경으로 옮긴다
      (스크롤 칸의 배경은 내용과 함께 움직이지 않고 보이는 칸을 늘 덮는다). 겹 순서는 위 .hero-scrim → .hero-bg 그대로 */
+  /* 84일차: hero.jpg / hero.jpg.png / hero.png 세 겹을 뺐다. prologue.jpg 가 바로 위에서 cover 로 전부 덮고 있어
+     화면에는 한 점도 나오지 않는데, hero.jpg.png(1.7MB)만 첫 화면마다 내려받고 나머지 둘은 404 를 맞고 있었다.
+     자홍색 대역 사진을 그 자리에 넣고 찍은 캡처가 뺀 뒤 캡처와 한 바이트도 다르지 않은 것을 확인했다(_check/hero84.js).
+     겹이 7개에서 4개로 줄었으므로 아래 background-position 목록도 4개로 맞춘다. */
   #screen-landing { background:
     linear-gradient(90deg, rgba(6,8,17,.92) 0%, rgba(6,8,17,.55) 45%, rgba(6,8,17,.15) 75%, rgba(6,8,17,.45) 100%),
     linear-gradient(0deg, rgba(6,8,17,.9) 0%, transparent 40%),
     url('images/prologue.jpg') center 30% / cover no-repeat,
-    url('images/hero.jpg') center 30% / cover no-repeat,
-    url('images/hero.jpg.png') center 30% / cover no-repeat,
-    url('images/hero.png') center 30% / cover no-repeat,
     radial-gradient(800px 500px at 75% 20%, rgba(140,118,210,.25), transparent 60%), var(--ink); }
   #screen-landing > .hero-bg, #screen-landing > .hero-scrim { display: none; }
-  @media (max-width: 520px) { #screen-landing { background-position: 0 0, 0 0, 80% center, center 30%, center 30%, center 30%, 0 0; } }   /* 폰에서는 달빛 창 쪽이 보이게 */
+  @media (max-width: 520px) { #screen-landing { background-position: 0 0, 0 0, 80% center, 0 0; } }   /* 폰에서는 달빛 창 쪽이 보이게 */
   .hero-body { position: relative; z-index: 1; display: flex; flex-direction: column; flex: 1; padding: var(--s6) var(--s5) var(--s5); }
   .hero-copy { margin-top: auto; max-width: 300px; }
   .hero-copy .brand-mark { display: flex; align-items: center; gap: 6px; font-family: var(--serif); letter-spacing: .26em; font-size: 12px; color: var(--paper); margin-bottom: var(--s4); }
@@ -1048,6 +1065,191 @@
     #tab-cont .cv .cc-av { display: flex; align-items: center; justify-content: center; background: var(--ink2); color: var(--dim); font-family: var(--serif); font-size: 11px; }
     #tab-cont .cv .nm { color: var(--dim); font-size: 12px; line-height: 1.3; }
     #tab-cont .cv .mt { color: var(--faint); font-size: 9.5px; display: block; }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     83일차 · 데스크톱 첫 화면을 가운데 한 칸으로 모은다.
+     배경 그림(images/prologue.jpg)은 좌우가 책장, 오른쪽 위가 달빛 창, 가운데가 가장 어둡다 —
+     즉 글을 얹으라고 그려진 자리가 가운데다. 개편 전에는 내용이 왼쪽 56px 에 붙어 그림과 어긋나 있었다.
+     ※ 전부 min-width:900px 안에만 있다. 폰(520px 이하)·태블릿(899px 이하)은 한 픽셀도 바뀌지 않는다.
+     ───────────────────────────────────────────────────────────── */
+  @media (min-width: 900px) {
+    #screen-landing { --hero-col: 1160px; }   /* 가운데 칸 폭. 1100~1280 사이면 숫자만 바꿔도 된다 */
+
+    /* ① 배경 가림막을 좌우 대칭으로 — 가운데가 가장 어둡고 양옆 책장이 액자처럼 살아난다.
+       884행 짧은 표기 중 그림 겹만 갈아끼운다. 겹 7개의 개수·순서를 그대로 지킬 것 —
+       background-position/size(3번째 겹의 center 30%/cover)와 background-color(var(--ink))는 884행 것이 그대로 남는다. */
+    #screen-landing {
+      background-image:
+        linear-gradient(90deg, rgba(6,8,17,.52) 0%, rgba(6,8,17,.74) 28%, rgba(6,8,17,.80) 50%, rgba(6,8,17,.66) 74%, rgba(6,8,17,.48) 100%),
+        linear-gradient(0deg, rgba(6,8,17,.88) 0%, transparent 46%),
+        url('images/prologue.jpg'),
+        radial-gradient(800px 500px at 75% 20%, rgba(140,118,210,.25), transparent 60%);
+    }
+
+    /* ② 세로 가운데 + 흐름 자식 8개를 전부 같은 가운데 칸으로 (이 안의 핵심 한 줄).
+       safe center 는 창 세로가 짧을 때 위가 잘려 못 읽는 것을 막는다(모르는 브라우저는 이 줄만 버리고 center 를 쓴다). */
+    .hero-body { justify-content: center; justify-content: safe center; }
+    .hero-body > :not(.hero-cards) {
+      width: 100%; max-width: var(--hero-col);
+      margin-left: auto; margin-right: auto;
+    }
+    .hero-copy { margin-block: 0; }   /* 1000행 margin:auto 0 의 위·아래 auto 를 끈다 (②가 좌우만 덮으므로) */
+
+    /* ③ 눈썹줄을 제목과 같은 왼쪽 끝으로.
+       274행 .eyebrow 에 justify-content:center 가 있어, 칸이 넓어지면 눈썹줄만 한가운데로 튄다. */
+    .hero-copy .eyebrow { justify-content: flex-start; font-size: 11px; }   /* 10px 은 넓은 화면에서 안 읽힌다 */
+
+    /* ④ 제목 묶음은 칸 왼쪽 안에만 — 오른쪽 남는 자리는 말풍선 몫 */
+    .hero-title2 { max-width: 700px; }
+    .hero-sub, .hero-genres { max-width: 680px; }   /* 일본어 부제가 620px 에서 "す。" 두 글자만 다음 줄로 떨어졌다. 제목(700)과도 폭이 맞는다 */
+    .hero-copy .hero-stats { width: auto; max-width: 700px; }
+
+    /* ⑤ 말풍선 2장을 가운데 칸의 오른쪽 끝선에 붙인다.
+       max() 인 이유: 1280px 이하에서는 칸 폭이 max-width 가 아니라 .hero-body 의 좌우 패딩 56px 으로 정해진다. */
+    .hero-cards { right: max(56px, calc(50% - var(--hero-col) / 2)); top: 20%; }
+
+    /* ⑥ 강점 카드 3개 — ②의 결과로 칸 전체 폭까지 펴지고(.hf 의 flex:1 그대로),
+       달빛 창문 쪽 밝은 면에 걸려도 읽히도록 .hc 와 같은 반투명 판을 깐다 */
+    .hero-feats {
+      gap: var(--s4); border-top: 0; padding-top: 0; margin-top: var(--s6);
+    }
+    .hero-feats .hf {
+      background: rgba(12,15,30,.78); border: 1px solid var(--hair);
+      backdrop-filter: blur(6px); border-radius: 10px; padding: 16px 18px;
+    }
+    .hero-feats b { font-size: 14px; margin-bottom: 6px; }
+    .hero-feats span { font-size: 12.5px; }
+    .hero-safety { margin-top: var(--s4); }
+
+    /* ⑦ 실적 띠는 심사·첫인상에서 가장 중요한 한 줄인데 924행이 12px 이다 — 넓은 화면에서는 안 보인다 */
+    .hero-copy .hero-stats { font-size: var(--t-bd); }
+
+    /* ⑧ 말풍선 폭 고정 — 한국어는 글이 짧아 193px 로 쪼그라들고 영·일은 240px 이라 언어마다 달랐다 */
+    .hero-cards .hc { width: 260px; max-width: 260px; }
+
+    /* ⑨ 시작 버튼이 위에 있는 제휴 버튼(405~581px)보다 작아 위계가 뒤집혀 보였다 */
+    .hero-cta .btn { min-width: 300px; min-height: 52px; font-size: 15px; }
+
+    /* ⑩ 칸의 바닥을 닫는 헤어라인 — 가운데 1160px 칸이 끝나는 자리를 눈이 알아본다 */
+    .hero-legal { border-top: 1px solid var(--hair); margin-top: 22px; padding-top: 14px; }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     84일차 · PC 마무리. 폰(520px 이하)에는 한 줄도 닿지 않는다 —
+     아래 규칙은 전부 min-width 521px 이상에서만 산다.
+     ───────────────────────────────────────────────────────────── */
+
+  /* ⓐ 오른쪽 말풍선 2장이 왼쪽 글(제목·부제·장르 줄) 위로 올라타 글자를 지우던 문제.
+     말풍선 왼쪽 = 칸오른쪽-260, 글 오른쪽 = 칸왼쪽+700 이므로 칸 폭이 960 미만이면 반드시 겹친다
+     (창 1052px 미만). 여유를 두고 1100px 미만에서는 말풍선을 내린다.
+     폰(520 이하)은 977행에서 이미 숨기고 있으므로 521px 부터만 건다. */
+  @media (min-width: 521px) and (max-width: 1099px) {
+    .hero-cards { display: none; }
+  }
+
+  /* ⓑ 521~899px(태블릿 세로·반쪽 창)은 폰 판짜기를 그대로 쓴다.
+     강점 카드 3개가 141px 로 쪼개지고 금색 시작 버튼이 제휴 버튼보다 작아 위계가 뒤집히던 것을
+     977행 폰 규칙과 같게 맞춘다. */
+  @media (min-width: 521px) and (max-width: 899px) {
+    .hero-feats { flex-direction: column; gap: var(--s3); }
+    .hero-cta .btn { flex: 1 1 100%; min-width: 0; }
+  }
+
+  /* ⓒ 세로가 짧은 데스크톱(노트북 1280x800 · 1024x768 · 900x800)에서
+     금색 시작 버튼과 약관 줄이 화면 아래로 잘리던 문제 — 영어가 가장 길어 844px 였다.
+     글자 크기는 그대로 두고 여백만 줄여 약 126px 을 되찾는다. */
+  @media (min-width: 900px) and (max-height: 870px) {
+    .hero-body { padding-top: 22px; padding-bottom: 16px; }
+    .hero-copy .brand-mark { margin-bottom: 8px; }
+    .hero-title2 { margin-top: 4px; margin-bottom: 8px; }
+    .hero-copy .hero-stats { margin-top: 10px; }
+    .hero-genres { margin-top: 8px; }
+    .hero-feats { margin-top: 14px; }
+    .hero-feats .hf { padding-top: 11px; padding-bottom: 11px; }
+    .hero-safety { margin-top: 10px; }
+    .hero-partners { margin-top: 12px; }
+    .hero-partners + .hero-peek { margin-top: 6px; }
+    .hero-peek + .hero-cta { margin-top: 10px; }
+    .hero-cta .btn { min-height: 46px; }
+    .hero-legal { margin-top: 12px; padding-top: 10px; }
+  }
+
+  @media (min-width: 900px) {
+    /* ⓓ 안전·연령 한 줄이 11px 이라 넓은 화면에서 가장 안 읽혔다. 데스크톱에서만 한 단계 키운다. */
+    .hero-safety { font-size: 12.5px; }
+
+    /* ⓔ 글 칸이 453px 로 좁아지던 원인 —
+       1018행 .pad 의 좌우 8% 는 "화면 전체 폭" 기준이라 760px 상자 안에서 양쪽 153px 씩을 먹었다.
+       소개·제휴·코인·구독·약관·내 정보 6개 화면의 글 칸을 704px 로 되돌리고, 머리 띠도 같은 선에 맞춘다. */
+    #screen-profile > .pad, #screen-legal > .pad, #screen-coin > .pad,
+    #screen-partners > .pad, #screen-subscribe > .pad, #screen-charintro > .pad {
+      padding-left: 28px; padding-right: 28px;
+    }
+    #screen-profile > header, #screen-legal > header, #screen-coin > header,
+    #screen-partners > header, #screen-subscribe > header, #screen-charintro > header {
+      padding-left: 28px; padding-right: 28px;
+    }
+
+    /* ⓕ 먼저 고르기(가입 직후 첫 화면)는 250px 이라 한 줄 소개가 잘렸다 */
+    #screen-firstpick > .pad { max-width: 760px; padding-left: 28px; padding-right: 28px; }
+
+    /* ⓖ 내 정보 화면은 반대로 1734px 까지 늘어나 라벨과 값이 화면 양 끝에 떨어져 있었다.
+       985행의 1280px 규칙이 > header 와 > .pad 만 잡아 .mypage-row 가 밖에 있었다. */
+    #screen-mypage > header, #screen-mypage > .pad,
+    #screen-mypage > .mypage-row, #screen-mypage > #mypage-stories {
+      width: 100%; max-width: 760px; margin-left: auto; margin-right: auto;
+    }
+    #screen-mypage > .pad { padding-left: var(--s4); padding-right: var(--s4); }
+
+    /* ⓗ 제휴 안내의 실제 화면 3장이 200px 로 줄어 글자가 안 읽혔다 */
+    .partners-shot img { max-width: 300px; }
+  }
+  /* 87일차: 의견 보내기 화면. 기존 화면(내 정보·제휴)의 폭·여백을 그대로 따르고, 폰 배치는 .pad 기본값을 쓴다. */
+  .fb-note { font-size: 12px; color: var(--text-sub); line-height: 1.7; margin-bottom: var(--s4); }
+  .fb-guest-msg { font-size: 13px; color: var(--dim); line-height: 1.7; margin-bottom: var(--s3); }
+  .fb-kinds { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fb-kinds button {
+    padding: 7px 12px; border: 1px solid var(--hair); border-radius: var(--r1);
+    background: var(--ink2); color: var(--dim); font-family: var(--sans); font-size: var(--t-rd); cursor: pointer;
+  }
+  .fb-kinds button.on { background: var(--brass-dim); border-color: var(--brass-mid); color: var(--brass); font-weight: 700; }
+  .fb-story-line { margin-top: var(--s2); font-size: var(--t-meta); color: var(--text-faint); line-height: 1.6; word-break: break-word; }
+  #fb-text { min-height: 128px; resize: vertical; line-height: 1.7; }
+  .fb-count { margin: var(--s1) 0 var(--s3); text-align: right; font-size: var(--t-meta); color: var(--text-faint); font-family: var(--mono); }
+  .fb-count .over { color: var(--warn); }
+  .fb-msg { margin-top: var(--s3); font-size: var(--t-sm); line-height: 1.7; }
+  .fb-msg.ok { color: var(--brass); }
+  .fb-msg.bad { color: var(--warn); }
+  .fb-list-title { margin: var(--s6) 0 var(--s2); color: #cbb8e8; font-size: var(--t-rd); font-weight: 700; }
+  .fb-empty { padding: var(--s2) 0 var(--s4); font-size: var(--t-sm); color: var(--text-faint); }
+  .fb-item { margin-bottom: var(--s3); padding: var(--s3); border: 1px solid var(--hair-soft); border-radius: var(--r1); }
+  .fb-item-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s2); margin-bottom: var(--s2); }
+  .fb-item-kind { color: var(--brass); font-family: var(--mono); font-size: 10px; letter-spacing: .14em; }
+  .fb-item-when { color: var(--text-faint); font-family: var(--mono); font-size: 10px; white-space: nowrap; }
+  .fb-item-text { color: var(--paper); font-size: var(--t-rd); line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+  .fb-item-reply {
+    margin-top: var(--s3); padding: var(--s3); border: 1px solid var(--moon-dim); border-radius: var(--r1);
+    background: var(--moon-dim); color: var(--moon); font-size: var(--t-sm); line-height: 1.8; white-space: pre-wrap; word-break: break-word;
+  }
+  .fb-item-reply-head { margin-bottom: var(--s1); font-family: var(--mono); font-size: 10px; letter-spacing: .14em; color: var(--brass); }
+  .fb-del {
+    margin-top: var(--s3); padding: 4px 10px; border: 1px solid var(--hair); border-radius: var(--r1);
+    background: transparent; color: var(--faint); font-family: var(--sans); font-size: var(--t-meta); cursor: pointer;
+  }
+  .fb-del:hover { color: var(--warn); border-color: var(--warn); }
+  /* 대화 화면 AI 안내 바로 아래 한 줄 — 새 버튼을 화면 가운데 띄우지 않고 이미 있는 안내줄에 붙인다 */
+  .chat-report-row { padding: 0 12px 0; text-align: center; }   /* 바로 위 AI 안내줄과 같게 — 바탕을 깔면 폭 전체에 띠가 생긴다 */
+  .chat-report-btn {
+    /* 87일차 잔손질: 폰에서 손가락으로 확실히 눌리게 누름 영역만 44px 로 키운다(글자 크기·밑줄·색은 그대로) */
+    display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+    padding: 0 14px; border: 0; background: none; color: var(--text-faint);
+    font-family: var(--sans); font-size: 10.5px; text-decoration: underline; cursor: pointer;
+  }
+  .chat-report-btn:hover { color: var(--warn); }
+  @media (min-width: 900px) {
+    /* v2026-09-16.7 에서 맞춘 글 칸 704px(760 - 28·2)에 의견 화면도 같이 맞춘다 */
+    #screen-feedback > .pad, #screen-feedback > header { max-width: 760px; padding-left: 28px; padding-right: 28px; }
   }
 </style>
 </head>
@@ -1269,6 +1471,7 @@
       <button id="suggest-btn" class="chat-action-btn" onclick="requestSuggestions()" data-i18n="chatSuggestBtn" data-i18n-title="chatSuggestTooltip" title="누르면 지금 대화에 어울리는 대사 3개를 추천해줘요. 눌러서 바로 보낼 수 있어요.">대사 추천</button>
     </div>
     <div style="padding:2px 12px 6px; font-size:10.5px; color:var(--text-faint); text-align:center;" data-i18n="chatAiNotice">이 대화의 모든 답변은 AI가 생성한 허구입니다. 등장인물은 실제 인물이 아닙니다.</div>
+    <div class="chat-report-row"><button type="button" class="chat-report-btn" onclick="reportCurrentChat()" data-i18n="chatReportBtn">이 답변 신고하기</button></div>
     <div style="padding:0 12px 6px; font-size:10.5px; color:var(--text-faint);" id="chat-billing-status"></div>
     <div id="stat-bar"></div>
     <div id="chat"></div>
@@ -1293,6 +1496,7 @@
     <div class="mypage-row"><span data-i18n="mypageLabelFreeQuota">오늘 무료 대화</span><b id="my-free-quota">-</b></div>
     <div class="pad" style="padding-bottom:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-profile')" data-i18n="mypageEditProfileBtn">내 정보 수정</button>
+      <button type="button" class="btn secondary" style="width:100%; margin-top:8px;" onclick="openFeedback()" data-i18n="mypageFeedbackBtn">의견 보내기</button>
       <div class="legal-links" style="margin:10px 2px 2px;"><a onclick="event.preventDefault(); openLegal('terms')" data-i18n="legalTermsLink">이용약관</a> · <a onclick="event.preventDefault(); openLegal('privacy')" data-i18n="legalPrivacyLink">개인정보처리방침</a> · <a onclick="event.preventDefault(); openLegal('refund')" data-i18n="legalRefundLink">환불 정책</a></div>
       <div id="push-row" style="margin-top:14px;"></div>
       <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="logout()" data-i18n="mypageLogoutBtn">로그아웃</button>
@@ -1305,10 +1509,44 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-16.5</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-17.1</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
+    </div>
+  </div>
+
+  <!-- 화면: 의견 보내기 (87일차 — 운영자만 보는 1:1 문의. players/{uid}/feedback 에 저장하고,
+       운영자는 _check/feedback.js 로 읽고 답한다. 서버 규칙이 허락하는 칸은
+       text·kind·createdAt·lang·build·storyId 여섯뿐이고 고치기는 막혀 있다. 지우기는 본인만 된다.
+       대화 화면의 "이 대화 신고하기"도 이 화면으로 들어온다 — 구글 플레이가 요구하는 AI 답변 신고를 겸한다. -->
+  <div class="screen" id="screen-feedback">
+    <header><button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-mypage')">←</button><h1 data-i18n="fbHeader">의견 보내기</h1></header>
+    <div class="pad">
+      <div class="fb-note" data-i18n="fbPrivacyNote">보내 주신 의견은 운영자만 봅니다. 답변은 이 화면에서 볼 수 있습니다.</div>
+      <div id="fb-guest" style="display:none;">
+        <div class="fb-guest-msg" data-i18n="fbLoginNeeded">로그인하면 의견을 보낼 수 있습니다.</div>
+        <button type="button" class="btn" style="width:100%;" onclick="goTo('screen-login')" data-i18n="fbLoginBtn">로그인하기</button>
+      </div>
+      <div id="fb-form">
+        <label data-i18n="fbKindLabel">어떤 내용인가요?</label>
+        <div class="fb-kinds" id="fb-kinds">
+          <button type="button" data-kind="idea" data-i18n="fbKindIdea">아이디어</button>
+          <button type="button" data-kind="bug" data-i18n="fbKindBug">오류 신고</button>
+          <button type="button" data-kind="story" data-i18n="fbKindStory">이야기 관련</button>
+          <button type="button" data-kind="report" data-i18n="fbKindReport">답변 신고</button>
+          <button type="button" data-kind="etc" data-i18n="fbKindEtc">기타</button>
+        </div>
+        <div class="fb-story-line" id="fb-story-line" hidden></div>
+        <label data-i18n="fbTextLabel">내용</label>
+        <textarea id="fb-text" rows="6" maxlength="2000" placeholder="편하게 적어 주세요. 개인정보는 빼 주세요." data-i18n-placeholder="fbPlaceholder"></textarea>
+        <div class="fb-count"><span id="fb-count">0 / 2000</span></div>
+        <button type="button" class="btn" style="width:100%;" id="fb-send" onclick="sendFeedback()" data-i18n="fbSendBtn">보내기</button>
+        <div class="fb-msg" id="fb-msg"></div>
+      </div>
+      <div class="fb-list-title" id="fb-list-title" data-i18n="fbListTitle">보낸 의견</div>
+      <div id="fb-list"></div>
+      <div class="fb-empty" id="fb-empty" data-i18n="fbEmpty" hidden>아직 보낸 의견이 없습니다.</div>
     </div>
   </div>
 
@@ -1329,7 +1567,7 @@
       <div class="pay-testnote"><span data-i18n="payTestTopNote">정식 결제 준비 중입니다. 지금은 시험 운영이라 실제 결제가 이루어지지 않습니다.</span><br><span data-i18n="payKrNote">국내 판매는 사업자등록과 통신판매업 신고를 마친 뒤 시작합니다.</span></div>
       <div id="coin-packs"></div>
       <div id="coin-uses"></div>
-      <div style="font-size:12px; color:var(--dim); line-height:1.7; padding: 4px 4px 10px;" data-i18n="coinVsSubNote">하루 무료 대화 10회로 부족해서 매일 18회 이상 더 하신다면, 코인보다 구독이 저렴해요.</div>
+      <div style="font-size:12px; color:var(--dim); line-height:1.7; padding: 4px 4px 10px;" data-i18n="coinVsSubNote">하루 무료 대화 10회로 부족해서 매일 23회 이상 더 하신다면, 코인보다 구독이 저렴해요.</div>
       <div style="font-size:11px; color:var(--text-faint); padding: 8px 4px;" data-i18n="coinDesc">하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 정식 결제가 열리면 PayPal로 처리되고, 카드 정보는 저희가 보관하지 않습니다.</div>
       <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="openSubscribeScreen()" data-i18n="coinSubscribeLinkBtn">매번 코인 사기 귀찮다면? 구독으로 무제한 이용하기 →</button>
       <!-- 68일차: 지인 테스트 기간용 무료 충전. 실결제 전환(PAYPAL_ENV=live) 시 서버가 막고 이 칸도 숨는다. -->
@@ -1424,7 +1662,7 @@ const I18N = {
     coinMessagesPrefix: '대화 ', coinMessagesSuffix: '회 분량',
     coinBonusPrefix: '', coinBonusSuffix: '% 더 드려요',
     coinBestBadge: '가장 이득',
-    coinVsSubNote: '하루 무료 대화 10회로 부족해서 매일 18회 이상 더 하신다면, 코인보다 구독이 저렴해요.',
+    coinVsSubNote: '하루 무료 대화 10회로 부족해서 매일 23회 이상 더 하신다면, 코인보다 구독이 저렴해요.',
     subValueNote: '하루 한도 없이 무제한으로 대화할 수 있어요. 코인을 사고 남은 개수를 신경 쓸 필요도 없고요.',
     charlistWaitingBadge: '다시 만날 때를 기다리는 중',
     safetyNoticeBody: '몸조심하세요. 도움이 필요하시면 가까운 사람에게 연락하거나 상담 전화로 문의하세요. 자살예방상담전화 109 (24시간, 무료)',
@@ -1678,6 +1916,37 @@ const I18N = {
     payCoinsDone: '결제 완료! 코인 {n}개가 충전됐어요.',
     paySubDone: '구독이 시작됐어요. 이제 대화가 무제한이에요.',
     payFailed: '결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요. 문제가 계속되면 kkfm1215@gmail.com 으로 알려주세요.',
+    fbHeader: '의견 보내기',
+    fbPrivacyNote: '보내 주신 의견은 운영자만 봅니다. 답변이 달리면 이 화면에서 보실 수 있습니다(모든 의견에 답변을 드리지는 못합니다). 전화번호·주소·카드번호 같은 개인정보나 비밀번호는 적지 말아 주세요.',
+    fbLoginNeeded: '로그인하면 의견을 보낼 수 있습니다.',
+    fbLoginBtn: '로그인하기',
+    fbKindLabel: '어떤 내용인가요?',
+    fbKindIdea: '아이디어',
+    fbKindBug: '오류 신고',
+    fbKindStory: '이야기 관련',
+    fbKindReport: '답변 신고',
+    fbKindEtc: '기타',
+    fbTextLabel: '내용',
+    fbPlaceholder: '편하게 적어 주세요. 개인정보는 빼 주세요.',
+    fbSendBtn: '보내기',
+    fbSentOk: '보내 주셔서 고맙습니다. 아래 목록에서 보실 수 있습니다.',
+    fbErrLogin: '로그인해야 의견을 보낼 수 있어요.',
+    fbErrEmpty: '내용을 먼저 적어 주세요.',
+    fbErrTooLong: '내용이 너무 길어요. 2,000자까지 보낼 수 있어요.',
+    fbErrNetwork: '보내지 못했어요. 잠시 뒤에 다시 눌러 주세요.',
+    fbErrDenied: '보내지 못했어요. 다시 로그인한 뒤에 눌러 주세요.',
+    fbErrDelete: '지우지 못했어요. 잠시 뒤에 다시 눌러 주세요.',
+    fbListTitle: '보낸 의견',
+    fbEmpty: '아직 보낸 의견이 없습니다.',
+    fbReplyLabel: '운영자 답변',
+    fbDeleteBtn: '지우기',
+    fbDeleteConfirm: '이 의견을 지울까요? 지우면 되돌릴 수 없어요.',
+    fbAboutStory: '이 이야기에 대해:',
+    fbLoadFailed: '목록을 불러오지 못했어요. 잠시 뒤에 다시 들어와 주세요.',
+    fbReportLead: '[신고한 답변]',
+    fbReportAsk: '[무엇이 문제였나요]',
+    mypageFeedbackBtn: '의견 보내기',
+    chatReportBtn: '이 답변 신고하기',
   },
   en: {
     landingEyebrow: "Live in Korean, English & Japanese",
@@ -1714,7 +1983,7 @@ const I18N = {
     coinMessagesPrefix: '', coinMessagesSuffix: ' messages',
     coinBonusPrefix: '+', coinBonusSuffix: '% extra',
     coinBestBadge: 'Best value',
-    coinVsSubNote: 'If 10 free messages a day is not enough and you send 18 or more beyond that, a subscription costs less than coins.',
+    coinVsSubNote: 'If 10 free messages a day is not enough and you send 23 or more beyond that, a subscription costs less than coins.',
     subValueNote: 'Talk without a daily limit, and never think about how many coins you have left.',
     charlistWaitingBadge: 'Waiting to meet again',
     safetyNoticeBody: 'Please take care of yourself. If you need help, reach out to someone close to you or a crisis line — in the US, call or text 988.',
@@ -1968,6 +2237,37 @@ const I18N = {
     payCoinsDone: 'Payment complete! {n} coins have been added.',
     paySubDone: 'Your subscription has started. Unlimited chat is now on.',
     payFailed: 'We couldn\'t complete the payment. Please try again shortly. If it keeps failing, email kkfm1215@gmail.com.',
+    fbHeader: 'Send feedback',
+    fbPrivacyNote: 'Only we read what you send. If we reply, you will see it on this screen — we cannot reply to everything. Please do not include personal details such as your phone number, address, card number, or any password.',
+    fbLoginNeeded: 'Sign in to send feedback.',
+    fbLoginBtn: 'Sign in',
+    fbKindLabel: 'What is this about?',
+    fbKindIdea: 'Idea',
+    fbKindBug: 'Bug report',
+    fbKindStory: 'About a story',
+    fbKindReport: 'Report a reply',
+    fbKindEtc: 'Other',
+    fbTextLabel: 'Message',
+    fbPlaceholder: 'Write anything you like. Please leave out personal details.',
+    fbSendBtn: 'Send',
+    fbSentOk: 'Thank you. Your feedback is in the list below.',
+    fbErrLogin: 'You need to sign in before sending feedback.',
+    fbErrEmpty: 'Please write your message first.',
+    fbErrTooLong: 'That is too long. Up to 2,000 characters.',
+    fbErrNetwork: 'We could not send it. Please try again in a moment.',
+    fbErrDenied: 'We could not send it. Please sign in again and try once more.',
+    fbErrDelete: 'We could not delete it. Please try again in a moment.',
+    fbListTitle: 'Your feedback',
+    fbEmpty: 'You have not sent any feedback yet.',
+    fbReplyLabel: 'Reply from us',
+    fbDeleteBtn: 'Delete',
+    fbDeleteConfirm: 'Delete this message? This cannot be undone.',
+    fbAboutStory: 'About this story:',
+    fbLoadFailed: 'We could not load your feedback. Please come back in a moment.',
+    fbReportLead: '[Reported reply]',
+    fbReportAsk: '[What was wrong]',
+    mypageFeedbackBtn: 'Send feedback',
+    chatReportBtn: 'Report this reply',
   },
   ja: {
     landingEyebrow: "日本語・英語・韓国語で公開中",
@@ -2004,7 +2304,7 @@ const I18N = {
     coinMessagesPrefix: '会話 ', coinMessagesSuffix: '回分',
     coinBonusPrefix: '+', coinBonusSuffix: '% おまけ',
     coinBestBadge: '一番お得',
-    coinVsSubNote: '1日の無料会話10回では足りず、毎日18回以上追加で話すなら、コインより購読の方が安くなります。',
+    coinVsSubNote: '1日の無料会話10回では足りず、毎日23回以上追加で話すなら、コインより購読の方が安くなります。',
     subValueNote: '1日の上限なく無制限に会話できます。コインの残数を気にする必要もありません。',
     charlistWaitingBadge: 'また会える日を待っています',
     safetyNoticeBody: 'ご自愛ください。助けが必要なときは、身近な人か相談窓口に連絡してください。いのちの電話 0570-783-556',
@@ -2258,12 +2558,48 @@ const I18N = {
     payCoinsDone: '決済完了!コイン{n}枚がチャージされました。',
     paySubDone: 'サブスクリプションが開始されました。会話が無制限になりました。',
     payFailed: '決済を完了できませんでした。しばらくしてからもう一度お試しください。続く場合は kkfm1215@gmail.com までご連絡ください。',
+    fbHeader: 'ご意見を送る',
+    fbPrivacyNote: 'いただいたご意見は運営者だけが見ます。返信がある場合はこの画面で確認できます(すべてにお返事できるとは限りません)。電話番号・住所・カード番号などの個人情報やパスワードは書かないでください。',
+    fbLoginNeeded: 'ログインするとご意見を送れます。',
+    fbLoginBtn: 'ログイン',
+    fbKindLabel: 'ご意見の種類',
+    fbKindIdea: 'アイデア',
+    fbKindBug: '不具合の報告',
+    fbKindStory: '物語について',
+    fbKindReport: '返答の報告',
+    fbKindEtc: 'その他',
+    fbTextLabel: '内容',
+    fbPlaceholder: 'お気軽にお書きください。個人情報は書かないでください。',
+    fbSendBtn: '送信',
+    fbSentOk: 'ありがとうございます。下の一覧で確認できます。',
+    fbErrLogin: 'ご意見を送るにはログインが必要です。',
+    fbErrEmpty: '内容を入力してください。',
+    fbErrTooLong: '長すぎます。2,000文字まで送れます。',
+    fbErrNetwork: '送信できませんでした。しばらくしてからもう一度お試しください。',
+    fbErrDenied: '送信できませんでした。もう一度ログインしてからお試しください。',
+    fbErrDelete: '削除できませんでした。しばらくしてからもう一度お試しください。',
+    fbListTitle: '送ったご意見',
+    fbEmpty: 'まだ送ったご意見はありません。',
+    fbReplyLabel: '運営者からの返信',
+    fbDeleteBtn: '削除',
+    fbDeleteConfirm: 'このご意見を削除しますか？元に戻せません。',
+    fbAboutStory: 'この物語について：',
+    fbLoadFailed: '一覧を読み込めませんでした。しばらくしてからもう一度お試しください。',
+    fbReportLead: '[報告する返答]',
+    fbReportAsk: '[何が問題でしたか]',
+    mypageFeedbackBtn: 'ご意見を送る',
+    chatReportBtn: 'この返答を報告する',
   },
 };
 
 function t(key) {
   return (I18N[currentLang] && I18N[currentLang][key] !== undefined) ? I18N[currentLang][key] : (I18N.ko[key] || key);
 }
+
+// 84일차: catalog 를 받아야 숫자를 셀 수 있어서, 느린 인터넷에서는 첫 화면 숫자 띠가 몇 초 동안 아예 없다가
+//         뒤늦게 끼어들며 아래를 밀어냈다. 그래서 지금 값을 미리 적어 두고 첫 그림부터 보여준다.
+//         catalog 가 오면 renderHeroStats 가 진짜 값으로 다시 채운다. 두 값이 어긋나면 _check/check_revamp.js 가 잡는다.
+const STAT_PRESET = { stories: 122, characters: 254, events: 366 };
 
 // 화면에 고정으로 박혀있는 글자들을 전부 다시 그린다 + 언어 스위처 버튼 활성 표시 갱신.
 function applyTranslations() {
@@ -2276,6 +2612,8 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
   document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.getAttribute('data-i18n-title')); });
+  document.querySelectorAll('[data-i18n-stat]').forEach(el => fillStatText(el, STAT_PRESET));   // 84일차: catalog 를 기다리는 동안 미리 적어 둔 숫자로 채운다
+  fillGenreLine(GENRE_PRESET);   // 86일차: catalog 를 기다리는 동안 미리 적어 둔 장르로 채운다 — 뒤늦게 끼어들며 첫 화면을 밀지 않게
   document.documentElement.lang = currentLang;
   document.querySelectorAll('#lang-switcher button').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
   // UI 라벨은 3개국어로 번역되지만 실제 스토리 대사·소개글은 아직 한국어로만 작성돼 있다.
@@ -2292,6 +2630,7 @@ function applyTranslations() {
   if (typeof STORIES !== 'undefined' && $('screen-mypage').classList.contains('active')) renderMypage();
   if (typeof STORIES !== 'undefined' && $('screen-album').classList.contains('active')) renderAlbum();
   if ($('screen-subscribe').classList.contains('active')) openSubscribeScreen();
+  if ($('screen-feedback').classList.contains('active')) drawFeedbackScreen();   // 87일차: 의견 화면의 종류·날짜·답변 줄도 고른 언어로 다시 그린다
   // 79일차 사이트 개편: 탭 제목을 고른 언어로 바꾸고, 첫 화면·제휴 안내가 열려 있으면 숫자·장르 줄도 새 언어로 다시 채운다
   const __docTitle = t('docTitle');
   if (__docTitle && __docTitle !== 'docTitle') document.title = __docTitle;
@@ -2345,6 +2684,16 @@ function refreshDynamicText() {
 document.querySelectorAll('#lang-switcher button').forEach(btn => {
   btn.addEventListener('click', () => setLang(btn.dataset.lang));
 });
+
+// 84일차: 지금 화면을 조금이라도 내렸으면 오른쪽 위 언어 버튼을 물린다 — 스크롤되는 글자를 덮지 않게.
+// 맨 위로 올리면 다시 나타난다. 자리·여백은 그대로라 폰·PC 배치가 바뀌지 않는다.
+function syncLangSwitcher() {
+  const sw = document.getElementById('lang-switcher');
+  if (!sw) return;
+  const scr = document.querySelector('.screen.active');
+  sw.classList.toggle('away', !!scr && scr.scrollTop > 24);
+}
+document.addEventListener('scroll', syncLangSwitcher, true);   // 스크롤은 위로 올라오지 않아서 잡는 단계(true)로 듣는다
 
 // --- Firebase 초기화 (구글 로그인 + Firestore 데이터 저장) ---
 const firebaseConfig = {
@@ -2417,6 +2766,7 @@ function goTo(screenId, opts) {
   if (screenId === 'screen-album') renderAlbum();
   if (screenId === 'screen-firstpick') renderFirstPick();
   if (screenId === 'screen-landing' || screenId === 'screen-partners') renderHeroStats();   // 79일차 사이트 개편: 첫 화면·제휴 안내 숫자·장르 줄
+  syncLangSwitcher();   // 84일차: 화면마다 스크롤 위치가 달라서, 옮겨 온 화면의 위치로 언어 버튼을 다시 맞춘다
 }
 
 // 뒤로가기 버튼 전용 — 실제로 직전에 있었던 화면으로 돌아간다. 히스토리가 비어있으면(예: 새로고침
@@ -2438,6 +2788,297 @@ window.addEventListener('popstate', () => {
   const cur = document.querySelector('.screen.active');
   if (cur && cur.id !== root) goTo(root, { isBack: true });
 });
+
+// 87일차: 의견 보내기 — 운영자만 보는 1:1 문의(공개 게시판이 아니다). 로그인한 사람만 보낼 수 있다.
+//   저장 위치는 players/{uid}/feedback/{자동id}. 2026-09-16 에 게시된 서버 규칙이 허락하는 칸은
+//   text·kind·createdAt·lang·build·storyId 여섯뿐이고, 그 밖의 칸을 하나라도 넣으면 저장이 거부된다.
+//   reply 는 운영자가 서버(_check/feedback.js)로 적는 칸이라 여기서는 읽기만 한다.
+//   고치기(update)는 규칙이 전면 금지하므로 화면에도 두지 않는다. 지우기는 본인만 되므로 둔다.
+const FEEDBACK_KINDS = ['idea', 'bug', 'story', 'report', 'etc'];
+const FEEDBACK_KIND_KEY = { idea: 'fbKindIdea', bug: 'fbKindBug', story: 'fbKindStory', report: 'fbKindReport', etc: 'fbKindEtc' };
+const FEEDBACK_MAX = 2000;
+let feedbackKind = 'idea';
+let feedbackStoryId = '';
+let feedbackSending = false;
+let feedbackItems = [];
+let feedbackLoadFailed = false;   // 87일차 잔손질: 목록을 못 불러온 상태 — 보낸 게 하나도 없는 것과 구분한다
+
+// 87일차 잔손질: 눈에 보이지 않는 글자(제로폭)만 적어 놓고 보내는 것을 막는다.
+// JS 의 trim 은 이 글자들을 공백으로 보지 않아, 빈 것처럼 보이는 의견이 실제로 저장됐다.
+function fbBody(s) {
+  const str = String(s == null ? '' : s);
+  let out = '';
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i);
+    if (c === 0x200B || c === 0x200C || c === 0x200D || c === 0x2060 || c === 0xFEFF) continue;
+    out += str.charAt(i);
+  }
+  return out.trim();
+}
+
+// 87일차: 신고한 답변을 글 상자에 미리 담기 위해 마지막 AI 답변을 글로 옮긴다.
+// 서버 규칙이 칸을 여섯 개로 묶어 두었으므로 새 칸을 만들지 않고 text 안에 담는다.
+function fbLastAiText(limit) {
+  try {
+    const h = (typeof state !== 'undefined' && state && state.history) || [];
+    for (let i = h.length - 1; i >= 0; i--) {
+      const turn = h[i];
+      if (!turn || turn.role !== 'model' || !Array.isArray(turn.beats)) continue;
+      const line = turn.beats.map((b) => {
+        const txt = String((b && b.text) || '').trim();
+        if (!txt) return '';
+        return b.type === 'dialogue' ? ((String((b && b.speaker) || '') + ' ' + txt).trim()) : ('(' + txt + ')');
+      }).filter((x) => !!x).join(' ');
+      if (line) return line.slice(0, limit || 500);
+    }
+  } catch (e) {}
+  return '';
+}
+
+function feedbackColRef() {
+  return db.collection('players').doc(currentUid).collection('feedback');
+}
+
+// 보낸 시각(ISO 글자)을 사람이 읽는 줄로. 못 읽는 값이면 빈 줄로 둔다.
+function feedbackWhen(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const p2 = (n) => (n < 10 ? '0' : '') + n;
+  const y = d.getFullYear(), mo = p2(d.getMonth() + 1), da = p2(d.getDate());
+  const hm = p2(d.getHours()) + ':' + p2(d.getMinutes());
+  // 87일차 잔손질: 날짜 표기를 언어에 맞춘다(예전에는 세 언어 모두 한국식이었다)
+  if (currentLang === 'ja') return y + '/' + mo + '/' + da + ' ' + hm;
+  if (currentLang === 'en') return y + '-' + mo + '-' + da + ' ' + hm;
+  return y + '. ' + mo + '. ' + da + ' ' + hm;
+}
+
+function setFeedbackKind(kind) {
+  feedbackKind = FEEDBACK_KINDS.indexOf(kind) >= 0 ? kind : 'idea';
+  const box = $('fb-kinds');
+  if (!box) return;
+  Array.prototype.forEach.call(box.querySelectorAll('button'), (b) => {
+    const on = b.getAttribute('data-kind') === feedbackKind;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
+// 남은 글자 수와 보내기 버튼 잠금. 빈 글이면 눌리지 않는다.
+function updateFeedbackCount() {
+  const ta = $('fb-text');
+  if (!ta) return;
+  const raw = ta.value.length;
+  const body = fbBody(ta.value).length;   // 87일차 잔손질: 제로폭 글자를 걷어낸 뒤 센다
+  const cnt = $('fb-count');
+  if (cnt) {
+    cnt.textContent = raw + ' / ' + FEEDBACK_MAX;
+    cnt.classList.toggle('over', raw > FEEDBACK_MAX);
+  }
+  const btn = $('fb-send');
+  if (btn) btn.disabled = feedbackSending || body < 1 || raw > FEEDBACK_MAX;
+}
+
+function feedbackMsg(key, good) {
+  const box = $('fb-msg');
+  if (!box) return;
+  box.textContent = key ? t(key) : '';
+  box.className = 'fb-msg' + (key ? (good ? ' ok' : ' bad') : '');
+}
+
+function feedbackItemEl(item) {
+  const wrap = document.createElement('div');
+  wrap.className = 'fb-item';
+  const head = document.createElement('div');
+  head.className = 'fb-item-head';
+  const kind = document.createElement('span');
+  kind.className = 'fb-item-kind';
+  kind.textContent = t(FEEDBACK_KIND_KEY[item.kind] || 'fbKindEtc');
+  head.appendChild(kind);
+  const when = document.createElement('span');
+  when.className = 'fb-item-when';
+  when.textContent = feedbackWhen(item.createdAt);
+  head.appendChild(when);
+  wrap.appendChild(head);
+  const body = document.createElement('div');
+  body.className = 'fb-item-text';
+  body.textContent = item.text;
+  wrap.appendChild(body);
+  if (item.reply) {
+    const rep = document.createElement('div');
+    rep.className = 'fb-item-reply';
+    const repHead = document.createElement('div');
+    repHead.className = 'fb-item-reply-head';
+    const repWhen = feedbackWhen(item.repliedAt);   // 87일차 잔손질: 운영자가 언제 답했는지도 보여준다
+    repHead.textContent = t('fbReplyLabel') + (repWhen ? ' · ' + repWhen : '');
+    rep.appendChild(repHead);
+    const repBody = document.createElement('div');
+    repBody.textContent = item.reply;
+    rep.appendChild(repBody);
+    wrap.appendChild(rep);
+  }
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'fb-del';
+  del.textContent = t('fbDeleteBtn');
+  del.addEventListener('click', () => deleteFeedback(item.id));
+  wrap.appendChild(del);
+  return wrap;
+}
+
+// 화면에 있는 값만 다시 그린다(서버를 다시 부르지 않는다). 언어를 바꿀 때도 이걸 부른다.
+function drawFeedbackScreen() {
+  const signedIn = !!currentUid;
+  const guest = $('fb-guest');
+  const form = $('fb-form');
+  if (guest) guest.style.display = signedIn ? 'none' : '';
+  if (form) form.style.display = signedIn ? '' : 'none';
+  setFeedbackKind(feedbackKind);
+  const line = $('fb-story-line');
+  if (line) {
+    let title = '';
+    if (feedbackStoryId && typeof STORIES !== 'undefined' && STORIES[feedbackStoryId]) {
+      title = String((localizeStory(STORIES[feedbackStoryId], feedbackStoryId) || {}).title || '');
+    }
+    line.textContent = title ? (t('fbAboutStory') + ' ' + title) : '';
+    line.hidden = !title;
+  }
+  const listTitle = $('fb-list-title');
+  if (listTitle) listTitle.hidden = !signedIn;   // 로그인 안 한 사람에게 제목만 덩그러니 남지 않게
+  const box = $('fb-list');
+  const empty = $('fb-empty');
+  if (box) {
+    box.textContent = '';
+    if (signedIn) feedbackItems.forEach((item) => box.appendChild(feedbackItemEl(item)));
+  }
+  if (empty) {
+    // 87일차 잔손질: 못 불러온 것과 보낸 게 하나도 없는 것을 구분한다(예전에는 둘 다 같은 줄이 떴다)
+    empty.textContent = t(feedbackLoadFailed ? 'fbLoadFailed' : 'fbEmpty');
+    empty.hidden = !signedIn || (!feedbackLoadFailed && feedbackItems.length > 0);
+  }
+  updateFeedbackCount();
+}
+
+async function loadFeedbackItems() {
+  const snap = await feedbackColRef().get();
+  const out = [];
+  snap.forEach((doc) => {
+    const d = doc.data() || {};
+    out.push({
+      id: doc.id,
+      text: String(d.text || ''),
+      kind: String(d.kind || 'etc'),
+      createdAt: String(d.createdAt || ''),
+      storyId: String(d.storyId || ''),
+      reply: String(d.reply || ''),
+      repliedAt: (d.repliedAt && typeof d.repliedAt.toDate === 'function') ? d.repliedAt.toDate().toISOString() : String(d.repliedAt || '')
+    });
+  });
+  out.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return out;
+}
+
+async function renderFeedbackList() {
+  if (!currentUid) { feedbackItems = []; feedbackLoadFailed = false; drawFeedbackScreen(); return; }
+  try { feedbackItems = await loadFeedbackItems(); feedbackLoadFailed = false; }
+  catch (e) {
+    // 87일차 잔손질: 못 불러왔으면 남아 있던 목록을 비운다 — 한 기기에서 계정을 바꿔 로그인했을 때
+    // 앞사람 의견이 그대로 보이면 안 된다. 그리고 못 불러왔다는 것을 화면에 알린다.
+    feedbackItems = [];
+    feedbackLoadFailed = true;
+    logClientError('feedbackList', e && e.message);
+  }
+  drawFeedbackScreen();
+}
+
+// 내 정보(마이페이지)와 대화 화면의 "이 대화 신고하기"가 함께 쓰는 입구.
+function openFeedback(kind, storyId) {
+  feedbackStoryId = storyId ? String(storyId) : '';
+  feedbackItems = [];          // 87일차 잔손질: 늘 빈 목록으로 시작해 서버에서 받아온 뒤에 채운다
+  feedbackLoadFailed = false;
+  setFeedbackKind(kind || 'idea');
+  feedbackMsg('', true);
+  goTo('screen-feedback');
+  drawFeedbackScreen();
+  renderFeedbackList();
+}
+
+function reportCurrentChat() {
+  openFeedback('report', currentStoryId || '');
+  // 87일차: 신고한 답변을 글 상자에 미리 담는다(구글 플레이의 AI 생성물 신고 요건 — 운영자가 문제 장면을 그대로 읽을 수 있어야 한다).
+  // 이미 적어 둔 글이 있으면 건드리지 않는다.
+  const ta = $('fb-text');
+  if (!ta || fbBody(ta.value)) return;
+  const said = fbLastAiText(500);
+  if (!said) return;
+  const nl = String.fromCharCode(10);
+  // 묻는 줄을 맨 위에 둔다 — 글 상자를 열자마자 무엇을 적어야 하는지가 보여야 한다(신고한 답변은 그 아래에 붙인다)
+  ta.value = t('fbReportAsk') + ' ' + nl + nl + t('fbReportLead') + ' ' + said;
+  updateFeedbackCount();
+}
+
+async function sendFeedback() {
+  if (feedbackSending) return;
+  const ta = $('fb-text');
+  if (!ta) return;
+  const text = fbBody(ta.value);   // 87일차 잔손질: 제로폭 글자를 먼저 걷어낸다
+  if (!currentUid) { feedbackMsg('fbErrLogin', false); return; }
+  if (!text) { feedbackMsg('fbErrEmpty', false); return; }
+  if (text.length > FEEDBACK_MAX) { feedbackMsg('fbErrTooLong', false); return; }
+  feedbackSending = true;
+  const btn = $('fb-send');
+  if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+  feedbackMsg('', true);
+  try {
+    // 서버 규칙의 여섯 칸 밖으로는 아무것도 넣지 않는다. storyId 는 대화에서 왔을 때만 넣는다.
+    const payload = {
+      text: text,
+      kind: FEEDBACK_KINDS.indexOf(feedbackKind) >= 0 ? feedbackKind : 'etc',
+      createdAt: nowIso(),
+      lang: currentLang,
+      build: String(window.__BUILD || '')
+    };
+    if (feedbackStoryId) payload.storyId = feedbackStoryId;
+    await feedbackColRef().add(payload);
+    ta.value = '';
+    await renderFeedbackList();
+    feedbackMsg('fbSentOk', true);
+  } catch (e) {
+    const code = String((e && e.code) || (e && e.message) || '').toLowerCase();
+    feedbackMsg(code.indexOf('permission') >= 0 ? 'fbErrDenied' : 'fbErrNetwork', false);
+    logClientError('feedbackSend', e && e.message);
+  } finally {
+    feedbackSending = false;
+    if (btn) btn.classList.remove('loading');
+    updateFeedbackCount();
+  }
+}
+
+async function deleteFeedback(id) {
+  if (!id || !currentUid) return;
+  if (!confirm(t('fbDeleteConfirm'))) return;
+  try {
+    await feedbackColRef().doc(id).delete();
+    await renderFeedbackList();
+    feedbackMsg('', true);
+  } catch (e) {
+    feedbackMsg('fbErrDelete', false);
+    logClientError('feedbackDelete', e && e.message);
+  }
+}
+
+function initFeedbackUI() {
+  const kinds = $('fb-kinds');
+  if (kinds) kinds.addEventListener('click', (ev) => {
+    const b = ev.target && ev.target.closest ? ev.target.closest('button[data-kind]') : null;
+    if (b) setFeedbackKind(b.getAttribute('data-kind'));
+  });
+  const ta = $('fb-text');
+  if (ta) ta.addEventListener('input', updateFeedbackCount);
+  setFeedbackKind('idea');
+  updateFeedbackCount();
+}
+initFeedbackUI();
 
 // --- 인연 앨범 (완성된 인연 목록) ---
 // 74일차: 일기책 — 완성 인연의 내부 일기를 30일 단위 '권'으로 묶어 읽는 상품.
@@ -2615,6 +3256,9 @@ auth.onAuthStateChanged(async (user) => {
   if (!user) {
     currentUid = null;
     playerProfile = null;
+    feedbackItems = [];       // 87일차 잔손질: 한 기기에서 계정을 바꿔 로그인해도 앞사람 의견이 남지 않게
+    feedbackStoryId = '';
+    feedbackLoadFailed = false;
     __authUid = null;
     __authSettled = true;
     // 랜딩 화면 자체에 세계관 자막이 항상 흘러가므로 별도 세계관 화면 분기 없이 바로 랜딩으로 이동한다.
@@ -2670,7 +3314,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-09-16.5';
+window.__BUILD = 'v2026-09-17.1';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -2926,6 +3570,10 @@ async function deleteAccount() {
     // 하위 대화 기록을 지우고, 마지막에 계정 문서를 지운다.
     const snap = await db.collection('players').doc(currentUid).collection('storyStates').get();
     await Promise.all(snap.docs.map(d => d.ref.delete()));
+    // 87일차: 보내 주신 의견도 함께 지운다. 금고는 부모 문서를 지워도 그 아래 칸이 남고,
+    // 계정이 사라지면 규칙상 본인도 지울 수 없게 되어 방침의 지체 없는 파기와 어긋난다.
+    const fbSnap = await db.collection('players').doc(currentUid).collection('feedback').get();
+    await Promise.all(fbSnap.docs.map(d => d.ref.delete()));
     await db.collection('players').doc(currentUid).delete();
     try {
       await user.delete();
@@ -3076,6 +3724,10 @@ const COIN_PACKS = [
   { coins: 550,  usd: 4.99, labelKey: 'coin550Label',  priceKey: 'coin550Price',  best: true },
   { coins: 1200, usd: 8.99, labelKey: 'coin1200Label', priceKey: 'coin1200Price' }
 ];
+// 84일차: '가장 이득' 배지를 손으로 붙여 두었더니 550(+9%)에 붙고 바로 아래 1200(+32%)이 맨몸이었다.
+//         1달러당 코인이 가장 많은 묶음이 배지를 가져가게 계산으로 바꾼다 — 값을 고쳐도 배지가 어긋나지 않는다.
+COIN_PACKS.forEach(p => { p.best = false; });
+COIN_PACKS[COIN_PACKS.reduce((b, p, i) => (p.coins / p.usd > COIN_PACKS[b].coins / COIN_PACKS[b].usd ? i : b), 0)].best = true;
 
 // ===== PayPal 결제 (66일차) =====
 // paypalClientId를 채우면 실결제 모드, 비워두면 테스트 지급 모드.
@@ -3269,6 +3921,7 @@ async function buyCoins(pack, card) {
 // =====================================================
 // =====================================================
 // 법률 문서 (62일차 초안 — 형균님 검토 후 확정). 시행일 2026-08-24.
+// 84일차 기준 시행일: 이용약관 2026-09-17 (이전 약관 2026-08-24) · 개인정보처리방침 2026-09-17 · 환불 정책 2026-08-26.
 // 개인 운영·픽션 콘텐츠·18+·코인/구독(추후 PayPal) 전제로 작성.
 // 일본 대상 유료 판매 시작 시 '특정상거래법 표기' 추가 필요 — 작업리스트 참고.
 // =====================================================
@@ -3289,11 +3942,11 @@ terms: `<h3>1. 서비스 소개</h3><p>LUNIQUE(이하 "서비스")는 작품 속
 <h3>8. 이용 제한</h3><p>본 약관을 중대하게 또는 반복적으로 위반하는 경우 이용을 제한하거나 계정을 정지할 수 있습니다.</p>
 <h3>9. 책임의 한계</h3><p>서비스는 "있는 그대로" 제공됩니다. 법이 허용하는 범위에서, 운영자는 서비스 이용으로 발생한 간접적·부수적 손해에 대해 책임을 지지 않습니다. 이 조항은 각국 소비자 보호 법령상 이용자의 권리를 제한하지 않습니다.</p>
 <h3>10. 준거법</h3><p>본 약관은 대한민국 법을 준거법으로 합니다. 다만 이용자가 거주하는 국가의 강행 소비자 보호 규정이 있는 경우 그 보호를 받습니다.</p>
-<h3>11. 운영자 및 문의</h3><p>운영자(판매자): 오형균 (Hyeonggyun Oh, 개인)<br>이메일: kkfm1215@gmail.com</p><p>시행일: 2026-08-24</p>`,
-privacy: `<h3>1. 수집하는 정보</h3><p>· 계정: Google 로그인 식별자, 이메일<br>· 프로필: 닉네임, 성별, 생년월일, 자기소개(선택), 관심 상대<br>· 이용 기록: 대화 내용, 관계 진행 상태, 코인·구독·무료 이용량, 오류 기록</p>
-<h3>2. 이용 목적</h3><p>서비스 제공(대화 생성과 "기억" 기능), 연령 확인, 결제·이용량 관리, 오류 진단과 안전한 운영.</p>
-<h3>3. 처리 위탁과 개인정보의 국외 이전</h3><p>다음 사업자가 서비스 제공을 위해 정보를 처리합니다:<br>· Google Firebase — 로그인, 데이터 저장<br>· Google Gemini API — 대화 생성(입력한 대화 내용이 처리됨)<br>· Netlify — 호스팅<br>· PayPal — 결제(결제 기능 도입 시, 카드 정보는 운영자가 보관하지 않음)</p><p>이 사업자들의 서버는 국외에 있어, 개인정보가 아래와 같이 국외로 이전됩니다.<br>· 이전되는 항목: Google 로그인 식별자와 이메일, 프로필(닉네임·성별·생년월일·자기소개·관심 상대), 대화 내용과 관계 진행 상태, 코인·구독·무료 이용량, 오류 기록<br>· 이전되는 국가와 시기: 미국 등 각 사업자의 서버가 있는 국가 / 서비스를 이용하는 동안 수시로<br>· 이전 방법: 정보통신망을 통한 전송<br>· 받는 자와 연락처: Google LLC(Firebase 로그인·저장, Gemini API 대화 생성, 개인정보 문의 support.google.com) / Netlify, Inc.(호스팅, 개인정보 문의 privacy@netlify.com) / PayPal(결제, 결제 기능 도입 시, 개인정보 문의 paypal.com 고객센터)<br>· 이용 목적과 보유·이용 기간: 위 2조의 목적 / 계정이 유지되는 동안 보관하며, 계정을 삭제하면 지체 없이 파기<br>· 거부 방법과 그 결과: 국외 이전을 원하지 않으시면 [내 정보] 화면에서 계정을 삭제하실 수 있습니다. 다만 로그인·저장·대화 생성이 모두 국외 사업자를 통해 이루어지므로, 거부하시면 서비스를 이용하실 수 없습니다.</p>
-<h3>4. 보관과 파기</h3><p>정보는 계정이 유지되는 동안 보관하며, 계정을 삭제하면 프로필과 대화 기록이 지체 없이 파기됩니다. 계정 삭제는 [내 정보] 화면에서 직접 할 수 있습니다. 다만 결제 영수증은 전자상거래 등에서의 소비자보호에 관한 법률에 따라 5년간 보관하며, 이 기록에는 대화 내용이 포함되지 않습니다.</p>
+<h3>11. 운영자 및 문의</h3><p>운영자(판매자): 오형균 (Hyeonggyun Oh, 개인)<br>이메일: kkfm1215@gmail.com</p><p>시행일: 2026-09-17 (이전 약관: 2026-08-24)</p>`,
+privacy: `<h3>1. 수집하는 정보</h3><p>· 계정: Google 로그인 식별자, 이메일<br>· 프로필: 닉네임, 성별, 생년월일, 자기소개(선택), 관심 상대<br>· 이용 기록: 대화 내용, 관계 진행 상태, 코인·구독·무료 이용량, 오류 기록<br>· 문의·의견: 보내 주신 글, 종류, 보낸 시각, 사용 언어, 앱 판 번호, 관련 이야기, 운영자 답변</p>
+<h3>2. 이용 목적</h3><p>서비스 제공(대화 생성과 "기억" 기능), 연령 확인, 결제·이용량 관리, 오류 진단과 안전한 운영, 문의 응대와 서비스 개선.</p>
+<h3>3. 처리 위탁과 개인정보의 국외 이전</h3><p>다음 사업자가 서비스 제공을 위해 정보를 처리합니다:<br>· Google Firebase — 로그인, 데이터 저장<br>· Google Gemini API — 대화 생성(입력한 대화 내용이 처리됨)<br>· Netlify — 호스팅<br>· PayPal — 결제(결제 기능 도입 시, 카드 정보는 운영자가 보관하지 않음)</p><p>이 사업자들의 서버는 국외에 있어, 개인정보가 아래와 같이 국외로 이전됩니다.<br>· 이전되는 항목: Google 로그인 식별자와 이메일, 프로필(닉네임·성별·생년월일·자기소개·관심 상대), 대화 내용과 관계 진행 상태, 코인·구독·무료 이용량, 오류 기록, 문의·의견 내용과 운영자 답변<br>· 이전되는 국가와 시기: 미국 등 각 사업자의 서버가 있는 국가 / 서비스를 이용하는 동안 수시로<br>· 이전 방법: 정보통신망을 통한 전송<br>· 받는 자와 연락처: Google LLC(Firebase 로그인·저장, Gemini API 대화 생성, 개인정보 문의 support.google.com) / Netlify, Inc.(호스팅, 개인정보 문의 privacy@netlify.com) / PayPal(결제, 결제 기능 도입 시, 개인정보 문의 paypal.com 고객센터)<br>· 이용 목적과 보유·이용 기간: 위 2조의 목적 / 계정이 유지되는 동안 보관하며, 계정을 삭제하면 지체 없이 파기<br>· 거부 방법과 그 결과: 국외 이전을 원하지 않으시면 [내 정보] 화면에서 계정을 삭제하실 수 있습니다. 다만 로그인·저장·대화 생성이 모두 국외 사업자를 통해 이루어지므로, 거부하시면 서비스를 이용하실 수 없습니다.</p>
+<h3>4. 보관과 파기</h3><p>정보는 계정이 유지되는 동안 보관하며, 계정을 삭제하면 프로필과 대화 기록, 보내 주신 의견과 운영자 답변이 지체 없이 파기됩니다. 계정 삭제는 [내 정보] 화면에서 직접 할 수 있습니다. 다만 결제 영수증은 전자상거래 등에서의 소비자보호에 관한 법률에 따라 5년간 보관하며, 이 기록에는 대화 내용이 포함되지 않습니다.</p>
 <h3>5. 이용자의 권리</h3><p>언제든 [내 정보]에서 프로필을 열람·수정할 수 있고, 계정 삭제로 전체 삭제를 요청할 수 있습니다. 그 밖의 요청은 아래 연락처로 문의해 주세요.</p>
 <h3>6. 쿠키·로컬 저장소</h3><p>로그인 유지와 화면 설정(언어, 안내 표시 여부)을 위해 브라우저 저장소를 사용합니다. 광고·추적 목적의 쿠키는 사용하지 않습니다.</p>
 <h3>7. 아동의 개인정보</h3><p>만 18세 미만은 서비스를 이용할 수 없으며, 아동의 정보를 고의로 수집하지 않습니다.</p>
@@ -3315,11 +3968,11 @@ terms: `<h3>1. About the Service</h3><p>LUNIQUE (the "Service") is an entertainm
 <h3>8. Suspension</h3><p>Serious or repeated violations of these Terms may result in restriction or suspension of your account.</p>
 <h3>9. Limitation of Liability</h3><p>The Service is provided "as is". To the extent permitted by law, the operator is not liable for indirect or incidental damages arising from use of the Service. This does not limit rights you have under consumer protection laws of your country.</p>
 <h3>10. Governing Law</h3><p>These Terms are governed by the laws of the Republic of Korea, without prejudice to mandatory consumer protections of your country of residence.</p>
-<h3>11. Operator & Contact</h3><p>Operator (Seller): Hyeonggyun Oh (sole trader / individual)<br>Email: kkfm1215@gmail.com</p><p>Effective: 2026-08-24</p>`,
-privacy: `<h3>1. Data We Collect</h3><p>· Account: Google sign-in identifier, email<br>· Profile: nickname, gender, date of birth, bio (optional), preference<br>· Usage: chat content, relationship progress, coin/subscription/free-quota usage, error logs</p>
-<h3>2. Purposes</h3><p>Providing the Service (conversation generation and the "memory" feature), age verification, billing and quota management, diagnostics and safe operation.</p>
-<h3>3. Processors & Transfer of Personal Data Abroad</h3><p>The following providers process data on our behalf:<br>· Google Firebase — sign-in, data storage<br>· Google Gemini API — conversation generation (your chat inputs are processed)<br>· Netlify — hosting<br>· PayPal — payments (when introduced; we never store card details)</p><p>Their servers are located outside Korea, so personal data is transferred abroad as follows.<br>· Items transferred: Google sign-in identifier and email, profile (nickname, gender, date of birth, bio, preference), chat content and relationship progress, coin/subscription/free-quota usage, error logs<br>· Countries and timing: the countries where each provider keeps its servers, including the United States / continuously while you use the Service<br>· Method: transmission over the network<br>· Recipients and contacts: Google LLC (Firebase sign-in and storage, Gemini API conversation generation; privacy contact support.google.com) / Netlify, Inc. (hosting; privacy contact privacy@netlify.com) / PayPal (payments, when introduced; privacy contact paypal.com support)<br>· Purpose and retention: the purposes in Section 2 / kept while your account exists and erased without delay when you delete your account<br>· How to refuse and what follows: if you do not want your data transferred abroad, you can delete your account on the [Me] screen. Because sign-in, storage and conversation generation all run through providers abroad, refusing means the Service cannot be used.</p>
-<h3>4. Retention & Deletion</h3><p>Data is kept while your account exists. Deleting your account promptly erases your profile and chat history. You can delete your account yourself on the [Me] screen.</p>
+<h3>11. Operator & Contact</h3><p>Operator (Seller): Hyeonggyun Oh (sole trader / individual)<br>Email: kkfm1215@gmail.com</p><p>Effective: 2026-09-17 (previous terms: 2026-08-24)</p>`,
+privacy: `<h3>1. Data We Collect</h3><p>· Account: Google sign-in identifier, email<br>· Profile: nickname, gender, date of birth, bio (optional), preference<br>· Usage: chat content, relationship progress, coin/subscription/free-quota usage, error logs<br>· Feedback: the message you send, its category, the time it was sent, your language, the app build, the related story, and our reply</p>
+<h3>2. Purposes</h3><p>Providing the Service (conversation generation and the "memory" feature), age verification, billing and quota management, diagnostics and safe operation, responding to your feedback and improving the Service.</p>
+<h3>3. Processors & Transfer of Personal Data Abroad</h3><p>The following providers process data on our behalf:<br>· Google Firebase — sign-in, data storage<br>· Google Gemini API — conversation generation (your chat inputs are processed)<br>· Netlify — hosting<br>· PayPal — payments (when introduced; we never store card details)</p><p>Their servers are located outside Korea, so personal data is transferred abroad as follows.<br>· Items transferred: Google sign-in identifier and email, profile (nickname, gender, date of birth, bio, preference), chat content and relationship progress, coin/subscription/free-quota usage, error logs, feedback you send and our replies<br>· Countries and timing: the countries where each provider keeps its servers, including the United States / continuously while you use the Service<br>· Method: transmission over the network<br>· Recipients and contacts: Google LLC (Firebase sign-in and storage, Gemini API conversation generation; privacy contact support.google.com) / Netlify, Inc. (hosting; privacy contact privacy@netlify.com) / PayPal (payments, when introduced; privacy contact paypal.com support)<br>· Purpose and retention: the purposes in Section 2 / kept while your account exists and erased without delay when you delete your account<br>· How to refuse and what follows: if you do not want your data transferred abroad, you can delete your account on the [Me] screen. Because sign-in, storage and conversation generation all run through providers abroad, refusing means the Service cannot be used.</p>
+<h3>4. Retention & Deletion</h3><p>Data is kept while your account exists. Deleting your account promptly erases your profile, your chat history, and the feedback you sent together with our replies. You can delete your account yourself on the [Me] screen.</p>
 <h3>5. Your Rights</h3><p>You can view and edit your profile anytime on the [Me] screen and request full erasure by deleting your account. For other requests, contact us below.</p>
 <h3>6. Cookies & Local Storage</h3><p>Browser storage is used to keep you signed in and remember settings (language, one-time guides). No advertising or tracking cookies.</p>
 <h3>7. Children</h3><p>The Service is not available to persons under 18, and we do not knowingly collect children's data.</p>
@@ -3341,11 +3994,11 @@ terms: `<h3>1. サービスについて</h3><p>LUNIQUE(以下「本サービス�
 <h3>8. 利用制限</h3><p>本規約への重大または反復的な違反があった場合、利用制限やアカウント停止を行うことがあります。</p>
 <h3>9. 責任の制限</h3><p>本サービスは現状有姿で提供されます。法令が許す範囲で、運営者は本サービスの利用から生じた間接的・付随的損害について責任を負いません。本条項は各国の消費者保護法上の権利を制限しません。</p>
 <h3>10. 準拠法</h3><p>本規約は大韓民国法を準拠法とします。ただし、利用者の居住国の強行的な消費者保護規定がある場合、その保護を受けます。</p>
-<h3>11. 運営者・お問い合わせ</h3><p>運営者(販売者): Oh Hyeonggyun(個人)<br>メール: kkfm1215@gmail.com</p><p>施行日: 2026-08-24</p>`,
-privacy: `<h3>1. 収集する情報</h3><p>· アカウント: Googleログイン識別子、メールアドレス<br>· プロフィール: ニックネーム、性別、生年月日、自己紹介(任意)、関心のある相手<br>· 利用記録: 会話内容、関係の進行状況、コイン・購読・無料利用量、エラー記録</p>
-<h3>2. 利用目的</h3><p>サービス提供(会話生成と「記憶」機能)、年齢確認、決済・利用量管理、エラー診断と安全な運営。</p>
-<h3>3. 処理の委託と個人情報の国外移転</h3><p>以下の事業者がサービス提供のため情報を処理します:<br>· Google Firebase — ログイン、データ保存<br>· Google Gemini API — 会話生成(入力した会話内容が処理されます)<br>· Netlify — ホスティング<br>· PayPal — 決済(導入時。カード情報を運営者は保持しません)</p><p>これらの事業者のサーバーは国外にあるため、個人情報は以下のとおり国外に移転されます。<br>· 移転される項目: Googleログイン識別子とメールアドレス、プロフィール(ニックネーム・性別・生年月日・自己紹介・関心のある相手)、会話内容と関係の進行状況、コイン・購読・無料利用量、エラー記録<br>· 移転先の国と時期: 米国など各事業者のサーバーがある国 / サービスを利用している間、随時<br>· 移転の方法: ネットワークを通じた送信<br>· 受け取る者と連絡先: Google LLC(Firebaseのログイン・保存、Gemini APIの会話生成、個人情報のお問い合わせ support.google.com) / Netlify, Inc.(ホスティング、privacy@netlify.com) / PayPal(決済。導入時。paypal.com カスタマーサポート)<br>· 利用目的と保有・利用期間: 上記2条の目的 / アカウントが存続する間保管し、アカウントを削除すると遅滞なく消去<br>· 拒否する方法とその結果: 国外移転を望まれない場合は[マイ]画面からアカウントを削除できます。ただしログイン・保存・会話生成のすべてが国外の事業者を通じて行われるため、拒否された場合は本サービスをご利用いただけません。</p>
-<h3>4. 保管と削除</h3><p>情報はアカウントが存続する間保管され、アカウントを削除するとプロフィールと会話履歴は遅滞なく消去されます。アカウント削除は[マイ]画面からご自身で行えます。</p>
+<h3>11. 運営者・お問い合わせ</h3><p>運営者(販売者): Oh Hyeonggyun(個人)<br>メール: kkfm1215@gmail.com</p><p>施行日: 2026-09-17 (旧規約: 2026-08-24)</p>`,
+privacy: `<h3>1. 収集する情報</h3><p>· アカウント: Googleログイン識別子、メールアドレス<br>· プロフィール: ニックネーム、性別、生年月日、自己紹介(任意)、関心のある相手<br>· 利用記録: 会話内容、関係の進行状況、コイン・購読・無料利用量、エラー記録<br>· お問い合わせ・ご意見: 送っていただいた本文、種類、送信日時、使用言語、アプリのバージョン、関連する物語、運営者からの返信</p>
+<h3>2. 利用目的</h3><p>サービス提供(会話生成と「記憶」機能)、年齢確認、決済・利用量管理、エラー診断と安全な運営、お問い合わせへの対応とサービス改善。</p>
+<h3>3. 処理の委託と個人情報の国外移転</h3><p>以下の事業者がサービス提供のため情報を処理します:<br>· Google Firebase — ログイン、データ保存<br>· Google Gemini API — 会話生成(入力した会話内容が処理されます)<br>· Netlify — ホスティング<br>· PayPal — 決済(導入時。カード情報を運営者は保持しません)</p><p>これらの事業者のサーバーは国外にあるため、個人情報は以下のとおり国外に移転されます。<br>· 移転される項目: Googleログイン識別子とメールアドレス、プロフィール(ニックネーム・性別・生年月日・自己紹介・関心のある相手)、会話内容と関係の進行状況、コイン・購読・無料利用量、エラー記録、ご意見の内容と運営者からの返信<br>· 移転先の国と時期: 米国など各事業者のサーバーがある国 / サービスを利用している間、随時<br>· 移転の方法: ネットワークを通じた送信<br>· 受け取る者と連絡先: Google LLC(Firebaseのログイン・保存、Gemini APIの会話生成、個人情報のお問い合わせ support.google.com) / Netlify, Inc.(ホスティング、privacy@netlify.com) / PayPal(決済。導入時。paypal.com カスタマーサポート)<br>· 利用目的と保有・利用期間: 上記2条の目的 / アカウントが存続する間保管し、アカウントを削除すると遅滞なく消去<br>· 拒否する方法とその結果: 国外移転を望まれない場合は[マイ]画面からアカウントを削除できます。ただしログイン・保存・会話生成のすべてが国外の事業者を通じて行われるため、拒否された場合は本サービスをご利用いただけません。</p>
+<h3>4. 保管と削除</h3><p>情報はアカウントが存続する間保管され、アカウントを削除するとプロフィールと会話履歴、送っていただいたご意見と運営者からの返信は遅滞なく消去されます。アカウント削除は[マイ]画面からご自身で行えます。</p>
 <h3>5. 利用者の権利</h3><p>[マイ]画面でいつでもプロフィールを閲覧・修正でき、アカウント削除により全消去を求められます。その他のご要望は下記連絡先へ。</p>
 <h3>6. Cookie・ローカルストレージ</h3><p>ログイン維持と設定(言語、初回ガイド表示)のためブラウザーの保存領域を使用します。広告・追跡目的のCookieは使用しません。</p>
 <h3>7. 未成年者</h3><p>18歳未満の方は本サービスを利用できず、児童の情報を故意に収集しません。</p>
@@ -3538,9 +4191,14 @@ async function openSubscribeScreen() {
 // 72일차: 작은 자리(목록 카드·이어하기·아바타)에 쓰는 축소본.
 // 원본은 평균 97KB인데 카드에는 26~78px로만 보이므로, 320px 썸네일(평균 17KB)이면 충분하다.
 // images/t/ 아래에 같은 이름으로 들어 있다. 없으면 원본으로 돌아간다.
+// 84일차: images/t/ 는 배포본에 올라가 있지 않다. 그래서 카드마다 축소본을 먼저 찾아 404 를 맞고
+//         그제야 원본을 받는 헛걸음이 122장 내내 일어났다(목록 사진이 1~2초 늦게 뜨는 원인).
+//         축소본 폴더를 올리는 날 이 값만 true 로 되돌리면 된다.
+const USE_THUMBS = false;
 function thumb(key) {
   const 원본 = AVATAR_IMAGE[key];
   if (!원본) return 원본;
+  if (!USE_THUMBS) return 원본;   // 84일차: 없는 축소본을 먼저 찾지 않는다
   return 원본.replace(/^images\/([^/]+)\.(jpg|jpeg|png)$/i, 'images/t/$1.jpg');
 }
 
@@ -3744,12 +4402,13 @@ function renderCoverThumb(id, small) {
   const story = localizeStory(raw, id) || raw;
   const box = document.createElement(small ? 'span' : 'div');   // 80일차: small 은 .cc-av(span) 안에 들어가므로 span
   box.className = 'cover-thumb' + (small ? ' small' : '');
+  const srcName = classicSourceName(raw);   // 82일차: 원전 3편은 표지에 원전 이름이 크게, 지금 제목이 작게
   const title = String(story.title || raw.title || '');
   const tt = document.createElement('span');
   tt.className = 'ct-title';
-  tt.textContent = small ? title.trim().charAt(0) : title;
+  tt.textContent = small ? title.trim().charAt(0) : (srcName || title);
   box.appendChild(tt);
-  const label = raw.classic && raw.classic.label && (raw.classic.label[currentLang] || raw.classic.label.ko);
+  const label = srcName ? title : (raw.classic && raw.classic.label && (raw.classic.label[currentLang] || raw.classic.label.ko));
   if (!small && label) {
     const sub = document.createElement('span');
     sub.className = 'ct-sub';
@@ -3865,23 +4524,7 @@ async function renderHeroStats() {
       if (st.genre && GENRE_LABELS[st.genre]) present[st.genre] = true;
     });
     document.querySelectorAll('[data-i18n-stat]').forEach(el => fillStatText(el, nums.stories ? nums : null));
-    const names = GENRE_ORDER.filter(k => present[k]).map(k => GENRE_LABELS[k][currentLang] || GENRE_LABELS[k].ko);
-    document.querySelectorAll('[data-genre-line]').forEach(el => {
-      if (names.length < 2) { el.hidden = true; return; }
-      // 장르 이름이 줄 끝에서 가운데가 끊기지 않게("Slice of / Life", "Sci- / Fi") 이름마다 줄바꿈 없는 칸에 넣는다
-      const parts = t(el.getAttribute('data-genre-line')).split('{GENRE_CHIPS}');
-      el.textContent = '';
-      el.appendChild(document.createTextNode(parts[0]));
-      names.forEach((name, i) => {
-        if (i) el.appendChild(document.createTextNode(' · '));
-        const span = document.createElement('span');
-        span.style.whiteSpace = 'nowrap';
-        span.textContent = name;
-        el.appendChild(span);
-      });
-      el.appendChild(document.createTextNode(parts.slice(1).join(names.join(' · '))));
-      el.hidden = false;
-    });
+    fillGenreLine(GENRE_ORDER.filter(k => present[k]));
   } catch (e) {
     document.querySelectorAll('[data-i18n-stat]').forEach(el => fillStatText(el, null));
     try { logClientError('hero-stats', String((e && e.message) || e).slice(0, 100)); } catch (e2) { }
@@ -4181,8 +4824,42 @@ function relTimeText(ms) {
 // (옛 기준이던 딥테스트 점수는 '이야기가 굴러가나'를 봤지 '연애로 설레나'를 안 봤다)
 // 키 = '만나고 싶은 상대 성별'(interest). 남성 캐릭터를 원하면 m, 여성 캐릭터를 원하면 w.
 const CURATED_PICKS = { '남성': ['m25', 'm01', 'm21', 'm11', 'm18'], '여성': ['w05', 'w27', 'w30', 'w42', 'w12'], '모두': ['m25', 'w05', 'm21', 'm01', 'w27'] };
+// 82일차: 원전을 그대로 옮긴 3편(춘향전·제인 에어·금색야차)을 앞에 세운다 — 화면만 바꾸고 데이터(title)는 건드리지 않는다.
+//   classicSourceName: classic.label 에서 말머리(원전: / From / 原典：)만 떼어 작품 이름을 뽑는다. 못 떼면 원문 그대로 쓴다.
+//   classicCardLineHTML: 목록 카드 제목 아래 작은 한 줄. 말머리는 label 에 적힌 그대로 둔다(모티프 편을 "원전"이라 부르면 각색으로 오해받는다).
+//   curatedPicksFor: 추천·스포트라이트 묶음 맨 앞에 이 3편을 붙인다 — CURATED_PICKS 자체는 그대로 둔다.
+const SOURCE_CLASSIC_IDS = ['chunhyang', 'janeeyre', 'konjikiyasha'];
+const CLASSIC_LABEL_HEADS = ['원전: ', '원전:', '原典：', '原典:', 'From ', 'from '];
+function classicSourceName(raw) {
+  if (!isSourceClassic(raw)) return '';
+  const L = raw.classic.label;
+  let s = (L && typeof L === 'object') ? (L[currentLang] || L.ko || '') : String(L || '');
+  s = String(s).trim();
+  for (let i = 0; i < CLASSIC_LABEL_HEADS.length; i++) {
+    const h = CLASSIC_LABEL_HEADS[i];
+    if (s.indexOf(h) === 0) { s = s.slice(h.length).trim(); break; }
+  }
+  return s;
+}
+function classicCardLineHTML(id) {
+  const raw = STORIES[id] || {};
+  const c = raw.classic;
+  if (!c || !c.label) return '';
+  const srcName = classicSourceName(raw);
+  const text = srcName ? String((localizeStory(raw, id) || raw).title || '')
+    : ((typeof c.label === 'object') ? (c.label[currentLang] || c.label.ko || '') : String(c.label || ''));
+  if (!text) return '';
+  const box = document.createElement('div');
+  box.className = 'card-classic';
+  box.textContent = text;
+  return box.outerHTML;
+}
+function curatedPicksFor(interest) {
+  const base = CURATED_PICKS[interest] || CURATED_PICKS['모두'];
+  return SOURCE_CLASSIC_IDS.concat(base.filter(id => SOURCE_CLASSIC_IDS.indexOf(id) < 0));
+}
 function pickStoriesFor(interest, excludeId, count) {
-  const pool = (CURATED_PICKS[interest] || CURATED_PICKS['모두']).filter(id => id !== excludeId && STORIES[id] && STORIES[id].playable);
+  const pool = curatedPicksFor(interest).filter(id => id !== excludeId && STORIES[id] && STORIES[id].playable);   // 82일차: 원전 3편이 맨 앞
   return pool.slice(0, count);
 }
 function firstpickCardHTML(id) {
@@ -4191,10 +4868,12 @@ function firstpickCardHTML(id) {
   const art = (STORIES[id].nophoto === true) ? renderCoverThumb(id) : AVATAR_IMAGE[key]
     ? `<img src="${thumb(key)}" alt="" loading="lazy">`
     : avatarSVG(key, 96, story.cast[0].name);
+  const srcName = classicSourceName(STORIES[id]);   // 82일차: 원전 3편은 원전 이름이 제목, 지금 제목이 부제
   return `<div class="fp-art">${art}</div>
     <div class="fp-info">
       ${story.relationLabel ? `<span class="rel-tag">${story.relationLabel}</span>` : ''}
-      <b class="${story.theme === 'affair' ? 'title-affair' : ''}">${story.title}</b>
+      <b class="${story.theme === 'affair' ? 'title-affair' : ''}">${srcName || story.title}</b>
+      ${srcName ? `<span class="fp-sub">${story.title}</span>` : ''}
       <span class="fp-hook">${story.cardHook || ''}</span>
     </div><span class="cc-go">${t('contGoBtn')}</span>`;
 }
@@ -4340,6 +5019,30 @@ const GENRE_LABELS = {
 };
 // 순서 고정(로맨스는 맨 뒤) — 첫 화면 장르 줄과 목록 탭이 같은 순서를 쓴다. 데이터에 없는 장르는 어느 쪽에도 나오지 않는다.
 const GENRE_ORDER = ['office', 'fantasy', 'daily', 'drama', 'mystery', 'comedy', 'scifi', 'romance'];
+
+// 86일차: 장르 줄도 84일차의 숫자 띠와 같은 문제였다 — catalog 를 기다리다 뒤늦게 끼어들며 첫 화면을 43px 밀어냈다.
+//         그래서 지금 데이터에 있는 장르를 미리 적어 두고 applyTranslations 가 첫 그림부터 채운다.
+//         catalog 가 오면 renderHeroStats 가 실제 장르로 다시 채운다. 두 값이 어긋나면 _check/check_revamp.js 가 잡는다.
+const GENRE_PRESET = ['office', 'fantasy', 'daily', 'drama', 'mystery', 'comedy', 'scifi', 'romance'];
+function fillGenreLine(keys) {
+  const names = keys.filter(k => GENRE_LABELS[k]).map(k => GENRE_LABELS[k][currentLang] || GENRE_LABELS[k].ko);
+  document.querySelectorAll('[data-genre-line]').forEach(el => {
+    if (names.length < 2) { el.hidden = true; return; }
+    // 장르 이름이 줄 끝에서 가운데가 끊기지 않게("Slice of / Life", "Sci- / Fi") 이름마다 줄바꿈 없는 칸에 넣는다
+    const parts = t(el.getAttribute('data-genre-line')).split('{GENRE_CHIPS}');
+    el.textContent = '';
+    el.appendChild(document.createTextNode(parts[0]));
+    names.forEach((name, i) => {
+      if (i) el.appendChild(document.createTextNode(' · '));
+      const span = document.createElement('span');
+      span.style.whiteSpace = 'nowrap';
+      span.textContent = name;
+      el.appendChild(span);
+    });
+    el.appendChild(document.createTextNode(parts.slice(1).join(names.join(' · '))));
+    el.hidden = false;
+  });
+}
 
 // ===== 태그 시스템 (67일차, 레퍼런스 처방 ③) =====
 // 어휘는 키로 통일하고 표기만 3개 언어 — 스토리는 키 배열만 가진다.
@@ -4587,6 +5290,8 @@ async function renderStoryList() {
       .filter(Boolean).join(' ').toLowerCase();
     return wide.includes(q);
   });
+  // 82일차: 원전을 그대로 옮긴 3편을 맨 앞으로. sort 는 순서를 지키므로(ES2019) 나머지 차례는 그대로다 — 장르 탭으로 걸러도 그 장르 안에서 앞에 온다.
+  matching.sort((a, b) => (isSourceClassic(STORIES[b]) ? 1 : 0) - (isSourceClassic(STORIES[a]) ? 1 : 0));
   const emptyEl = $('story-list-empty');
   if (emptyEl) emptyEl.style.display = matching.length ? 'none' : 'block';
   matching.forEach(id => {
@@ -4623,10 +5328,12 @@ async function renderStoryList() {
     const blockedBadge = blocked ? `<span class="diff-badge badge-full">${t('charlistSlotFullBadge')} (${activeCount}/${MAX_STORY_SLOTS})</span>` : '';
     // cardHook(46일차, 목적/후킹 한 줄 문구)이 있으면 그걸, 아직 없는 스토리(번역 대상 외 등)는 기존 subtitle로 대체.
     const hookText = story.cardHook || story.subtitle || '';
+    const srcName = classicSourceName(STORIES[id]);   // 82일차: 원전 3편은 원전 이름이 제목 자리에
     card.innerHTML = `
       <div class="char-card-photo">${photoInner}</div>
       <div class="char-info">
-        ${story.relationLabel ? `<span class="rel-tag">${story.relationLabel}</span>` : ''}<b class="${story.theme === 'affair' ? 'title-affair' : ''}">${story.title}</b>
+        ${story.relationLabel ? `<span class="rel-tag">${story.relationLabel}</span>` : ''}<b class="${story.theme === 'affair' ? 'title-affair' : ''}">${srcName || story.title}</b>
+        ${classicCardLineHTML(id)}
         <div>${badges}${progressBadge}${waitingBadge}${blockedBadge}</div>
         <div class="hook-line">${hookText}</div>
         ${tagChipsHTML(id, 4)}
@@ -4660,8 +5367,17 @@ async function openStoryIntro(storyId) {
   if (!rawStory || !rawStory.playable) return;
   const story = localizeStory(rawStory, storyId);
   pendingStoryId = storyId;
-  $('charintro-title').textContent = story.title;
-  $('charintro-subtitle').textContent = story.subtitle || '';
+  // 82일차: 원전 3편은 원전 이름이 제목, 지금 제목이 부제, 원래 부제(인물·MBTI)는 그 아래 작은 줄로 내려간다.
+  const srcName = classicSourceName(rawStory);
+  $('charintro-title').textContent = srcName || story.title;
+  const subBox = $('charintro-subtitle');
+  subBox.textContent = srcName ? story.title : (story.subtitle || '');
+  if (srcName && story.subtitle) {
+    const sub2 = document.createElement('span');
+    sub2.className = 'intro-sub2';
+    sub2.textContent = story.subtitle;
+    subBox.appendChild(sub2);
+  }
   // 실사/일러스트 이미지가 있는 캐릭터는 사각 프레임을 꽉 채우는 큰 사진으로, 없는 캐릭터는 기존 원형 placeholder 아이콘으로.
   const introKey = story.cast[0].key;
   $('intro-portrait').innerHTML = (rawStory.nophoto === true) ? renderCoverThumb(storyId) : AVATAR_IMAGE[introKey]
