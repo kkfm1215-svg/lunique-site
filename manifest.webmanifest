@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "LUNIQUE — Interactive Romance Fiction",
+  "name": "LUNIQUE — 작품 속 AI 이야기",
   "short_name": "LUNIQUE",
-  "description": "An AI romance where every conversation is remembered.",
+  "description": "작품 속 주인공이 되는 AI 이야기. 인물은 나눈 대화를 전부 기억합니다.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

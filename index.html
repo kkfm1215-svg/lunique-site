@@ -3,19 +3,21 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>LUNIQUE — Interactive Romance Fiction</title>
+<title>LUNIQUE — 작품 속 주인공이 되는 AI 이야기</title>
 <!-- 62일차: favicon(초승달 문양)과 링크 공유 미리보기. 도메인을 사면 og:url·og:image 주소를 바꿀 것 -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230C1017'/%3E%3Cpath d='M40 8a26 26 0 1 0 0 48 22 22 0 0 1 0-48Z' fill='%23C9A227'/%3E%3C/svg%3E">
-<meta name="description" content="An AI romance where every conversation is remembered. Meet, grow close, and be part of a story that never forgets you.">
+<meta name="description" content="작품 속 주인공이 되어 인물과 이야기를 이어 갑니다. 인물은 나눈 대화를 전부 기억하고 먼저 연락합니다. 한·영·일 122편 운영 중.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LUNIQUE">
-<meta property="og:title" content="LUNIQUE — Interactive Romance Fiction">
-<meta property="og:description" content="An AI romance where every conversation is remembered. Meet, grow close, and be part of a story that never forgets you.">
+<meta property="og:title" content="LUNIQUE — 작품 속 주인공이 되는 AI 이야기">
+<meta property="og:description" content="인물은 나눈 대화를 전부 기억하고, 먼저 연락합니다. 한·영·일 122편.">
 <meta property="og:url" content="https://stately-pegasus-2b6e10.netlify.app/">
-<meta property="og:image" content="https://stately-pegasus-2b6e10.netlify.app/images/share.jpg">
+<meta property="og:image" content="https://stately-pegasus-2b6e10.netlify.app/images/share-2.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="LUNIQUE — 작품 속 주인공이 되는 AI 이야기">
+<meta name="twitter:description" content="인물은 나눈 대화를 전부 기억하고, 먼저 연락합니다. 한·영·일 122편.">
 <!-- 68일차: PWA(홈 화면 추가) — 매니페스트·아이콘·서비스 워커 -->
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#0C1017">
@@ -312,6 +314,7 @@
 
   /* 56일차 C03: 15개 안팎이 평면 리스트로 쌓여 고르기 부담스러웠다. 검색과 난이도 필터를 둔다. */
   .filter-row { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s3); }
+  #genre-tabs[hidden] { display: none; }   /* 79일차 사이트 개편: .filter-row 의 display 가 hidden 속성을 이기지 않게 */
   .filter-chip {
     border: 1px solid var(--hair); background: transparent; color: var(--dim);
     border-radius: var(--r1); padding: 5px var(--s3); cursor: pointer;
@@ -387,6 +390,24 @@
     color: var(--brass); display: block; margin-bottom: 3px;
   }
   .intro-crack .v { font-size: 13.5px; line-height: 1.7; color: var(--text-sub); }
+  /* 80일차: 모티프 고전 한 줄(소개 화면) + 책 표지형 카드(사진 없는 편, nophoto) */
+  .intro-classic { font-size: 11.5px; line-height: 1.55; color: var(--text-faint); margin: -4px 0 12px; font-family: var(--serif); }
+  .intro-classic .ic-main { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .intro-classic .ic-twist { display: block; font-size: 10.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .8; }
+  .cover-thumb {
+    width: 100%; height: 100%; min-height: 84px; box-sizing: border-box; padding: 8px 6px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;
+    background: linear-gradient(160deg, #2a2340 0%, #0e0c19 100%); color: var(--paper, #E9E5D9);
+    font-family: var(--serif); box-shadow: inset 0 0 0 1px rgba(201,162,39,.35), inset 3px 0 0 rgba(201,162,39,.25);
+  }
+  .cover-thumb .ct-title { font-size: 12px; font-weight: 600; line-height: 1.3; word-break: keep-all; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .cover-thumb .ct-sub { font-size: 9px; line-height: 1.3; color: rgba(233,229,217,.62); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .cover-thumb.small { min-height: 0; padding: 0; gap: 0; box-shadow: inset 0 0 0 1px rgba(201,162,39,.35); }
+  .cover-thumb.small .ct-title { font-size: 12px; line-height: 1; -webkit-line-clamp: 1; }
+  .sp-card .fp-art .cover-thumb { min-height: 96px; }
+  .intro-portrait .cover-thumb { min-height: 0; padding: 14px 18px; gap: 8px; }
+  .intro-portrait .cover-thumb .ct-title { font-size: 20px; -webkit-line-clamp: 2; }
+  .intro-portrait .cover-thumb .ct-sub { font-size: 12px; }
   .intro-fold {
     border: 1px solid var(--hair-soft); border-radius: var(--r0);
     margin-bottom: 7px; overflow: hidden;
@@ -466,6 +487,20 @@
   .turn-player:hover .turn-rewind-btn, .turn-rewind-btn.show { opacity: 1; pointer-events: auto; }
   #legal-body h3 { font-family: var(--serif); color: var(--paper); font-size: var(--t-bd); margin: var(--s5) 0 var(--s2); }
   #legal-body p { color: var(--dim); font-size: var(--t-rd); line-height: 1.9; margin-bottom: var(--s2); }
+  /* 79일차 사이트 개편: 원작 창작자·중소 콘텐츠 기업 제휴 안내 화면 — 약관 화면(#legal-body)의 글 간격을 따른다 */
+  .partners-body { padding-bottom: var(--s6); }
+  .partners-body .partners-title { font-family: var(--serif); color: var(--paper); font-size: var(--t-xl); line-height: 1.5; font-weight: 700; margin: var(--s2) 0; }
+  .partners-body h3 { font-family: var(--serif); color: var(--paper); font-size: var(--t-bd); margin: var(--s5) 0 var(--s2); }
+  .partners-body p { color: var(--dim); font-size: var(--t-rd); line-height: 1.9; margin: 0 0 var(--s2); }
+  .partners-body .partners-lead { color: var(--moon); }
+  .partners-body .partners-note { color: var(--faint); font-size: 12px; }
+  .partners-shots { display: flex; flex-direction: column; gap: var(--s4); margin-top: var(--s3); }
+  .partners-shot { display: flex; gap: var(--s3); align-items: flex-start; margin: 0; }
+  .partners-shot img { width: 46%; max-width: 220px; height: auto; flex-shrink: 0; border: 1px solid var(--hair); border-radius: 10px; background: var(--ink); }
+  .partners-shot figcaption { color: var(--dim); font-size: 12.5px; line-height: 1.75; padding-top: 4px; }
+  .partners-mail { display: flex; align-items: center; justify-content: center; width: 100%; margin-top: var(--s6); text-decoration: none; text-align: center; }
+  .partners-body .partners-mail-note { margin-top: var(--s2); color: var(--faint); font-size: 12px; text-align: center; overflow-wrap: anywhere; }
+  :lang(ko) .partners-body { word-break: keep-all; overflow-wrap: break-word; }
   .legal-links { font-size: var(--t-meta); color: var(--faint); line-height: 1.8; }
   .legal-links a { color: var(--moon, var(--brass)); text-decoration: underline; cursor: pointer; }
   .onboard-card {
@@ -530,6 +565,7 @@
   /* 언어 버튼은 채팅 화면 바깥(#app 바로 아래)에 있어서 위 규칙에 안 걸린다.
      :has() 선택자는 오래된 브라우저에서 안 먹으므로, body에 표시를 달아 확실히 감춘다 */
   body.art-only #lang-switcher { opacity: 0; pointer-events: none; }
+  body.in-chat #lang-switcher { opacity: 0; pointer-events: none; }   /* 80일차: 대화 화면 머리줄의 단계 표시(흔들림 · 6/4 ▾)와 겹쳐서 감춘다 */
   #lang-switcher { transition: opacity .35s ease; }
 
   /* 밀어넣기 버튼 — 입력창 위 오른쪽에 조용히 붙어 있다.
@@ -744,6 +780,8 @@
     font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; cursor: pointer;
   }
 
+  /* 82일차: 결제 화면 맨 위 — 정식 결제 준비 중 안내 */
+  .pay-testnote { margin: 0 4px 10px; padding: 9px 11px; border: 1px dashed var(--hair); border-radius: var(--r1); color: var(--dim); font-size: 11.5px; line-height: 1.7; }
   .coin-card {
     margin: 0 var(--s4) var(--s3); padding: var(--s4); background: transparent;
     border: 1px solid var(--hair); border-radius: var(--r1);
@@ -762,6 +800,7 @@
   #coin-uses .cu-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s3); padding: var(--s2) 0; font-size: var(--t-rd); color: var(--dim); }
   #coin-uses .cu-row b { font-family: var(--serif); color: var(--brass); white-space: nowrap; }
   .coin-card b { color: var(--paper); font-size: var(--t-xl); font-family: var(--serif); font-weight: 400; }
+  [data-i18n-html="subBullets"] b { font-size: inherit; font-family: var(--sans); font-weight: 700; color: inherit; }
 
   /* 60일차: 소개가 길어도 시작 버튼은 늘 손에 닿게 아래에 붙여둔다. */
   .sticky-cta {
@@ -840,6 +879,18 @@
   .hero-scrim { position: absolute; inset: 0; background:
     linear-gradient(90deg, rgba(6,8,17,.92) 0%, rgba(6,8,17,.55) 45%, rgba(6,8,17,.15) 75%, rgba(6,8,17,.45) 100%),
     linear-gradient(0deg, rgba(6,8,17,.9) 0%, transparent 40%); }
+  /* 79일차 배경 안 ①: 달의 서가. 첫 화면이 세로로 스크롤돼도 배경이 끊기지 않게 겹 전부를 화면 칸 자체의 배경으로 옮긴다
+     (스크롤 칸의 배경은 내용과 함께 움직이지 않고 보이는 칸을 늘 덮는다). 겹 순서는 위 .hero-scrim → .hero-bg 그대로 */
+  #screen-landing { background:
+    linear-gradient(90deg, rgba(6,8,17,.92) 0%, rgba(6,8,17,.55) 45%, rgba(6,8,17,.15) 75%, rgba(6,8,17,.45) 100%),
+    linear-gradient(0deg, rgba(6,8,17,.9) 0%, transparent 40%),
+    url('images/prologue.jpg') center 30% / cover no-repeat,
+    url('images/hero.jpg') center 30% / cover no-repeat,
+    url('images/hero.jpg.png') center 30% / cover no-repeat,
+    url('images/hero.png') center 30% / cover no-repeat,
+    radial-gradient(800px 500px at 75% 20%, rgba(140,118,210,.25), transparent 60%), var(--ink); }
+  #screen-landing > .hero-bg, #screen-landing > .hero-scrim { display: none; }
+  @media (max-width: 520px) { #screen-landing { background-position: 0 0, 0 0, 80% center, center 30%, center 30%, center 30%, 0 0; } }   /* 폰에서는 달빛 창 쪽이 보이게 */
   .hero-body { position: relative; z-index: 1; display: flex; flex-direction: column; flex: 1; padding: var(--s6) var(--s5) var(--s5); }
   .hero-copy { margin-top: auto; max-width: 300px; }
   .hero-copy .brand-mark { display: flex; align-items: center; gap: 6px; font-family: var(--serif); letter-spacing: .26em; font-size: 12px; color: var(--paper); margin-bottom: var(--s4); }
@@ -867,6 +918,25 @@
   .hero-feats span { color: var(--faint); font-size: 10.5px; line-height: 1.6; }
   .hero-pricing { margin-top: var(--s3); color: var(--faint); font-size: 11px; letter-spacing: .2px; }
   .hero-legal { margin-top: 6px; font-size: 10.5px; }
+  /* 79일차 사이트 개편: 첫 화면 — 장르 줄·실적 띠·안전 한 줄·제휴 안내 버튼. 내용이 길어져 폰에서 화면보다 길면 첫 화면이 세로로 스크롤된다 */
+  #screen-landing { overflow-x: hidden; overflow-y: auto; justify-content: flex-start; }
+  .hero-genres { margin-top: var(--s3); color: var(--moon); font-size: 12px; line-height: 1.7; letter-spacing: .02em; }
+  .hero-stats { margin-top: var(--s5); color: var(--paper); font-size: var(--t-sm); line-height: 1.7; }
+  /* 82일차: 실적 띠를 제목·부제 묶음 안으로 올렸다 — 폰에서 첫 화면에 바로 보이게. 폰(520px 이하)에서는 hero-copy 가 이미 전체 폭이다 */
+  .hero-copy .hero-stats { margin-top: var(--s4); }
+  @media (min-width: 900px) { .hero-copy .hero-stats { width: 640px; } }
+  .hero-safety { margin-top: var(--s2); color: var(--faint); font-size: 11px; line-height: 1.7; }
+  .hero-partners { margin-top: var(--s4); }
+  /* 82일차: 로그인 없이 실제 화면을 먼저 볼 수 있다는 안내 — 글자처럼 보이는 작은 버튼 */
+  .hero-peek { margin-top: var(--s4); }
+  .hero-peek .linky { background: none; border: 0; padding: 0; color: var(--dim); font-family: var(--sans); font-size: 11px; line-height: 1.6; text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .hero-partners + .hero-peek { margin-top: var(--s2); }
+  .hero-partners .btn { width: 100%; white-space: normal; line-height: 1.5; padding-top: 10px; padding-bottom: 10px; }
+  :lang(ko) .hero-partners .btn { word-break: keep-all; overflow-wrap: break-word; }   /* 일본어에 keep-all 을 주면 375·360px 에서 세 줄이 된다(82일차 재확인). 문구를 한 마디 줄여 400px 에서 "— " 앞뒤로 두 줄이 되게 했다 */
+  .hero-peek + .hero-cta { margin-top: var(--s3); }
+  .hero-feats span { font-size: 11px; }
+  :lang(ko) .hero-title2, :lang(ko) .hero-sub, :lang(ko) .hero-genres, :lang(ko) .hero-feats, :lang(ko) .hero-stats, :lang(ko) .hero-safety { word-break: keep-all; overflow-wrap: break-word; }
+  @media (min-width: 900px) { .hero-stats, .hero-safety, .hero-partners, .hero-peek, .hero-peek + .hero-cta { max-width: 640px; } .hero-partners .btn { width: auto; min-width: 320px; } }
   /* 67일차 디자인 1차 — 위계 정돈: 금색은 '주 행동'에만, 구조는 달빛 보라·헤어라인으로 가라앉힌다 */
   .char-card-photo { width: 78px; border-color: var(--hair); }
   .char-card-photo img { filter: saturate(.94) contrast(1.03); }
@@ -904,7 +974,7 @@
     .btn.loading::after { animation-duration: 1.4s; }
   }
   @media (prefers-reduced-motion: reduce) { .hc-dots i { animation: none; } }
-  @media (max-width: 520px) { .hero-cards { top: 10%; } .hc { max-width: 170px; padding: 8px 11px; } }
+  @media (max-width: 520px) { .hero-cards { top: 10%; display: none; } .hc { max-width: 170px; padding: 8px 11px; } .hero-copy, .hero-sub { max-width: none; } .hero-feats { flex-direction: column; gap: var(--s3); } .hero-cta .btn { flex: 1 1 100%; min-width: 0; } }
   @media (min-width: 900px) {
     body { background: #04060B; align-items: stretch; padding: 0; }
     #app {
@@ -918,11 +988,11 @@
     }
     /* 폼·문서·결제류는 더 좁게 — 읽고 입력하기 좋은 폭 */
     #screen-profile > .pad, #screen-legal > .pad, #screen-coin > .pad,
-    #screen-subscribe > .pad, #screen-charintro > .pad, #screen-login .center {
+    #screen-partners > .pad, #screen-subscribe > .pad, #screen-charintro > .pad, #screen-login .center {
       max-width: 760px;
     }
     #screen-profile > header, #screen-legal > header, #screen-coin > header,
-    #screen-subscribe > header, #screen-charintro > header {
+    #screen-partners > header, #screen-subscribe > header, #screen-charintro > header {
       max-width: 760px;
     }
     /* 달빛 랜딩 데스크톱: 카피는 왼쪽 세로 중앙, 카드는 오른쪽, 특징은 하단 */
@@ -1004,23 +1074,27 @@
     <div class="hero-body">
       <div class="hero-copy">
         <div class="brand-mark"><span class="moon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M10 1.5a6.5 6.5 0 1 0 0 13 5.5 5.5 0 0 1 0-13Z" fill="var(--brass)"/></svg></span> <b>LUNIQUE</b></div>
-        <div class="eyebrow"><span class="diamond" aria-hidden="true"></span> <span data-i18n="landingEyebrow">당신만을 위한, 기억하는 AI 로맨스</span></div>
-        <h1 class="hero-title2" data-i18n-html="heroTitle2">대화로 시작되는<br>가장 사적인 로맨스</h1>
-        <p class="hero-sub" data-i18n="heroSub2">당신의 말을 기억하고, 감정과 서사가 변하는 AI 연애 시뮬레이션.</p>
-        <div class="hero-cta">
-          <button class="btn" onclick="goTo('screen-manifesto')" data-i18n="landingStartBtn">지금 시작하기</button>
-        </div>
+        <div class="eyebrow"><span class="diamond" aria-hidden="true"></span> <span data-i18n="landingEyebrow">한·영·일 3개 언어로 운영 중</span></div>
+        <h1 class="hero-title2" data-i18n-html="heroTitle2">작품 속 주인공이 되는<br>AI 이야기</h1>
+        <p class="hero-sub" data-i18n="heroSub2">좋아하는 장르의 작품에 들어가 인물과 이야기를 이어 갑니다. 인물은 나눈 대화를 전부 기억합니다.</p>
+        <div class="hero-stats" data-i18n-stat-alt="heroStatBandAlt" data-i18n-stat="heroStatBand" hidden></div>
+        <div class="hero-genres" data-genre-line="heroGenreLine" hidden></div>
       </div>
       <div class="hero-cards" aria-hidden="true">
-        <div class="hc hc-typing"><span class="hc-name" data-i18n="heroCardName">서연</span> <span class="hc-now" data-i18n="heroCardNow">지금</span><div class="hc-line" data-i18n="heroCardMsg">오늘도 기다리고 있었어요.</div><div class="hc-dots"><i></i><i></i><i></i></div></div>
-        <div class="hc hc-memory"><div class="hc-cap" data-i18n="heroCardMemTitle">기억 속 순간</div><div class="hc-quote" data-i18n="heroCardMemQuote">“바닷가에서 들려준 노래”</div><div class="hc-date" data-i18n="heroCardMemDate">23일 전의 대화</div></div>
+        <div class="hc hc-typing"><span class="hc-name" data-i18n="heroCardName">서연</span> <span class="hc-now" data-i18n="heroCardNow">지금</span><div class="hc-line" data-i18n="heroCardMsg">지난번에 말한 발표, 오늘이었죠?</div><div class="hc-dots"><i></i><i></i><i></i></div></div>
+        <div class="hc hc-memory"><div class="hc-cap" data-i18n="heroCardMemTitle">기억 속 순간</div><div class="hc-quote" data-i18n="heroCardMemQuote">“바닷가에서 들려준 노래”</div><div class="hc-date" data-i18n="heroCardMemDate">석 달 전의 대화</div></div>
       </div>
       <div class="hero-feats">
-        <div class="hf"><b data-i18n="heroFeat1T">무료로도 전부 기억</b><span data-i18n="heroFeat1B">몇 달 전에 흘린 말도, 날짜까지 짚어 꺼냅니다.</span></div>
-        <div class="hf"><b data-i18n="heroFeat2T">자유로운 입력</b><span data-i18n="heroFeat2B">정해진 선택지 없이, 내 방식대로 표현하세요.</span></div>
-        <div class="hf"><b data-i18n="heroFeat3T">변화하는 관계</b><span data-i18n="heroFeat3B">대화할수록 깊어지는 감정, 새로운 이야기.</span></div>
+        <div class="hf"><b data-i18n="heroFeat1T">인물이 나를 기억합니다</b><span data-i18n="heroFeat1B">나눈 대화를 전부 기억합니다. “그때”, “저번에”라고 말하면 지난 대화에서 찾아 이어서 답합니다.</span></div>
+        <div class="hf"><b data-i18n="heroFeat2T">인물이 먼저 연락합니다</b><span data-i18n="heroFeat2B">이틀 넘게 대화가 없으면, 다시 들어왔을 때 인물이 먼저 말을 걸어 옵니다. 마지막 대화와 약속, 다가오는 일정을 이어서 말합니다. 알림을 켜 두면 연락이 왔다는 소식을 폰으로 받습니다.</span></div>
+        <div class="hf"><b data-i18n="heroFeat3T">이야기는 결말로 갑니다</b><span data-i18n="heroFeat3B">관계는 5단계로 나아가고, 이야기마다 라이벌이 있습니다. 헤어짐과 재회도 있으며, 끝까지 완성한 이야기는 앨범에 남습니다.</span></div>
       </div>
-      <div class="hero-pricing" data-i18n="heroPricing">무료로 시작 — 매일 10회 무료 대화 · 가입 시 코인 50개 · 코인 $0.99부터 · 프리미엄 월 $9.99</div>
+      <div class="hero-safety" data-i18n="heroSafety">만 18세 이상 이용 · 표현 수위는 관계 단계에 따라 제한합니다 · 위험 신호가 보이면 상담 창구를 안내합니다</div>
+      <div class="hero-partners"><button type="button" class="btn secondary" onclick="goTo('screen-partners')" data-i18n="heroPartnersBtn">원작 창작자·중소 콘텐츠 기업과 수익을 나눕니다 — 제휴 안내</button></div>
+      <div class="hero-peek"><button type="button" class="linky" onclick="goTo('screen-partners')" data-i18n="heroPeekBtn">로그인 없이 실제 화면 3장을 볼 수 있습니다</button></div>
+      <div class="hero-cta">
+        <button class="btn" onclick="goTo('screen-manifesto')" data-i18n="landingStartBtn">이야기 시작하기</button>
+      </div>
       <div class="legal-links hero-legal"><a onclick="event.preventDefault(); openLegal('terms')" data-i18n="legalTermsLink">이용약관</a> · <a onclick="event.preventDefault(); openLegal('privacy')" data-i18n="legalPrivacyLink">개인정보처리방침</a> · <a onclick="event.preventDefault(); openLegal('refund')" data-i18n="legalRefundLink">환불 정책</a></div>
     </div>
   </div>
@@ -1053,11 +1127,39 @@
     <div class="starfield"></div>
     <div class="center pad" style="position:relative; z-index:1;">
       <div class="hero-title" style="font-size:19px; color:var(--text-main);" data-i18n="loginWelcome">기록을 시작합니다</div>
-      <div style="font-size:12.5px; color:var(--text-sub); line-height:1.6;" data-i18n-html="loginDesc">구글 계정으로 로그인하면<br/>진행 상황이 서버에 저장돼요.</div>
+      <div style="font-size:12.5px; color:var(--text-sub); line-height:1.6;" data-i18n-html="loginDesc">구글 계정으로 로그인하면 바로 시작합니다. 결제 정보는 필요 없고, 매일 무료 대화가 제공됩니다. 진행 상황은 서버에 저장됩니다.</div>
       <div style="font-size:11px; color:var(--text-faint); line-height:1.5; margin-top:10px; display:none;" id="login-lang-notice"></div>
       <button class="btn" style="width:100%; margin-top:18px;" id="google-login-btn" onclick="signInWithGoogle()" data-i18n="loginGoogleBtn">G 구글 계정으로 로그인</button>
       <div class="legal-links" style="margin-top:14px;" data-i18n-html="loginLegalNote">계속하면 <a onclick="event.preventDefault(); openLegal('terms')">이용약관</a>과 <a onclick="event.preventDefault(); openLegal('privacy')">개인정보처리방침</a>에 동의하게 됩니다.</div>
       <div class="error-msg" id="login-error"></div>
+    </div>
+  </div>
+
+  <!-- 화면: 원작 창작자·중소 콘텐츠 기업 제휴 안내 (79일차 사이트 개편 — 첫 화면 버튼에서 들어온다. 캡처 3장은 data/partners-1~3.png) -->
+  <div class="screen" id="screen-partners">
+    <header><button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-landing')">←</button><h1 data-i18n="partnersHeader">제휴 안내</h1></header>
+    <div class="pad partners-body">
+      <h2 class="partners-title" data-i18n="partnersTitle">완결된 작품을, 독자가 주인공이 되는 AI 이야기로</h2>
+      <p class="partners-lead" data-i18n="partnersLead">원작 창작자와 중소 콘텐츠 기업을 위한 안내입니다.</p>
+      <h3 data-i18n="partnersS1H">작품 속 인물과 세계관을 AI 이야기로</h3>
+      <p data-i18n="partnersS1B">완결된 소설·웹툰·영상 작품의 인물과 세계관을 AI 이야기로 옮깁니다. 독자는 주인공이 되어 인물과 대화하며 이야기를 이어 가고, 인물은 독자와 나눈 대화를 전부 기억합니다.</p>
+      <h3 data-i18n="partnersS2H">원작을 따라가는 길, 새 이야기를 만드는 길</h3>
+      <p data-i18n="partnersS2B">원작 흐름을 따라가는 길과 독자가 새 이야기를 만드는 길을 함께 둡니다. 원작의 주요 장면은 이야기 속 사건으로 준비하고, 그 사이의 전개는 독자의 말에 따라 달라집니다.</p>
+      <h3 data-i18n="partnersS3H">한국어·영어·일본어 동시 출시</h3>
+      <p data-i18n-stat-alt="partnersS3BAlt" data-i18n-stat="partnersS3B" hidden></p>
+      <h3 data-i18n="partnersS4H">수익은 원작 측과 나눕니다</h3>
+      <p data-i18n="partnersS4B">이야기에서 생기는 수익은 원작 측과 나눕니다. 나누는 방식과 비율은 작품마다 협의해 정합니다.</p>
+      <h3 data-i18n="partnersS5H">제휴 작품은 원작자 승인 없이는 올리지 않습니다</h3>
+      <p data-i18n-stat-alt="partnersS5BAlt" data-i18n-stat="partnersS5B" hidden></p>
+      <h3 data-i18n="partnersShotsH">이렇게 보입니다</h3>
+      <p class="partners-note" data-i18n-stat-alt="partnersShotsNoteAlt" data-i18n-stat="partnersShotsNote" hidden></p>
+      <div class="partners-shots">
+        <figure class="partners-shot"><img src="data/partners-1.png" alt="이야기 고르기 — 이야기마다 제목과 한 줄 소개, 등장인물이 보입니다." data-i18n-aria="partnersShot1" loading="lazy" width="400" height="860"><figcaption data-i18n="partnersShot1">이야기 고르기 — 이야기마다 제목과 한 줄 소개, 등장인물이 보입니다.</figcaption></figure>
+        <figure class="partners-shot"><img src="data/partners-2.png" alt="대화 — 인물이 지난 대화를 기억해 이어서 말합니다." data-i18n-aria="partnersShot2" loading="lazy" width="400" height="860"><figcaption data-i18n="partnersShot2">대화 — 인물이 지난 대화를 기억해 이어서 말합니다.</figcaption></figure>
+        <figure class="partners-shot"><img src="data/partners-3.png" alt="먼저 온 메시지 — 이틀 넘게 대화가 없다가 다시 들어오면, 인물이 먼저 말을 겁니다." data-i18n-aria="partnersShot3" loading="lazy" width="400" height="860"><figcaption data-i18n="partnersShot3">먼저 온 메시지 — 이틀 넘게 대화가 없다가 다시 들어오면, 인물이 먼저 말을 겁니다.</figcaption></figure>
+      </div>
+      <a class="btn partners-mail" href="mailto:kkfm1215@gmail.com" data-i18n="partnersContactBtn">제휴 문의하기</a>
+      <p class="partners-mail-note" data-i18n="partnersContactNote">문의: kkfm1215@gmail.com</p>
     </div>
   </div>
 
@@ -1073,7 +1175,7 @@
     <div class="pad">
       <div style="font-size:12px; color:#8f84a8; margin-bottom:6px;" data-i18n="profileDesc">모든 스토리가 공통으로 참고하는 정보예요. 한 번만 입력하면 돼요.</div>
       <label data-i18n="profileLabelName">이름 (또는 원하는 호칭)</label>
-      <input id="p-name" type="text" placeholder="예: 형균" data-i18n-placeholder="profilePlaceholderName" />
+      <input id="p-name" type="text" placeholder="예: 지우" data-i18n-placeholder="profilePlaceholderName" />
       <label data-i18n="profileLabelGender">성별</label>
       <div id="p-gender" class="gender-toggle">
         <button type="button" data-val="남성" data-i18n="genderMale">남성</button>
@@ -1124,6 +1226,7 @@
     <div class="pad" style="padding-top:4px; padding-bottom:0;">
       <div class="sect-label" id="newlist-label" style="display:none;" data-i18n="contNewSection">새 인연</div>
       <input id="charlist-search" type="search" autocomplete="off" placeholder="이름이나 분위기로 찾기" data-i18n-placeholder="charlistSearchPlaceholder" aria-label="스토리 검색" />
+      <div id="genre-tabs" class="filter-row" hidden></div>
       <div id="charlist-filters" class="filter-row"></div>
       <div id="tag-cloud"></div>
     </div>
@@ -1202,7 +1305,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-11.2</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-16.5</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1223,14 +1326,15 @@
   <div class="screen" id="screen-coin">
     <header><button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-mypage')">←</button><h1 data-i18n="coinHeader">코인 충전</h1></header>
     <div class="pad" style="padding-bottom:0;">
+      <div class="pay-testnote"><span data-i18n="payTestTopNote">정식 결제 준비 중입니다. 지금은 시험 운영이라 실제 결제가 이루어지지 않습니다.</span><br><span data-i18n="payKrNote">국내 판매는 사업자등록과 통신판매업 신고를 마친 뒤 시작합니다.</span></div>
       <div id="coin-packs"></div>
       <div id="coin-uses"></div>
       <div style="font-size:12px; color:var(--dim); line-height:1.7; padding: 4px 4px 10px;" data-i18n="coinVsSubNote">하루 무료 대화 10회로 부족해서 매일 18회 이상 더 하신다면, 코인보다 구독이 저렴해요.</div>
-      <div style="font-size:11px; color:var(--text-faint); padding: 8px 4px;" data-i18n="coinDesc">하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 눌러도 코인만 임시로 채워져요.</div>
+      <div style="font-size:11px; color:var(--text-faint); padding: 8px 4px;" data-i18n="coinDesc">하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 정식 결제가 열리면 PayPal로 처리되고, 카드 정보는 저희가 보관하지 않습니다.</div>
       <button class="btn secondary" style="width:100%; margin-top:8px;" onclick="openSubscribeScreen()" data-i18n="coinSubscribeLinkBtn">매번 코인 사기 귀찮다면? 구독으로 무제한 이용하기 →</button>
       <!-- 68일차: 지인 테스트 기간용 무료 충전. 실결제 전환(PAYPAL_ENV=live) 시 서버가 막고 이 칸도 숨는다. -->
       <div id="test-coin-box" style="display:none; margin-top:14px; padding:12px; border:1px dashed var(--hair); border-radius:var(--r1);">
-        <div style="font-size:11.5px; color:var(--dim); line-height:1.7; margin-bottom:8px;" data-i18n="testCoinNote">테스트 기간 안내 — 아래 버튼으로 코인을 무료로 받을 수 있어요. 정식 결제가 열리면 이 버튼은 사라집니다.</div>
+        <div style="font-size:11.5px; color:var(--dim); line-height:1.7; margin-bottom:8px;" data-i18n="testCoinNote">지금은 코인을 무료로 드립니다. 아래 버튼으로 받으실 수 있고, 정식 결제가 열리면 이 버튼은 사라집니다.</div>
         <button class="btn secondary" style="width:100%;" onclick="grantTestCoins(this)" data-i18n="testCoinBtn">테스트용 코인 500개 받기</button>
       </div>
     </div>
@@ -1240,6 +1344,7 @@
   <div class="screen" id="screen-subscribe">
     <header><button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-mypage')">←</button><h1 data-i18n="subHeader">구독</h1></header>
     <div class="pad">
+      <div class="pay-testnote"><span data-i18n="payTestTopNote">정식 결제 준비 중입니다. 지금은 시험 운영이라 실제 결제가 이루어지지 않습니다.</span><br><span data-i18n="payKrNote">국내 판매는 사업자등록과 통신판매업 신고를 마친 뒤 시작합니다.</span></div>
       <div class="coin-card" style="cursor:default; flex-direction:column; align-items:flex-start; gap:6px;">
         <div style="display:flex; justify-content:space-between; width:100%;">
           <b data-i18n="subTitle">프리미엄 구독</b><span style="color:var(--gold);" data-i18n="subPriceLabel">월 12,900원</span>
@@ -1251,7 +1356,7 @@
       </div>
       <div id="subscribe-status" style="font-size:12.5px; color:var(--text-sub); margin:12px 4px;"></div>
       <div id="subscribe-action" style="margin-top:8px;"></div>
-      <div style="font-size:11px; color:var(--text-faint); padding: 12px 4px 0;" data-i18n="subFooterNote">실제 결제(Stripe/국내 PG)는 아직 연결 전이라, 지금은 테스트로 바로 활성화/해지돼요.</div>
+      <div style="font-size:11px; color:var(--text-faint); padding: 12px 4px 0;" data-i18n="subFooterNote">구독은 언제든 해지할 수 있습니다. 정식 결제가 열리면 PayPal로 처리됩니다.</div>
     </div>
   </div>
 
@@ -1285,10 +1390,10 @@ if (currentLang !== 'ko') { try { setTimeout(() => loadStoryI18n(currentLang), 0
 
 const I18N = {
   ko: {
-    landingEyebrow: '당신만을 위한, 기억하는 AI 로맨스',
+    landingEyebrow: "한·영·일 3개 언어로 운영 중",
     landingHeroTitle: '하루의 끝,<br/>그 사람과의 대화',
-    landingSubtitle: 'AI와 함께하는 연애 시뮬레이션',
-    landingStartBtn: '지금 시작하기',
+    landingSubtitle: "작품 속 주인공이 되는 AI 이야기",
+    landingStartBtn: "이야기 시작하기",
     mf1: '밤이 가장 깊은 시각 — 당신은 낡은 서가 앞에 서 있습니다.',
     mf2: '달빛이 닿자, 아직 쓰이지 않은 이야기들이 책장에서 술렁입니다.',
     mf3: '「어서 오세요. 당신을 기다리고 있었습니다.」',
@@ -1364,14 +1469,14 @@ const I18N = {
     chatStatEx: '지난 인연',
     chatRailTitle: '인연 기록', chatRailUpcoming: '다가오는 일', chatRailMemory: '기억', chatRailToday: '오늘', chatRailInDays: '{n}일 뒤',
     loginWelcome: '기록을 시작합니다',
-    loginDesc: '구글 계정으로 로그인하면<br/>진행 상황이 서버에 저장돼요.',
+    loginDesc: '구글 계정으로 로그인하면 바로 시작합니다. 결제 정보는 필요 없고, 매일 무료 대화가 제공됩니다. 진행 상황은 서버에 저장됩니다.',
     loginGoogleBtn: 'G 구글 계정으로 로그인',
     loginErrorPrefix: '로그인 중 오류가 발생했어요: ',
     loginLangNotice: '',
     profileHeader: '내 정보 입력',
     profileDesc: '모든 스토리가 공통으로 참고하는 정보예요. 한 번만 입력하면 돼요.',
     profileLabelName: '이름 (또는 원하는 호칭)',
-    profilePlaceholderName: '예: 형균',
+    profilePlaceholderName: "예: 지우",
     profileLabelGender: '성별',
     genderMale: '남성', genderFemale: '여성', genderNonbinary: '논바이너리',
     profileLabelInterest: '관심 있는 상대',
@@ -1446,6 +1551,8 @@ const I18N = {
     chatQuotaExceededPrefix: '오늘 무료 대화 ', chatQuotaExceededSuffix: '개를 다 쓰셨어요. 코인을 충전하거나 구독하면 계속 대화할 수 있어요.',
     chatQuotaCoinBtn: '코인 충전하기', chatQuotaSubscribeBtn: '구독하기',
     chatRetryBtn: '다시 시도',
+    chatNoReplyNotice: '답이 오지 않았어요. 다시 시도해 볼까요?',
+    chatNoReplyAgain: '두 번 잇따라 답이 오지 않았어요. 잠시 뒤에 다시 보내 주세요.',
     chatErrorPrefix: '오류: ',
     chatSuggestErrorPrefix: '추천 대사를 불러오지 못했어요: ',
     chatTimeoutMessage: '응답이 너무 오래 걸려서 중단했어요. 네트워크 상태를 확인하고 다시 시도해주세요.',
@@ -1495,20 +1602,53 @@ const I18N = {
     quotaLastNoticeHaveCoins: '오늘 무료 대화가 마지막 1회예요. 다음부터는 코인 {c}개씩 사용됩니다. (보유 {left}개)',
     coinStartNotice: '오늘 무료 대화를 다 썼어요. 지금부터는 코인 {c}개씩 사용됩니다. (남은 코인 {left}개)',
     coinLeftNotice: '남은 코인 {left}개',
-    heroTitle2: '대화로 시작되는<br>가장 사적인 로맨스',
-    heroSub2: '당신의 말을 기억하고, 감정과 서사가 변하는 AI 연애 시뮬레이션.',
-    heroCardName: '서연', heroCardNow: '지금', heroCardMsg: '오늘도 기다리고 있었어요.',
+    heroTitle2: "작품 속 주인공이 되는<br>AI 이야기",
+    heroSub2: "좋아하는 장르의 작품에 들어가 인물과 이야기를 이어 갑니다. 인물은 나눈 대화를 전부 기억합니다.",
+    heroCardName: '서연', heroCardNow: '지금', heroCardMsg: "지난번에 말한 발표, 오늘이었죠?",
     heroCardMemTitle: '기억 속 순간', heroCardMemQuote: '“바닷가에서 들려준 노래”', heroCardMemDate: '석 달 전의 대화',
-    heroFeat1T: '무료로도 전부 기억', heroFeat1B: '몇 달 전에 흘린 말도, 날짜까지 짚어 꺼냅니다.',
-    heroFeat2T: '자유로운 입력', heroFeat2B: '정해진 선택지 없이, 내 방식대로 표현하세요.',
-    heroFeat3T: '변화하는 관계', heroFeat3B: '대화할수록 깊어지는 감정, 새로운 이야기.',
+    heroFeat1T: "인물이 나를 기억합니다", heroFeat1B: "나눈 대화를 전부 기억합니다. “그때”, “저번에”라고 말하면 지난 대화에서 찾아 이어서 답합니다.",
+    heroFeat2T: "인물이 먼저 연락합니다", heroFeat2B: "이틀 넘게 대화가 없으면, 다시 들어왔을 때 인물이 먼저 말을 걸어 옵니다. 마지막 대화와 약속, 다가오는 일정을 이어서 말합니다. 알림을 켜 두면 연락이 왔다는 소식을 폰으로 받습니다.",
+    heroFeat3T: "이야기는 결말로 갑니다", heroFeat3B: "관계는 5단계로 나아가고, 이야기마다 라이벌이 있습니다. 헤어짐과 재회도 있으며, 끝까지 완성한 이야기는 앨범에 남습니다.",
     heroPricing: '무료로 시작 — 매일 10회 무료 대화 · 가입 시 코인 50개 · 기억은 요금제와 무관 · 코인 $0.99부터 · 프리미엄 월 $9.99',
+    heroStatBand: "{STORIES}편 · 등장인물 {CHARACTERS}명 · 미리 준비된 사건 {EVENTS}개",   // 79일차 사이트 개편: 실적 띠·안전 한 줄·제휴 버튼·장르 줄·장르 탭 전체·탭 제목·제휴 안내 화면 ({STORIES} 등은 renderHeroStats 가 catalog 에서 채움)
+    heroSafety: "만 18세 이상 이용 · 표현 수위는 관계 단계에 따라 제한합니다 · 위험 신호가 보이면 상담 창구를 안내합니다",
+    heroPartnersBtn: "원작 창작자·중소 콘텐츠 기업과 수익을 나눕니다 — 제휴 안내",
+    heroPeekBtn: "로그인 없이 실제 화면 3장을 볼 수 있습니다",
+    heroStatBandAlt: "이야기마다 등장인물과 미리 준비된 사건이 갖춰져 있습니다",
+    heroGenreLine: "장르 · {GENRE_CHIPS}",
+    genreAll: "모든 장르",
+    docTitle: "LUNIQUE — 작품 속 주인공이 되는 AI 이야기",
+    partnersHeader: "제휴 안내",
+    partnersTitle: "완결된 작품을, 독자가 주인공이 되는 AI 이야기로",
+    partnersLead: "원작 창작자와 중소 콘텐츠 기업을 위한 안내입니다.",
+    partnersS1H: "작품 속 인물과 세계관을 AI 이야기로",
+    partnersS1B: "완결된 소설·웹툰·영상 작품의 인물과 세계관을 AI 이야기로 옮깁니다. 독자는 주인공이 되어 인물과 대화하며 이야기를 이어 가고, 인물은 독자와 나눈 대화를 전부 기억합니다.",
+    partnersS2H: "원작을 따라가는 길, 새 이야기를 만드는 길",
+    partnersS2B: "원작 흐름을 따라가는 길과 독자가 새 이야기를 만드는 길을 함께 둡니다. 원작의 주요 장면은 이야기 속 사건으로 준비하고, 그 사이의 전개는 독자의 말에 따라 달라집니다.",
+    partnersS3H: "한국어·영어·일본어 동시 출시",
+    partnersS3B: "세 언어로 함께 출시합니다. 지금도 {STORIES}편의 이야기를 세 언어로 운영하고 있습니다.",
+    partnersS4H: "수익은 원작 측과 나눕니다",
+    partnersS4B: "이야기에서 생기는 수익은 원작 측과 나눕니다. 나누는 방식과 비율은 작품마다 협의해 정합니다.",
+    partnersS5H: "제휴 작품은 원작자 승인 없이는 올리지 않습니다",
+    partnersS5B: "원작자가 승인하지 않은 작품은 공개하지 않습니다. 공개 전에 원작 측이 내용을 확인합니다. 지금 공개된 {STORIES}편은 저희가 직접 쓴 이야기입니다.",
+    partnersS5BAlt: "원작자가 승인하지 않은 작품은 공개하지 않습니다. 공개 전에 원작 측이 내용을 확인합니다. 지금 공개된 이야기는 저희가 직접 쓴 것입니다.",
+    partnersShotsH: "이렇게 보입니다",
+    partnersShotsNote: "아래는 저희가 직접 만든 이야기의 실제 화면입니다. 지금 운영 중인 {STORIES}편이 모두 이 방식으로 만들어졌고, 원작 작품에도 같은 방식을 그대로 적용합니다.",
+    partnersS3BAlt: "한국어·영어·일본어로 함께 출시합니다. 지금도 세 언어로 이야기를 운영하고 있습니다.",
+    partnersShotsNoteAlt: "아래는 저희가 직접 만든 이야기의 실제 화면입니다. 지금 공개된 이야기는 모두 이 방식으로 만들어졌고, 원작 작품에도 같은 방식을 그대로 적용합니다.",
+    partnersShot1: "이야기 고르기 — 이야기마다 제목과 한 줄 소개, 등장인물이 보입니다.",
+    partnersShot2: "대화 — 인물이 지난 대화를 기억해 이어서 말합니다.",
+    partnersShot3: "먼저 온 메시지 — 이틀 넘게 대화가 없다가 다시 들어오면, 인물이 먼저 말을 겁니다.",
+    partnersContactBtn: "제휴 문의하기",
+    partnersContactNote: "문의: kkfm1215@gmail.com",
     contGoBtn: '대화 ▸',
     contNewSection: '새 인연',
     timeJustNow: '방금',
     timeHoursAgo: '{n}시간 전',
     timeDaysAgo: '{n}일 전',
     mypageResetDoneAlert: '초기화됐어요. 다시 처음부터 대화할 수 있어요.',
+    payTestTopNote: '정식 결제 준비 중입니다. 지금은 시험 운영이라 실제 결제가 이루어지지 않습니다.',
+    payKrNote: '국내 판매는 사업자등록과 통신판매업 신고를 마친 뒤 시작합니다.',
     coinHeader: '코인 충전',
     coin100Label: '100코인', coin550Label: '550코인', coin1200Label: '1200코인',
     coinUsesTitle: '코인으로 할 수 있는 것',
@@ -1517,16 +1657,16 @@ const I18N = {
     coinUseMessage: '대화 1회 — 하루 무료 횟수를 다 쓴 뒤',
     coinUseUnit: '코인 {n}개',
     coin100Price: '$0.99', coin550Price: '$4.99', coin1200Price: '$8.99',
-    coinDesc: '하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 결제는 PayPal을 통해 안전하게 처리되며, 카드 정보는 저희가 보관하지 않아요.',
+    coinDesc: '하루 무료 대화 횟수를 다 쓰면 메시지당 2코인이 소모돼요. 정식 결제가 열리면 PayPal로 처리되고, 카드 정보는 저희가 보관하지 않습니다.',
     coinSubscribeLinkBtn: '매번 코인 사기 귀찮다면? 구독으로 무제한 이용하기 →',
-    testCoinNote: '테스트 기간 안내 — 아래 버튼으로 코인을 무료로 받을 수 있어요. 정식 결제가 열리면 이 버튼은 사라집니다.',
+    testCoinNote: '지금은 코인을 무료로 드립니다. 아래 버튼으로 받으실 수 있고, 정식 결제가 열리면 이 버튼은 사라집니다.',
     testCoinBtn: '테스트용 코인 500개 받기',
     testCoinDone: '코인 {n}개를 받았어요. (잔액 {c}개)',
     testCoinEnough: '아직 코인이 충분해요. (잔액 {c}개) 다 쓰신 뒤에 다시 받아주세요.',
     testCoinFail: '지금은 받을 수 없어요. 잠시 뒤 다시 시도해 주세요.',
     subHeader: '구독', subTitle: '프리미엄 구독', subPriceLabel: '월 $9.99',
     subBullets: '· 하루 무료 대화 한도 없이 무제한 대화<br/>· 앞으로 추가될 프리미엄 전용 스토리 우선 이용 (추후 적용)<br/>· <b>기억은 구독 항목이 아닙니다</b> — 무료 회원도 지난 대화를 전부 그대로 간직해요',
-    subFooterNote: '구독은 언제든 해지할 수 있어요. 결제는 PayPal을 통해 안전하게 처리돼요.',
+    subFooterNote: '구독은 언제든 해지할 수 있습니다. 정식 결제가 열리면 PayPal로 처리됩니다.',
     subStatusActiveBadge: '구독 중', subStatusActiveText: '무제한으로 대화할 수 있어요.',
     subStatusInactiveBadge: '미구독', subStatusInactiveTextPrefix: '하루 ', subStatusInactiveTextSuffix: '개 무료 대화 이후엔 코인이 필요해요.',
     subCancelBtn: '구독 해지하기',
@@ -1540,10 +1680,10 @@ const I18N = {
     payFailed: '결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요. 문제가 계속되면 kkfm1215@gmail.com 으로 알려주세요.',
   },
   en: {
-    landingEyebrow: 'Your own AI romance that remembers you',
+    landingEyebrow: "Live in Korean, English & Japanese",
     landingHeroTitle: 'At the end of the day,<br/>a conversation with someone',
-    landingSubtitle: 'A romance simulation with AI',
-    landingStartBtn: 'Get Started',
+    landingSubtitle: "AI stories where you play the lead",
+    landingStartBtn: "Start a story",
     mf1: 'At the deepest hour of night, you stand before an old library.',
     mf2: 'As moonlight touches the shelves, unwritten stories begin to stir.',
     mf3: '\u300CWelcome. I have been waiting for you.\u300D',
@@ -1619,7 +1759,7 @@ const I18N = {
     chatStatEx: 'Past love',
     chatRailTitle: 'Record', chatRailUpcoming: 'Coming up', chatRailMemory: 'Memories', chatRailToday: 'Today', chatRailInDays: 'in {n}d',
     loginWelcome: 'Your record begins',
-    loginDesc: 'Sign in with Google<br/>to save your progress to the cloud.',
+    loginDesc: 'Sign in with Google and start right away. No payment details needed, and free conversations are given every day. Your progress is saved on the server.',
     loginGoogleBtn: 'G Sign in with Google',
     loginErrorPrefix: 'An error occurred while signing in: ',
     loginLangNotice: 'Note: the app menus are translated, but the story dialogue and character writing are currently Korean only.',
@@ -1701,6 +1841,8 @@ const I18N = {
     chatQuotaExceededPrefix: 'You\'ve used all ', chatQuotaExceededSuffix: ' free messages for today. Top up coins or subscribe to keep chatting.',
     chatQuotaCoinBtn: 'Buy Coins', chatQuotaSubscribeBtn: 'Subscribe',
     chatRetryBtn: 'Retry',
+    chatNoReplyNotice: 'No reply came back. Want to retry?',
+    chatNoReplyAgain: "That's twice with no reply. Please try again in a little while.",
     chatErrorPrefix: 'Error: ',
     chatSuggestErrorPrefix: 'Couldn\'t load suggested lines: ',
     chatTimeoutMessage: 'The response took too long, so it was stopped. Please check your connection and try again.',
@@ -1750,20 +1892,53 @@ const I18N = {
     quotaLastNoticeHaveCoins: 'This is your last free message today. From the next one, {c} coins are used per message. (You have {left})',
     coinStartNotice: 'You have used all your free messages today. From now on, {c} coins are used per message. ({left} coins left)',
     coinLeftNotice: '{left} coins left',
-    heroTitle2: 'The most personal romance<br>begins with a conversation',
-    heroSub2: 'An AI romance that remembers your words — where feelings and stories truly change.',
-    heroCardName: 'Seoyeon', heroCardNow: 'now', heroCardMsg: 'I was waiting for you today, too.',
+    heroTitle2: "AI stories where<br>you play the lead",
+    heroSub2: "Enter a story in the genre you like and carry it forward with its characters. They remember every conversation.",
+    heroCardName: 'Seoyeon', heroCardNow: 'now', heroCardMsg: "That presentation you mentioned was today, right?",
     heroCardMemTitle: 'A remembered moment', heroCardMemQuote: '“The song you played by the sea”', heroCardMemDate: 'from three months ago',
-    heroFeat1T: 'Remembers everything — free too', heroFeat1B: 'Something you said months ago, recalled with the date.',
-    heroFeat2T: 'Say it your way', heroFeat2B: 'No fixed choices — express yourself freely.',
-    heroFeat3T: 'Relationships evolve', heroFeat3B: 'Feelings deepen and new stories unfold as you talk.',
+    heroFeat1T: "Characters remember you", heroFeat1B: "Everything you've talked about is kept. Ask “Do you remember…?” and they search your past conversations before answering.",
+    heroFeat2T: "Characters reach out first", heroFeat2B: "After two days without a conversation, the character reaches out first when you come back, picking up your last talk, a promise, or something coming up. Switch on notifications to get a heads-up on your phone.",
+    heroFeat3T: "Stories reach an ending", heroFeat3B: "Relationships move through five stages, and each story has a rival. There are breakups and reunions, and a story you see through to the end is kept in your album.",
     heroPricing: 'Start free — 10 free chats daily · 50 bonus coins on signup · Memory on every plan · Coins from $0.99 · Premium $9.99/mo',
+    heroStatBand: "{STORIES} stories · {CHARACTERS} characters · {EVENTS} built-in story events",   // 79일차 사이트 개편: 실적 띠·안전 한 줄·제휴 버튼·장르 줄·장르 탭 전체·탭 제목·제휴 안내 화면 ({STORIES} 등은 renderHeroStats 가 catalog 에서 채움)
+    heroSafety: "18+ only · How far expression can go is limited by the relationship stage · We point to a helpline when warning signs appear",
+    heroPartnersBtn: "We share revenue with original creators & content companies — Partnerships",
+    heroPeekBtn: "See three real screens without signing in",
+    heroStatBandAlt: "Every story comes with its own cast and story events prepared in advance",
+    heroGenreLine: "Genres · {GENRE_CHIPS}",
+    genreAll: "All genres",
+    docTitle: "LUNIQUE — AI Stories Where You Play the Lead",
+    partnersHeader: "Partnerships",
+    partnersTitle: "Make your finished work an AI story where readers play the lead",
+    partnersLead: "For original creators and small and mid-sized content companies.",
+    partnersS1H: "Your characters and world, as an AI story",
+    partnersS1B: "We adapt the characters and world of a completed novel, comic or screen work into an AI story. Readers take the lead and talk with your characters as the story unfolds, and the characters remember every conversation.",
+    partnersS2H: "Follow the original, or open a new path",
+    partnersS2B: "Readers can follow the original storyline or build a new story of their own. Key scenes from the original are set up as story events, and what happens in between depends on what the reader says.",
+    partnersS3H: "Launch in Korean, English and Japanese",
+    partnersS3B: "Each title launches in all three languages together. {STORIES} stories already run in all three today.",
+    partnersS4H: "Revenue is shared with the original creator",
+    partnersS4B: "Revenue from each story is shared with the original creator or rights holder. How it is split is agreed title by title.",
+    partnersS5H: "Partner titles don't go live without the creator's approval",
+    partnersS5B: "We don't publish any partner work the original creator hasn't approved. The original creator or rights holder reviews it before release. The {STORIES} stories open today were written by us.",
+    partnersS5BAlt: "We don't publish any partner work the original creator hasn't approved. The original creator or rights holder reviews it before release. The stories open today were written by us.",
+    partnersShotsH: "What it looks like",
+    partnersShotsNote: "These are real screens from stories we made ourselves. All {STORIES} stories running today were made this way, and we apply the same process to a partner’s original work.",
+    partnersS3BAlt: "Each title launches in Korean, English and Japanese together. Our stories already run in all three today.",
+    partnersShotsNoteAlt: "These are real screens from stories we made ourselves. Every story running today was made this way, and we apply the same process to a partner’s original work.",
+    partnersShot1: "Choosing a story — each card shows the title, a one-line hook and the cast.",
+    partnersShot2: "Conversation — the character remembers what you talked about before and picks it up.",
+    partnersShot3: "A message first — come back after two days away, and the character speaks first.",
+    partnersContactBtn: "Contact us about a partnership",
+    partnersContactNote: "Email: kkfm1215@gmail.com",
     contGoBtn: 'Chat ▸',
     contNewSection: 'New connections',
     timeJustNow: 'just now',
     timeHoursAgo: '{n}h ago',
     timeDaysAgo: '{n}d ago',
     mypageResetDoneAlert: 'Reset complete. You can start over from the beginning.',
+    payTestTopNote: 'Official payments are still being set up. This is a trial run, so no real payment is taken.',
+    payKrNote: 'Sales in Korea will begin after business and mail-order registration are completed.',
     coinHeader: 'Buy Coins',
     coin100Label: '100 coins', coin550Label: '550 coins', coin1200Label: '1200 coins',
     coinUsesTitle: 'What coins are for',
@@ -1772,16 +1947,16 @@ const I18N = {
     coinUseMessage: 'One message — after your free daily limit',
     coinUseUnit: '{n} coins',
     coin100Price: '$0.99', coin550Price: '$4.99', coin1200Price: '$8.99',
-    coinDesc: 'Once you use up today\'s free messages, each message costs 2 coins. Payments are processed securely via PayPal — we never store your card details.',
+    coinDesc: 'Once you use up today\'s free messages, each message costs 2 coins. When official payments open, they will be handled through PayPal, and we never store your card details.',
     coinSubscribeLinkBtn: 'Tired of buying coins? Subscribe for unlimited →',
-    testCoinNote: 'Test period — you can get coins for free with the button below. It disappears once real payments open.',
+    testCoinNote: 'Coins are free for now. Use the button below; it disappears once official payments open.',
     testCoinBtn: 'Get 500 test coins',
     testCoinDone: 'You received {n} coins. (balance: {c})',
     testCoinEnough: 'You still have plenty. (balance: {c}) Come back when you run low.',
     testCoinFail: 'Not available right now. Please try again shortly.',
     subHeader: 'Subscription', subTitle: 'Premium subscription', subPriceLabel: '$9.99/mo',
     subBullets: '· Unlimited chats, no daily free-message limit<br/>· Priority access to upcoming premium-only stories (coming later)<br/>· <b>Memory is not a paid feature</b> — free members keep every past conversation too',
-    subFooterNote: 'You can cancel anytime. Payments are processed securely via PayPal.',
+    subFooterNote: 'You can cancel anytime. When official payments open, they will be handled through PayPal.',
     subStatusActiveBadge: 'Subscribed', subStatusActiveText: 'You can chat without limits.',
     subStatusInactiveBadge: 'Not subscribed', subStatusInactiveTextPrefix: 'After ', subStatusInactiveTextSuffix: ' free messages a day, you\'ll need coins.',
     subCancelBtn: 'Cancel Subscription',
@@ -1795,10 +1970,10 @@ const I18N = {
     payFailed: 'We couldn\'t complete the payment. Please try again shortly. If it keeps failing, email kkfm1215@gmail.com.',
   },
   ja: {
-    landingEyebrow: 'あなただけを覚えているAIロマンス',
+    landingEyebrow: "日本語・英語・韓国語で公開中",
     landingHeroTitle: '一日の終わりに、<br/>あの人との会話',
-    landingSubtitle: 'AIと楽しむ恋愛シミュレーション',
-    landingStartBtn: '今すぐ始める',
+    landingSubtitle: "作品の主人公になるAIストーリー",
+    landingStartBtn: "物語をはじめる",
     mf1: '夜がもっとも深まる時刻 — あなたは古い書架の前に立っています。',
     mf2: '月光が触れると、まだ書かれていない物語たちが棚でざわめきます。',
     mf3: '「ようこそ。あなたを待っていました。」',
@@ -1874,14 +2049,14 @@ const I18N = {
     chatStatEx: '過ぎた縁',
     chatRailTitle: '縁の記録', chatRailUpcoming: 'この先の予定', chatRailMemory: '記憶', chatRailToday: '今日', chatRailInDays: '{n}日後',
     loginWelcome: '記録を始めます',
-    loginDesc: 'Googleアカウントでログインすると<br/>進行状況がサーバーに保存されます。',
+    loginDesc: 'Googleアカウントでログインすればすぐに始められます。決済情報は不要で、毎日無料の会話をご利用いただけます。進行状況はサーバーに保存されます。',
     loginGoogleBtn: 'G Googleでログイン',
     loginErrorPrefix: 'ログイン中にエラーが発生しました: ',
     loginLangNotice: '※ メニューは翻訳されていますが、ストーリーのセリフ・文章は現在韓国語のみです。',
     profileHeader: 'プロフィール入力',
     profileDesc: 'すべてのストーリー共通の情報です。一度だけ入力すればOKです。',
     profileLabelName: '名前(呼んでほしい名前)',
-    profilePlaceholderName: '例: ヒョンギュン',
+    profilePlaceholderName: "例: ユウ",
     profileLabelGender: '性別',
     genderMale: '男性', genderFemale: '女性', genderNonbinary: 'ノンバイナリー',
     profileLabelInterest: '興味のある相手',
@@ -1956,6 +2131,8 @@ const I18N = {
     chatQuotaExceededPrefix: '本日の無料メッセージ', chatQuotaExceededSuffix: '件をすべて使い切りました。コインをチャージするか購読すると続けて会話できます。',
     chatQuotaCoinBtn: 'コインチャージ', chatQuotaSubscribeBtn: '購読する',
     chatRetryBtn: '再試行',
+    chatNoReplyNotice: '返事が届きませんでした。もう一度試しますか？',
+    chatNoReplyAgain: '2回続けて返事が届きませんでした。少し時間をおいてからもう一度お送りください。',
     chatErrorPrefix: 'エラー: ',
     chatSuggestErrorPrefix: 'セリフ提案を読み込めませんでした: ',
     chatTimeoutMessage: '応答に時間がかかりすぎたため中断しました。ネットワーク状態を確認してもう一度お試しください。',
@@ -2002,22 +2179,56 @@ const I18N = {
     legalTermsLink: '利用規約', legalPrivacyLink: 'プライバシーポリシー', legalRefundLink: '返金ポリシー',
     quotaLowNotice: '今日の無料会話は残り{n}回です。',
     quotaLastNotice: '今日の無料会話はこれが最後の{n}回です。続けるにはコインか購読をご用意ください。',
+    quotaLastNoticeHaveCoins: "今日の無料会話はこれが最後の1回です。次からはコインを{c}枚ずつ消費します。（所持{left}枚）",
     coinStartNotice: '本日の無料会話を使い切りました。ここからはコインを{c}枚ずつ消費します。（残り{left}枚）',
     coinLeftNotice: '残りコイン{left}枚',
-    heroTitle2: '会話から始まる<br>いちばん私的なロマンス',
-    heroSub2: 'あなたの言葉を記憶し、感情と物語が変わっていくAI恋愛シミュレーション。',
-    heroCardName: 'ソヨン', heroCardNow: 'たった今', heroCardMsg: '今日も待っていました。',
+    heroTitle2: "作品の主人公になる<br>AIストーリー",
+    heroSub2: "好きなジャンルの作品に入り、人物と物語を進めます。交わした会話はすべて記録に残ります。",
+    heroCardName: 'ソヨン', heroCardNow: 'たった今', heroCardMsg: "この前話してた発表、今日でしたよね？",
     heroCardMemTitle: '記憶の中の瞬間', heroCardMemQuote: '「海辺で聴かせてくれた歌」', heroCardMemDate: '三か月前の会話',
-    heroFeat1T: '無料でもすべて記憶', heroFeat1B: '数か月前にこぼした一言も、日付まで添えて思い出します。',
-    heroFeat2T: '自由な入力', heroFeat2B: '決まった選択肢はなく、自分の言葉で表現できます。',
-    heroFeat3T: '変化する関係', heroFeat3B: '会話するほど深まる感情、新しい物語。',
+    heroFeat1T: "人物があなたを覚えている", heroFeat1B: "交わした会話はすべて記録に残り、人物は会話の流れを踏まえて答えます。",
+    heroFeat2T: "人物のほうから連絡が来る", heroFeat2B: "2日以上会話がないと、次に開いたとき人物のほうから話しかけてきます。最後の会話や約束、近づく予定の話を続けます。通知をオンにすると、連絡が来たことをスマホでお知らせします。",
+    heroFeat3T: "物語は結末へ向かう", heroFeat3B: "関係は5つの段階で進み、物語ごとにライバルがいます。別れや再会もあり、最後まで完成させた物語はアルバムに残ります。",
     heroPricing: '無料で開始 — 毎日10回無料チャット · 登録時コイン50枚 · 記憶はプランを問わず · コインは$0.99から · プレミアム月額$9.99',
+    heroStatBand: "{STORIES}作品 · 登場人物{CHARACTERS}人 · 用意された出来事{EVENTS}件",   // 79일차 사이트 개편: 실적 띠·안전 한 줄·제휴 버튼·장르 줄·장르 탭 전체·탭 제목·제휴 안내 화면 ({STORIES} 등은 renderHeroStats 가 catalog 에서 채움)
+    heroSafety: "18歳以上の方のみ · 表現の深さは関係の段階に応じて制限します · 危険な兆候が見えたら相談窓口をご案内します",
+    heroPartnersBtn: "原作者・コンテンツ企業と収益を分け合います — 提携のご案内",
+    heroPeekBtn: "ログインなしで実際の画面3枚をご覧いただけます",
+    heroStatBandAlt: "すべての作品に登場人物と用意された出来事がそろっています",
+    heroGenreLine: "ジャンル · {GENRE_CHIPS}",
+    genreAll: "すべてのジャンル",
+    docTitle: "LUNIQUE — 作品の主人公になるAIストーリー",
+    partnersHeader: "提携のご案内",
+    partnersTitle: "完結した作品を、読者が主人公になるAIストーリーに",
+    partnersLead: "原作者・中小コンテンツ企業の皆さまへのご案内です。",
+    partnersS1H: "作品の人物と世界観をAIストーリーに",
+    partnersS1B: "完結した小説・マンガ・映像作品の登場人物と世界観を、AIストーリーとして再構成します。読者は主人公として人物と会話しながら物語を進め、交わした会話はすべて記録に残ります。",
+    partnersS2H: "原作に沿う道と、新しい物語をつくる道",
+    partnersS2B: "原作の流れに沿って進む道と、読者が新しい物語をつくる道の両方を用意します。原作の主な場面は物語の出来事として用意し、その間の展開は読者の言葉によって変わります。",
+    partnersS3H: "日本語・英語・韓国語で同時公開",
+    partnersS3B: "3つの言語で同時に公開します。現在も{STORIES}作品を3言語で運営しています。",
+    partnersS4H: "収益は原作側と分け合います",
+    partnersS4B: "物語から生まれる収益は原作側と分け合います。分け方と比率は作品ごとに協議して決めます。",
+    partnersS5H: "提携作品は原作者の承認なしに公開しません",
+    partnersS5B: "原作者が承認していない作品は公開しません。公開前に原作側に内容をご確認いただきます。現在公開中の{STORIES}作品は私たちが自分たちで書いた物語です。",
+    partnersS5BAlt: "原作者が承認していない作品は公開しません。公開前に原作側に内容をご確認いただきます。現在公開中の物語は私たちが自分たちで書いたものです。",
+    partnersShotsH: "実際の画面",
+    partnersShotsNote: "以下は私たちが自分たちで作った物語の実際の画面です。現在運営中の{STORIES}作品はすべてこの方法で作られており、原作作品にも同じ方法をそのまま適用します。",
+    partnersS3BAlt: "日本語・英語・韓国語で同時に公開します。現在も3つの言語で物語を運営しています。",
+    partnersShotsNoteAlt: "以下は私たちが自分たちで作った物語の実際の画面です。現在公開中の物語はすべてこの方法で作られており、原作作品にも同じ方法をそのまま適用します。",
+    partnersShot1: "物語を選ぶ — 作品ごとにタイトル、ひとこと紹介、登場人物が表示されます。",
+    partnersShot2: "会話 — 人物がそれまでの流れを受けて、続きから話します。",
+    partnersShot3: "先に届くメッセージ — 2日以上空けて戻ると、人物のほうから話しかけてきます。",
+    partnersContactBtn: "提携について問い合わせる",
+    partnersContactNote: "お問い合わせ: kkfm1215@gmail.com",
     contGoBtn: '会話 ▸',
     contNewSection: '新しい縁',
     timeJustNow: 'たった今',
     timeHoursAgo: '{n}時間前',
     timeDaysAgo: '{n}日前',
     mypageResetDoneAlert: 'リセットしました。最初からもう一度お楽しみいただけます。',
+    payTestTopNote: '正式な決済は準備中です。現在は試験運用のため、実際の決済は行われません。',
+    payKrNote: '韓国国内での販売は、事業者登録と通信販売業の届出を終えてから開始します。',
     coinHeader: 'コインチャージ',
     coin100Label: '100コイン', coin550Label: '550コイン', coin1200Label: '1200コイン',
     coinUsesTitle: 'コインの使いみち',
@@ -2026,16 +2237,16 @@ const I18N = {
     coinUseMessage: '会話1回 — 1日の無料回数を使い切ったあと',
     coinUseUnit: 'コイン{n}枚',
     coin100Price: '$0.99', coin550Price: '$4.99', coin1200Price: '$8.99',
-    coinDesc: '本日の無料メッセージを使い切ると、メッセージごとに2コイン消費します。決済はPayPalを通じて安全に処理され、カード情報を当方が保持することはありません。',
+    coinDesc: '本日の無料メッセージを使い切ると、メッセージごとに2コイン消費します。正式な決済が始まるとPayPalで処理され、カード情報を当方が保持することはありません。',
     coinSubscribeLinkBtn: '毎回コインを買うのが面倒なら?購読で無制限に →',
-    testCoinNote: 'テスト期間のご案内 — 下のボタンでコインを無料で受け取れます。正式な決済が始まるとこのボタンは消えます。',
+    testCoinNote: '今はコインを無料でお渡しします。下のボタンから受け取れ、正式な決済が始まるとこのボタンは消えます。',
     testCoinBtn: 'テスト用コインを500枚もらう',
     testCoinDone: 'コインを{n}枚受け取りました。(残高{c}枚)',
     testCoinEnough: 'まだコインは十分あります。(残高{c}枚) 使い切ってからまたどうぞ。',
     testCoinFail: '今は受け取れません。しばらくしてからお試しください。',
     subHeader: '購読', subTitle: 'プレミアム購読', subPriceLabel: '月額$9.99',
     subBullets: '· 1日の無料会話制限なしで無制限に会話<br/>· 今後追加されるプレミアム専用ストーリーへの優先アクセス(今後対応)<br/>· <b>記憶は有料機能ではありません</b> — 無料会員も過去の会話をすべてそのまま保てます',
-    subFooterNote: '購読はいつでも解約できます。決済はPayPalを通じて安全に処理されます。',
+    subFooterNote: '購読はいつでも解約できます。正式な決済が始まるとPayPalで処理されます。',
     subStatusActiveBadge: '購読中', subStatusActiveText: '無制限に会話できます。',
     subStatusInactiveBadge: '未購読', subStatusInactiveTextPrefix: '1日', subStatusInactiveTextSuffix: '件の無料会話の後はコインが必要です。',
     subCancelBtn: '購読を解約する',
@@ -2081,6 +2292,10 @@ function applyTranslations() {
   if (typeof STORIES !== 'undefined' && $('screen-mypage').classList.contains('active')) renderMypage();
   if (typeof STORIES !== 'undefined' && $('screen-album').classList.contains('active')) renderAlbum();
   if ($('screen-subscribe').classList.contains('active')) openSubscribeScreen();
+  // 79일차 사이트 개편: 탭 제목을 고른 언어로 바꾸고, 첫 화면·제휴 안내가 열려 있으면 숫자·장르 줄도 새 언어로 다시 채운다
+  const __docTitle = t('docTitle');
+  if (__docTitle && __docTitle !== 'docTitle') document.title = __docTitle;
+  if (['screen-landing', 'screen-partners'].some(id => $(id) && $(id).classList.contains('active'))) renderHeroStats();
 }
 
 function setLang(lang) {
@@ -2195,11 +2410,13 @@ function goTo(screenId, opts) {
     if (bw) bw.style.display = isProfileEditMode ? '' : 'none';
   }
   updateTabbar(screenId);
+  document.body.classList.toggle('in-chat', screenId === 'screen-chat');   // 80일차: 대화 화면에서는 언어 버튼을 감춘다(머리줄의 단계 표시와 겹침)
   if (screenId === 'screen-coin') { renderCoinScreen(); markFunnel('viewedCoinScreen'); }
   if (screenId === 'screen-mypage') renderMypage();
   if (screenId === 'screen-charlist') renderStoryList();
   if (screenId === 'screen-album') renderAlbum();
   if (screenId === 'screen-firstpick') renderFirstPick();
+  if (screenId === 'screen-landing' || screenId === 'screen-partners') renderHeroStats();   // 79일차 사이트 개편: 첫 화면·제휴 안내 숫자·장르 줄
 }
 
 // 뒤로가기 버튼 전용 — 실제로 직전에 있었던 화면으로 돌아간다. 히스토리가 비어있으면(예: 새로고침
@@ -2453,7 +2670,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-09-11.2';
+window.__BUILD = 'v2026-09-16.5';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -3060,12 +3277,12 @@ ko: { termsTitle: '이용약관', privacyTitle: '개인정보처리방침', refu
 refund: `<h3>1. 적용 대상</h3><p>본 정책은 LUNIQUE에서 판매하는 디지털 콘텐츠(코인, 구독)에 적용됩니다. 운영자(판매자): 오형균 (개인).</p>
 <h3>2. 코인</h3><p>사용하지 않은 코인은 구매일로부터 14일 이내에 요청하시면 전액 환불해 드립니다. 일부만 사용한 경우 미사용분을 비례하여 환불해 드릴 수 있습니다. 이미 사용한 코인은 환불되지 않습니다.</p>
 <h3>3. 구독</h3><p>구독은 언제든 해지할 수 있으며, 해지 후에도 이미 결제한 기간이 끝날 때까지 이용할 수 있습니다. 결제일로부터 14일 이내이고 해당 기간의 유료 기능을 사실상 사용하지 않은 경우 전액 환불해 드립니다.</p>
-<h3>4. 요청 방법</h3><p>kkfm1215@gmail.com 으로 계정 이메일과 구매 내역(날짜·금액)을 보내주세요. 영업일 기준 7일 이내에 처리합니다. 결제 대행사(PayPal, Paddle 등)를 통해 결제하신 경우 환불도 해당 대행사를 통해 이루어질 수 있습니다.</p>
+<h3>4. 요청 방법</h3><p>kkfm1215@gmail.com 으로 계정 이메일과 구매 내역(날짜·금액)을 보내주세요. 영업일 기준 7일 이내에 처리합니다. 결제 대행사(PayPal)를 통해 결제하신 경우 환불도 해당 대행사를 통해 이루어질 수 있습니다.</p>
 <h3>5. 법정 권리</h3><p>본 정책은 이용자가 거주하는 국가의 강행 소비자 보호 법령상의 권리(EU·영국의 14일 철회권 등)를 제한하지 않습니다. 디지털 콘텐츠의 즉시 제공에 동의하고 이용을 시작한 경우, 관련 법령에 따라 철회권이 소멸될 수 있습니다.</p><p>시행일: 2026-08-26</p>`,
-terms: `<h3>1. 서비스 소개</h3><p>LUNIQUE(이하 "서비스")는 AI가 만들어내는 가상 인물과의 창작 로맨스 대화를 제공하는 엔터테인먼트 서비스입니다. 모든 인물과 이야기는 허구이며, 실존 인물과 무관합니다. 서비스의 대화는 창작물일 뿐 상담·의료·법률 등 어떠한 전문적 조언도 아닙니다.</p>
+terms: `<h3>1. 서비스 소개</h3><p>LUNIQUE(이하 "서비스")는 작품 속 인물과 이야기를 이어 가는 AI 창작 대화를 제공하는 엔터테인먼트 서비스입니다. 모든 인물과 이야기는 허구이며, 실존 인물과 무관합니다. 서비스의 대화는 창작물일 뿐 상담·의료·법률 등 어떠한 전문적 조언도 아닙니다.</p>
 <h3>2. 이용 자격</h3><p>본 서비스는 만 18세 이상만 이용할 수 있습니다. 가입 시 생년월일 입력으로 연령을 확인하며, 허위 입력에 따른 책임은 이용자에게 있습니다.</p>
 <h3>3. 계정</h3><p>로그인은 Google 계정으로 이루어집니다. 계정 관리 책임은 이용자에게 있으며, 타인의 계정을 무단 사용해서는 안 됩니다.</p>
-<h3>4. 가상 재화(코인)와 구독</h3><p>코인과 구독은 서비스 안에서만 쓰이는 디지털 콘텐츠이며 현금·현물로 교환되지 않습니다. 디지털 콘텐츠의 특성상 사용이 시작된 코인·이용이 개시된 구독 기간은 환불이 제한될 수 있습니다. 미사용 코인의 환불은 아래 연락처로 문의해 주시면 관련 법령에 따라 처리합니다. 이 조항은 이용자의 법정 권리를 제한하지 않습니다.</p>
+<h3>4. 이용권(코인)과 구독</h3><p>코인과 구독은 서비스 안에서만 쓰이는 디지털 콘텐츠이며 현금·현물로 교환되지 않습니다. 디지털 콘텐츠의 특성상 사용이 시작된 코인·이용이 개시된 구독 기간은 환불이 제한될 수 있습니다. 미사용 코인의 환불은 아래 연락처로 문의해 주시면 관련 법령에 따라 처리합니다. 이 조항은 이용자의 법정 권리를 제한하지 않습니다.</p>
 <h3>5. 금지 행위</h3><p>다음 행위는 금지됩니다: 불법적이거나 타인의 권리를 침해하는 이용, 콘텐츠 정책(노골적 성적 묘사 요구 등)의 반복적 우회 시도, 자동화 도구를 이용한 비정상적 대량 이용, 서비스의 역설계·무단 복제.</p>
 <h3>6. AI 생성 콘텐츠</h3><p>대화는 AI가 실시간으로 생성하며 부정확하거나 예상과 다른 내용이 나올 수 있습니다. 이용자가 입력한 내용은 대화 생성과 서비스 운영에 필요한 범위에서 처리됩니다.</p>
 <h3>7. 서비스 변경·중단</h3><p>운영상 필요한 경우 서비스의 내용을 변경하거나 중단할 수 있으며, 중대한 변경은 서비스 내 공지로 알립니다.</p>
@@ -3075,20 +3292,20 @@ terms: `<h3>1. 서비스 소개</h3><p>LUNIQUE(이하 "서비스")는 AI가 만�
 <h3>11. 운영자 및 문의</h3><p>운영자(판매자): 오형균 (Hyeonggyun Oh, 개인)<br>이메일: kkfm1215@gmail.com</p><p>시행일: 2026-08-24</p>`,
 privacy: `<h3>1. 수집하는 정보</h3><p>· 계정: Google 로그인 식별자, 이메일<br>· 프로필: 닉네임, 성별, 생년월일, 자기소개(선택), 관심 상대<br>· 이용 기록: 대화 내용, 관계 진행 상태, 코인·구독·무료 이용량, 오류 기록</p>
 <h3>2. 이용 목적</h3><p>서비스 제공(대화 생성과 "기억" 기능), 연령 확인, 결제·이용량 관리, 오류 진단과 안전한 운영.</p>
-<h3>3. 처리 위탁과 국외 이전</h3><p>다음 사업자가 서비스 제공을 위해 정보를 처리하며, 서버는 해외(미국 등)에 있을 수 있습니다:<br>· Google Firebase — 로그인, 데이터 저장<br>· Google Gemini API — 대화 생성(입력한 대화 내용이 처리됨)<br>· Netlify — 호스팅<br>· PayPal — 결제(결제 기능 도입 시, 카드 정보는 운영자가 보관하지 않음)</p>
+<h3>3. 처리 위탁과 개인정보의 국외 이전</h3><p>다음 사업자가 서비스 제공을 위해 정보를 처리합니다:<br>· Google Firebase — 로그인, 데이터 저장<br>· Google Gemini API — 대화 생성(입력한 대화 내용이 처리됨)<br>· Netlify — 호스팅<br>· PayPal — 결제(결제 기능 도입 시, 카드 정보는 운영자가 보관하지 않음)</p><p>이 사업자들의 서버는 국외에 있어, 개인정보가 아래와 같이 국외로 이전됩니다.<br>· 이전되는 항목: Google 로그인 식별자와 이메일, 프로필(닉네임·성별·생년월일·자기소개·관심 상대), 대화 내용과 관계 진행 상태, 코인·구독·무료 이용량, 오류 기록<br>· 이전되는 국가와 시기: 미국 등 각 사업자의 서버가 있는 국가 / 서비스를 이용하는 동안 수시로<br>· 이전 방법: 정보통신망을 통한 전송<br>· 받는 자와 연락처: Google LLC(Firebase 로그인·저장, Gemini API 대화 생성, 개인정보 문의 support.google.com) / Netlify, Inc.(호스팅, 개인정보 문의 privacy@netlify.com) / PayPal(결제, 결제 기능 도입 시, 개인정보 문의 paypal.com 고객센터)<br>· 이용 목적과 보유·이용 기간: 위 2조의 목적 / 계정이 유지되는 동안 보관하며, 계정을 삭제하면 지체 없이 파기<br>· 거부 방법과 그 결과: 국외 이전을 원하지 않으시면 [내 정보] 화면에서 계정을 삭제하실 수 있습니다. 다만 로그인·저장·대화 생성이 모두 국외 사업자를 통해 이루어지므로, 거부하시면 서비스를 이용하실 수 없습니다.</p>
 <h3>4. 보관과 파기</h3><p>정보는 계정이 유지되는 동안 보관하며, 계정을 삭제하면 프로필과 대화 기록이 지체 없이 파기됩니다. 계정 삭제는 [내 정보] 화면에서 직접 할 수 있습니다. 다만 결제 영수증은 전자상거래 등에서의 소비자보호에 관한 법률에 따라 5년간 보관하며, 이 기록에는 대화 내용이 포함되지 않습니다.</p>
 <h3>5. 이용자의 권리</h3><p>언제든 [내 정보]에서 프로필을 열람·수정할 수 있고, 계정 삭제로 전체 삭제를 요청할 수 있습니다. 그 밖의 요청은 아래 연락처로 문의해 주세요.</p>
 <h3>6. 쿠키·로컬 저장소</h3><p>로그인 유지와 화면 설정(언어, 안내 표시 여부)을 위해 브라우저 저장소를 사용합니다. 광고·추적 목적의 쿠키는 사용하지 않습니다.</p>
 <h3>7. 아동의 개인정보</h3><p>만 18세 미만은 서비스를 이용할 수 없으며, 아동의 정보를 고의로 수집하지 않습니다.</p>
 <h3>8. 변경 고지</h3><p>이 방침이 바뀌면 서비스 내 공지로 알립니다.</p>
-<h3>9. 문의</h3><p>kkfm1215@gmail.com</p><p>시행일: 2026-08-24</p>` },
+<h3>9. 개인정보 보호책임자와 문의</h3><p>개인정보 보호책임자: 오형균 (운영자)<br>이메일: kkfm1215@gmail.com</p><p>개인정보 침해로 인한 신고나 상담이 필요하시면 개인정보분쟁조정위원회(1833-6972), 개인정보침해신고센터(118)에 문의하실 수 있습니다.</p><p>시행일: 2026-09-17 (이전 방침: 2026-08-24)</p>` },
 en: { termsTitle: 'Terms of Service', privacyTitle: 'Privacy Policy', refundTitle: 'Refund Policy',
 refund: `<h3>1. Scope</h3><p>This policy applies to digital content sold on LUNIQUE (coins and subscriptions). Operator (Seller): Hyeonggyun Oh (sole trader / individual).</p>
 <h3>2. Coins</h3><p>Unused coins are fully refundable within 14 days of purchase upon request. If a pack is partially used, we may refund the unused portion on a pro-rata basis. Coins already spent are non-refundable.</p>
 <h3>3. Subscriptions</h3><p>You can cancel anytime and keep access until the end of the paid period. A full refund is available within 14 days of a charge if the paid features were substantially unused during that period.</p>
-<h3>4. How to request</h3><p>Email kkfm1215@gmail.com with your account email and purchase details (date and amount). Requests are handled within 7 business days. If you paid through a payment provider (PayPal, Paddle, etc.), the refund may be issued through that provider.</p>
+<h3>4. How to request</h3><p>Email kkfm1215@gmail.com with your account email and purchase details (date and amount). Requests are handled within 7 business days. If you paid through a payment provider (PayPal), the refund may be issued through that provider.</p>
 <h3>5. Statutory rights</h3><p>Nothing in this policy limits your mandatory consumer rights in your country of residence (including the 14-day withdrawal right in the EU/UK). Where you consent to immediate delivery of digital content and begin using it, the withdrawal right may lapse under applicable law.</p><p>Effective: 2026-08-26</p>`,
-terms: `<h3>1. About the Service</h3><p>LUNIQUE (the "Service") is an entertainment service offering fictional romance conversations with AI-generated characters. All characters and stories are fictional and unrelated to real persons. Conversations are creative fiction and do not constitute professional advice of any kind.</p>
+terms: `<h3>1. About the Service</h3><p>LUNIQUE (the "Service") is an entertainment service that provides AI-created conversations in which you carry on a story with the characters of a work. All characters and stories are fictional and unrelated to real persons. Conversations are creative fiction and do not constitute professional advice of any kind.</p>
 <h3>2. Eligibility</h3><p>You must be 18 or older. Age is confirmed by the date of birth you provide at sign-up; you are responsible for its accuracy.</p>
 <h3>3. Account</h3><p>Sign-in is via Google. You are responsible for your account and must not use another person's account.</p>
 <h3>4. Coins & Subscription</h3><p>Coins and subscriptions are digital content usable only within the Service and are not exchangeable for money. Due to the nature of digital content, refunds may be limited for coins already spent or subscription periods already started. For unused coins, contact us below and we will handle requests in accordance with applicable law. Nothing here limits your statutory rights.</p>
@@ -3101,20 +3318,20 @@ terms: `<h3>1. About the Service</h3><p>LUNIQUE (the "Service") is an entertainm
 <h3>11. Operator & Contact</h3><p>Operator (Seller): Hyeonggyun Oh (sole trader / individual)<br>Email: kkfm1215@gmail.com</p><p>Effective: 2026-08-24</p>`,
 privacy: `<h3>1. Data We Collect</h3><p>· Account: Google sign-in identifier, email<br>· Profile: nickname, gender, date of birth, bio (optional), preference<br>· Usage: chat content, relationship progress, coin/subscription/free-quota usage, error logs</p>
 <h3>2. Purposes</h3><p>Providing the Service (conversation generation and the "memory" feature), age verification, billing and quota management, diagnostics and safe operation.</p>
-<h3>3. Processors & International Transfer</h3><p>The following providers process data on our behalf; servers may be located abroad (e.g., the U.S.):<br>· Google Firebase — sign-in, data storage<br>· Google Gemini API — conversation generation (your chat inputs are processed)<br>· Netlify — hosting<br>· PayPal — payments (when introduced; we never store card details)</p>
+<h3>3. Processors & Transfer of Personal Data Abroad</h3><p>The following providers process data on our behalf:<br>· Google Firebase — sign-in, data storage<br>· Google Gemini API — conversation generation (your chat inputs are processed)<br>· Netlify — hosting<br>· PayPal — payments (when introduced; we never store card details)</p><p>Their servers are located outside Korea, so personal data is transferred abroad as follows.<br>· Items transferred: Google sign-in identifier and email, profile (nickname, gender, date of birth, bio, preference), chat content and relationship progress, coin/subscription/free-quota usage, error logs<br>· Countries and timing: the countries where each provider keeps its servers, including the United States / continuously while you use the Service<br>· Method: transmission over the network<br>· Recipients and contacts: Google LLC (Firebase sign-in and storage, Gemini API conversation generation; privacy contact support.google.com) / Netlify, Inc. (hosting; privacy contact privacy@netlify.com) / PayPal (payments, when introduced; privacy contact paypal.com support)<br>· Purpose and retention: the purposes in Section 2 / kept while your account exists and erased without delay when you delete your account<br>· How to refuse and what follows: if you do not want your data transferred abroad, you can delete your account on the [Me] screen. Because sign-in, storage and conversation generation all run through providers abroad, refusing means the Service cannot be used.</p>
 <h3>4. Retention & Deletion</h3><p>Data is kept while your account exists. Deleting your account promptly erases your profile and chat history. You can delete your account yourself on the [Me] screen.</p>
 <h3>5. Your Rights</h3><p>You can view and edit your profile anytime on the [Me] screen and request full erasure by deleting your account. For other requests, contact us below.</p>
 <h3>6. Cookies & Local Storage</h3><p>Browser storage is used to keep you signed in and remember settings (language, one-time guides). No advertising or tracking cookies.</p>
 <h3>7. Children</h3><p>The Service is not available to persons under 18, and we do not knowingly collect children's data.</p>
 <h3>8. Changes</h3><p>Changes to this policy will be announced in the Service.</p>
-<h3>9. Contact</h3><p>kkfm1215@gmail.com</p><p>Effective: 2026-08-24</p>` },
+<h3>9. Data Protection Officer & Contact</h3><p>Data protection officer: Hyeonggyun Oh (operator)<br>Email: kkfm1215@gmail.com</p><p>In Korea you may also report a privacy concern to the Personal Information Dispute Mediation Committee (1833-6972) or the Privacy Infringement Report Center (118).</p><p>Effective: 2026-09-17 (previous version: 2026-08-24)</p>` },
 ja: { termsTitle: '利用規約', privacyTitle: 'プライバシーポリシー', refundTitle: '返金ポリシー',
 refund: `<h3>1. 適用範囲</h3><p>本ポリシーはLUNIQUEで販売するデジタルコンテンツ(コイン、サブスクリプション)に適用されます。運営者(販売者): Oh Hyeonggyun(個人)。</p>
 <h3>2. コイン</h3><p>未使用のコインは、購入日から14日以内のご請求で全額返金いたします。一部使用済みの場合は未使用分を按分して返金できる場合があります。使用済みのコインは返金できません。</p>
 <h3>3. サブスクリプション</h3><p>いつでも解約でき、解約後も支払済み期間の終了まで利用できます。決済日から14日以内で、その期間の有料機能を実質的に使用していない場合は全額返金いたします。</p>
-<h3>4. 請求方法</h3><p>kkfm1215@gmail.com までアカウントのメールアドレスと購入情報(日付・金額)をお送りください。7営業日以内に対応します。決済代行(PayPal、Paddle等)経由のお支払いは、当該代行を通じて返金される場合があります。</p>
+<h3>4. 請求方法</h3><p>kkfm1215@gmail.com までアカウントのメールアドレスと購入情報(日付・金額)をお送りください。7営業日以内に対応します。決済代行(PayPal)経由のお支払いは、当該代行を通じて返金される場合があります。</p>
 <h3>5. 法定の権利</h3><p>本ポリシーは、お住まいの国の強行的な消費者保護法上の権利(EU・英国の14日間の撤回権など)を制限するものではありません。デジタルコンテンツの即時提供に同意し利用を開始した場合、適用法により撤回権が消滅することがあります。</p><p>施行日: 2026-08-26</p>`,
-terms: `<h3>1. サービスについて</h3><p>LUNIQUE(以下「本サービス」)は、AIが生成する架空の人物との創作恋愛会話を提供するエンターテインメントサービスです。すべての人物と物語はフィクションであり、実在の人物とは関係ありません。会話は創作物であり、いかなる専門的助言でもありません。</p>
+terms: `<h3>1. サービスについて</h3><p>LUNIQUE(以下「本サービス」)は、作品の中の人物と物語を紡いでいくAI創作会話を提供するエンターテインメントサービスです。すべての人物と物語はフィクションであり、実在の人物とは関係ありません。会話は創作物であり、いかなる専門的助言でもありません。</p>
 <h3>2. 利用資格</h3><p>18歳以上の方のみご利用いただけます。年齢は登録時の生年月日で確認し、虚偽入力の責任は利用者にあります。</p>
 <h3>3. アカウント</h3><p>ログインはGoogleアカウントで行います。アカウントの管理責任は利用者にあり、他人のアカウントを無断で使用してはなりません。</p>
 <h3>4. コインとサブスクリプション</h3><p>コインとサブスクリプションは本サービス内でのみ使用できるデジタルコンテンツであり、現金等と交換できません。デジタルコンテンツの性質上、使用開始後のコイン・開始済みの購読期間については返金が制限される場合があります。未使用コインの返金は下記連絡先までお問い合わせください。適用法令に基づき対応し、本条項は利用者の法定権利を制限しません。</p>
@@ -3127,13 +3344,13 @@ terms: `<h3>1. サービスについて</h3><p>LUNIQUE(以下「本サービス�
 <h3>11. 運営者・お問い合わせ</h3><p>運営者(販売者): Oh Hyeonggyun(個人)<br>メール: kkfm1215@gmail.com</p><p>施行日: 2026-08-24</p>`,
 privacy: `<h3>1. 収集する情報</h3><p>· アカウント: Googleログイン識別子、メールアドレス<br>· プロフィール: ニックネーム、性別、生年月日、自己紹介(任意)、関心のある相手<br>· 利用記録: 会話内容、関係の進行状況、コイン・購読・無料利用量、エラー記録</p>
 <h3>2. 利用目的</h3><p>サービス提供(会話生成と「記憶」機能)、年齢確認、決済・利用量管理、エラー診断と安全な運営。</p>
-<h3>3. 処理の委託と国外移転</h3><p>以下の事業者がサービス提供のため情報を処理し、サーバーは海外(米国など)にある場合があります:<br>· Google Firebase — ログイン、データ保存<br>· Google Gemini API — 会話生成(入力した会話内容が処理されます)<br>· Netlify — ホスティング<br>· PayPal — 決済(導入時。カード情報を運営者は保持しません)</p>
+<h3>3. 処理の委託と個人情報の国外移転</h3><p>以下の事業者がサービス提供のため情報を処理します:<br>· Google Firebase — ログイン、データ保存<br>· Google Gemini API — 会話生成(入力した会話内容が処理されます)<br>· Netlify — ホスティング<br>· PayPal — 決済(導入時。カード情報を運営者は保持しません)</p><p>これらの事業者のサーバーは国外にあるため、個人情報は以下のとおり国外に移転されます。<br>· 移転される項目: Googleログイン識別子とメールアドレス、プロフィール(ニックネーム・性別・生年月日・自己紹介・関心のある相手)、会話内容と関係の進行状況、コイン・購読・無料利用量、エラー記録<br>· 移転先の国と時期: 米国など各事業者のサーバーがある国 / サービスを利用している間、随時<br>· 移転の方法: ネットワークを通じた送信<br>· 受け取る者と連絡先: Google LLC(Firebaseのログイン・保存、Gemini APIの会話生成、個人情報のお問い合わせ support.google.com) / Netlify, Inc.(ホスティング、privacy@netlify.com) / PayPal(決済。導入時。paypal.com カスタマーサポート)<br>· 利用目的と保有・利用期間: 上記2条の目的 / アカウントが存続する間保管し、アカウントを削除すると遅滞なく消去<br>· 拒否する方法とその結果: 国外移転を望まれない場合は[マイ]画面からアカウントを削除できます。ただしログイン・保存・会話生成のすべてが国外の事業者を通じて行われるため、拒否された場合は本サービスをご利用いただけません。</p>
 <h3>4. 保管と削除</h3><p>情報はアカウントが存続する間保管され、アカウントを削除するとプロフィールと会話履歴は遅滞なく消去されます。アカウント削除は[マイ]画面からご自身で行えます。</p>
 <h3>5. 利用者の権利</h3><p>[マイ]画面でいつでもプロフィールを閲覧・修正でき、アカウント削除により全消去を求められます。その他のご要望は下記連絡先へ。</p>
 <h3>6. Cookie・ローカルストレージ</h3><p>ログイン維持と設定(言語、初回ガイド表示)のためブラウザーの保存領域を使用します。広告・追跡目的のCookieは使用しません。</p>
 <h3>7. 未成年者</h3><p>18歳未満の方は本サービスを利用できず、児童の情報を故意に収集しません。</p>
 <h3>8. 変更の告知</h3><p>本ポリシーの変更はサービス内で告知します。</p>
-<h3>9. お問い合わせ</h3><p>kkfm1215@gmail.com</p><p>施行日: 2026-08-24</p>` }
+<h3>9. 個人情報保護責任者とお問い合わせ</h3><p>個人情報保護責任者: Oh Hyeonggyun(運営者)<br>メール: kkfm1215@gmail.com</p><p>韓国国内では、個人情報紛争調停委員会(1833-6972)や個人情報侵害申告センター(118)に申告・ご相談いただけます。</p><p>施行日: 2026-09-17 (旧ポリシー: 2026-08-24)</p>` }
 };
 // 문서 뷰어 열기. kind: 'terms' | 'privacy'
 // 67일차 마감: 비동기 작업 중 버튼에 스피너를 돌린다. 이중 클릭도 함께 막힌다.
@@ -3517,6 +3734,53 @@ function avatarSymbolPath(symbol) {
   }
 }
 
+// 80일차: 책 표지형 카드 + 모티프 고전 한 줄 (화면만 — 게임 로직은 건드리지 않는다)
+// renderCoverThumb(id, small): STORIES[id].nophoto === true 인 편의 인물 사진 자리에 그리는 "책 표지".
+//   짙은 바탕 + 세리프 제목 + (classic.label 이 있으면) 아래 작은 글씨. 이미지 src 를 만들지 않으니 404 요청이 나가지 않는다.
+//   small 이 참이면(이어하기 곁줄 26px·카드 40px 원형) 제목 첫 글자만 — 제목이 들어가지 않는 크기.
+//   글은 textContent 로 넣은 요소의 outerHTML 을 돌려준다(데이터 문자열을 innerHTML 에 그대로 붙이지 않는다).
+function renderCoverThumb(id, small) {
+  const raw = STORIES[id] || {};
+  const story = localizeStory(raw, id) || raw;
+  const box = document.createElement(small ? 'span' : 'div');   // 80일차: small 은 .cc-av(span) 안에 들어가므로 span
+  box.className = 'cover-thumb' + (small ? ' small' : '');
+  const title = String(story.title || raw.title || '');
+  const tt = document.createElement('span');
+  tt.className = 'ct-title';
+  tt.textContent = small ? title.trim().charAt(0) : title;
+  box.appendChild(tt);
+  const label = raw.classic && raw.classic.label && (raw.classic.label[currentLang] || raw.classic.label.ko);
+  if (!small && label) {
+    const sub = document.createElement('span');
+    sub.className = 'ct-sub';
+    sub.textContent = label;
+    box.appendChild(sub);
+  }
+  return box.outerHTML;
+}
+// renderClassicLine(story): 이야기 소개 화면의 모티프 고전 한 줄 — classic 이 있을 때만.
+//   위 줄 = label · part, 아래 더 작은 글씨 = twist. 값은 {ko,en,ja} 사전(현재 언어, 없으면 ko) 또는 문자열 둘 다 받는다.
+function renderClassicLine(story) {
+  const c = story && story.classic;
+  if (!c || !c.label || !c.part) return '';
+  const pick = (m) => (m && typeof m === 'object') ? (m[currentLang] || m.ko || '') : String(m || '');
+  const label = pick(c.label), part = pick(c.part), twist = pick(c.twist);
+  if (!label && !part) return '';
+  const box = document.createElement('div');
+  box.className = 'intro-classic';
+  const main = document.createElement('span');
+  main.className = 'ic-main';
+  main.textContent = (label && part) ? (label + ' · ' + part) : (label || part);
+  box.appendChild(main);
+  if (twist) {
+    const tw = document.createElement('span');
+    tw.className = 'ic-twist';
+    tw.textContent = '— ' + twist;
+    box.appendChild(tw);
+  }
+  return box.outerHTML;
+}
+
 // key: STORIES[...].cast[].key, size: 렌더링될 정사각형 픽셀 크기
 function avatarSVG(key, size, name) {
   // 67일차 디자인 1차: 글자 타일이 화면을 '미완성 시안'처럼 보이게 만들던 최대 원인이라
@@ -3582,6 +3846,68 @@ function loadCatalog() {
     list.forEach(st => { if (!STORIES[st.id]) { STORY_ORDER.push(st.id); STORIES[st.id] = Object.assign({ __full: false }, st); } });
   }).catch(e => { console.warn('스토리 목록을 받지 못했습니다', e); });
   return __catalogPromise;
+}
+// 79일차 사이트 개편: 첫 화면·제휴 안내의 숫자(공개 편·등장인물·미리 준비된 사건)와 장르 줄은 catalog 에서 센다.
+// 숫자가 든 문구는 data-i18n 이 아니라 data-i18n-stat 에 두고 이 함수만 채운다(applyTranslations 는 자리표시를 모른다).
+// arcCount 칸이 없는 옛 catalog(방문자 브라우저에 남은 사본)면 사건 수({EVENTS})가 든 문구만 숨긴다 — 틀린 숫자를 보이느니 숨긴다. 편 수만 쓰는 문구는 채운다.
+// catalog 를 못 받으면 숫자 문구와 바로 앞 제목(h3)을 함께 숨기고 오류를 기록한다(제휴 안내에 본문 없는 제목만 남지 않게).
+async function renderHeroStats() {
+  try {
+    await loadCatalog();
+    const nums = { stories: 0, characters: 0, events: 0 };
+    const present = {};
+    Object.keys(STORIES).forEach(id => {
+      const st = STORIES[id];
+      if (!st || !st.playable) return;
+      nums.stories++;
+      nums.characters += (st.cast || []).length;
+      if (nums.events !== null) { if (typeof st.arcCount === 'number') nums.events += st.arcCount; else nums.events = null; }
+      if (st.genre && GENRE_LABELS[st.genre]) present[st.genre] = true;
+    });
+    document.querySelectorAll('[data-i18n-stat]').forEach(el => fillStatText(el, nums.stories ? nums : null));
+    const names = GENRE_ORDER.filter(k => present[k]).map(k => GENRE_LABELS[k][currentLang] || GENRE_LABELS[k].ko);
+    document.querySelectorAll('[data-genre-line]').forEach(el => {
+      if (names.length < 2) { el.hidden = true; return; }
+      // 장르 이름이 줄 끝에서 가운데가 끊기지 않게("Slice of / Life", "Sci- / Fi") 이름마다 줄바꿈 없는 칸에 넣는다
+      const parts = t(el.getAttribute('data-genre-line')).split('{GENRE_CHIPS}');
+      el.textContent = '';
+      el.appendChild(document.createTextNode(parts[0]));
+      names.forEach((name, i) => {
+        if (i) el.appendChild(document.createTextNode(' · '));
+        const span = document.createElement('span');
+        span.style.whiteSpace = 'nowrap';
+        span.textContent = name;
+        el.appendChild(span);
+      });
+      el.appendChild(document.createTextNode(parts.slice(1).join(names.join(' · '))));
+      el.hidden = false;
+    });
+  } catch (e) {
+    document.querySelectorAll('[data-i18n-stat]').forEach(el => fillStatText(el, null));
+    try { logClientError('hero-stats', String((e && e.message) || e).slice(0, 100)); } catch (e2) { }
+  }
+}
+function fillStatText(el, nums) {
+  const tpl = t(el.getAttribute('data-i18n-stat'));
+  const prev = el.previousElementSibling;
+  const head = prev && prev.tagName === 'H3' ? prev : null;
+  if (!nums || (nums.events === null && tpl.indexOf('{EVENTS}') >= 0)) {
+    // 82일차: 숫자를 못 받아도 문단을 통째로 숨기지 않는다 — 숫자 없는 대체 문장(data-i18n-stat-alt)을 쓰고,
+    //          대체 문장조차 없을 때만 숨긴다. t() 는 없는 키에 키 이름을 그대로 돌려준다.
+    const altKey = el.getAttribute('data-i18n-stat-alt');
+    const altText = altKey ? t(altKey) : '';
+    if (!altKey || altText === altKey) { el.hidden = true; if (head) head.hidden = true; return; }
+    el.textContent = altText;
+    el.hidden = false;
+    if (head) head.hidden = false;
+    return;
+  }
+  el.textContent = tpl
+    .split('{STORIES}').join(String(nums.stories))
+    .split('{CHARACTERS}').join(String(nums.characters))
+    .split('{EVENTS}').join(String(nums.events));
+  el.hidden = false;
+  if (head) head.hidden = false;
 }
 const __storyPromises = {};   // 묶음 파일 이름별
 function __hydrateStory(data) {
@@ -3862,7 +4188,7 @@ function pickStoriesFor(interest, excludeId, count) {
 function firstpickCardHTML(id) {
   const story = localizeStory(STORIES[id], id);
   const key = story.cast[0].key;
-  const art = AVATAR_IMAGE[key]
+  const art = (STORIES[id].nophoto === true) ? renderCoverThumb(id) : AVATAR_IMAGE[key]
     ? `<img src="${thumb(key)}" alt="" loading="lazy">`
     : avatarSVG(key, 96, story.cast[0].name);
   return `<div class="fp-art">${art}</div>
@@ -3936,7 +4262,7 @@ function renderContinueSection(statusById, metaById) {
       const key0 = story.cast[0].key;
       const cv = document.createElement('div');
       cv.className = 'cv';
-      cv.innerHTML = (AVATAR_IMAGE[key0]
+      cv.innerHTML = ((STORIES[id].nophoto === true) ? `<span class="cc-av">${renderCoverThumb(id, true)}</span>` : AVATAR_IMAGE[key0]
         ? `<img src="${thumb(key0)}" alt="" loading="lazy" onerror="this.style.display='none'">`
         : `<span class="cc-av">${avatarSVG(key0, 26)}</span>`)
         + `<span class="nm">${story.title}<span class="mt">${relTimeText(m.last)}</span></span>`;
@@ -3946,7 +4272,7 @@ function renderContinueSection(statusById, metaById) {
     const card = document.createElement('div');
     card.className = 'cont-card';
     const key = story.cast[0].key;
-    const av = AVATAR_IMAGE[key]
+    const av = (STORIES[id].nophoto === true) ? `<span class="cc-av">${renderCoverThumb(id, true)}</span>` : AVATAR_IMAGE[key]
       ? `<img src="${thumb(key)}" alt="" loading="lazy" onerror="this.style.display='none'">`
       : `<span class="cc-av">${avatarSVG(key, 40)}</span>`;
     const need = requiredArcsFor(story);
@@ -3997,7 +4323,23 @@ async function getStorySlotStatus() {
 // 56일차 C03: 목록 검색·필터 상태. 화면을 벗어나면 초기화된다(저장하지 않는다).
 let listQuery = '';
 let listTier = 'all';   // all | easy | normal | hard | ongoing
+let listGenre = 'all';   // 79일차 사이트 개편: 목록 장르 탭(catalog.ko 의 genre). 'all' = 모든 장르
 
+
+// ===== 79일차 사이트 개편: 장르 (목록 장르 탭·첫 화면 장르 줄) =====
+// catalog.ko 의 genre 칸에는 key 만 있다(_check/genre_map.json → build_data.js). 이름표는 여기 3개 언어로 둔다.
+const GENRE_LABELS = {
+  office: { ko: '직장·일', en: 'Work & Career', ja: '仕事・職場' },
+  fantasy: { ko: '판타지·기묘한 일', en: 'Fantasy & the Uncanny', ja: 'ファンタジー・不思議' },
+  daily: { ko: '일상·동네', en: 'Slice of Life', ja: '日常・街角' },
+  drama: { ko: '인생 드라마', en: 'Life Drama', ja: 'ヒューマンドラマ' },
+  mystery: { ko: '미스터리·비밀', en: 'Mystery & Secrets', ja: 'ミステリー・秘密' },
+  comedy: { ko: '코미디·라이벌', en: 'Comedy & Rivals', ja: 'コメディ・ライバル' },
+  scifi: { ko: 'SF·AI', en: 'Sci-Fi & AI', ja: 'SF・AI' },
+  romance: { ko: '로맨스', en: 'Romance', ja: '恋愛' }
+};
+// 순서 고정(로맨스는 맨 뒤) — 첫 화면 장르 줄과 목록 탭이 같은 순서를 쓴다. 데이터에 없는 장르는 어느 쪽에도 나오지 않는다.
+const GENRE_ORDER = ['office', 'fantasy', 'daily', 'drama', 'mystery', 'comedy', 'scifi', 'romance'];
 
 // ===== 태그 시스템 (67일차, 레퍼런스 처방 ③) =====
 // 어휘는 키로 통일하고 표기만 3개 언어 — 스토리는 키 배열만 가진다.
@@ -4071,6 +4413,7 @@ const STORY_TAGS = {
   m43:['anonymous','pure','slowburn','secret'], m44:['researcher','letters','slowburn','pure'],
   m45:['rival','office','blunt','elegant'], m46:['reunion','pure','healing','sweet'],
   m47:['distance','crisis','sweet','slowburn'], m48:['exlover','reunion','healing','crisis'],
+  chunhyang:['pure','rival','secret','fate'], janeeyre:['secret','mystery','slowburn','blunt'], konjikiyasha:['pure','rival','tension','chaebol'],
   m49:['loop','office','playful','mystery'], m50:['office','contract','rival','elegant']
 };
 // '관계로 찾기' 줄에 보여줄 대표 태그 (순서 = 노출 순서)
@@ -4106,7 +4449,7 @@ function renderSpotlight(startedIds) {
   const wrap = document.getElementById('story-spotlight-wrap');
   const box = document.getElementById('story-spotlight');
   if (!wrap || !box) return;
-  const filtering = !!listTag || !!(listQuery || '').trim() || listTier === 'ongoing';
+  const filtering = !!listTag || !!(listQuery || '').trim() || listTier === 'ongoing' || listGenre !== 'all';
   const interest = (playerProfile && playerProfile.interest) || '모두';
   const pool = (CURATED_PICKS[interest] || CURATED_PICKS['모두'])
     .filter(id => STORIES[id] && STORIES[id].playable && !(startedIds && startedIds.has(id)))
@@ -4133,6 +4476,33 @@ function renderTagCloud() {
     '<button type="button" class="tag-chip cloud' + (listTag === k ? ' on' : '') + '" data-tag="' + k + '">#' + tagLabel(k) + '</button>'
   ).join('');
   bindTagChips(box);
+}
+
+// 79일차 사이트 개편: 목록 위 장르 탭. 지금 보이는 공개 편(관심 상대 조건 포함)에 실제로 있는 장르만 버튼이 된다 — 빈 탭은 구조상 생기지 않는다.
+function renderGenreTabs(interest) {
+  const box = $('genre-tabs');
+  if (!box) return;
+  const present = {};
+  Object.keys(STORIES).forEach(id => {
+    const st = STORIES[id];
+    if (!st || !st.playable) return;
+    if (interest !== '모두' && !(st.cast || []).some(c => c.gender === interest)) return;
+    if (st.genre && GENRE_LABELS[st.genre]) present[st.genre] = true;
+  });
+  const keys = GENRE_ORDER.filter(k => present[k]);
+  if (listGenre !== 'all' && !present[listGenre]) listGenre = 'all';
+  box.innerHTML = '';
+  if (keys.length < 2) { box.hidden = true; return; }
+  box.hidden = false;
+  ['all'].concat(keys).forEach(k => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'filter-chip' + (listGenre === k ? ' on' : '');
+    b.textContent = k === 'all' ? t('genreAll') : (GENRE_LABELS[k][currentLang] || GENRE_LABELS[k].ko);
+    b.setAttribute('aria-pressed', listGenre === k ? 'true' : 'false');
+    b.addEventListener('click', () => { listGenre = k; renderStoryList(); });
+    box.appendChild(b);
+  });
 }
 
 function renderStoryFilters() {
@@ -4186,6 +4556,7 @@ async function renderStoryList() {
   }
   renderBillingSnippet('charlist-billing-status');
   renderStoryFilters();
+  renderGenreTabs(interest);
   renderTagCloud();
   const q = (listQuery || '').trim().toLowerCase();
   let shown = 0;
@@ -4194,6 +4565,7 @@ async function renderStoryList() {
     return STORIES[id].cast.some(c => c.gender === interest);
   }).filter(id => {
     // 난이도 / 진행 중 필터
+    if (listGenre !== 'all' && STORIES[id].genre !== listGenre) return false;   // 79일차 사이트 개편: 장르 탭
     if (listTier === 'ongoing') return statusById[id] === 'active';
     // 태그 필터 (67일차)
     if (listTag && !(STORY_TAGS[id] || []).includes(listTag)) return false;
@@ -4237,13 +4609,14 @@ async function renderStoryList() {
     // 61일차: 첫 화면에 바로 보이는 카드까지 나중에 받으면 목록이 빈 채로 잠깐 떴다가 채워진다.
     // 위쪽 6장은 바로 받고, 스크롤해야 보이는 아래쪽만 미룬다.
     const eager = shown <= 6;
-    const photoInner = AVATAR_IMAGE[photoKey]
+    const photoInner = (STORIES[id].nophoto === true) ? renderCoverThumb(id) : AVATAR_IMAGE[photoKey]
       ? `<img src="${thumb(photoKey)}" alt="${t('a11yPortrait')}" decoding="async" width="320" height="320" onerror="this.style.display='none'"${eager ? '' : ' loading="lazy"'}>`
       : avatarSVG(photoKey, 84, story.cast[0].name);
     // 64일차: 난이도 표기 폐지 — "어려움" 배지는 경고문이 되어 그 스토리를 재고로 만든다.
     // 카드는 훅(제목·한 줄·관계 설정)으로만 승부한다. 다인 스토리만 인물 이름 배지 유지.
+    // 81일차: 이름 배지는 주인공+경쟁자 둘까지만. 고전 3편은 여섯 개가 깔려 카드가 이름표 밭이 됐다.
     const badges = story.cast.length > 1
-      ? story.cast.map(c => `<span class="diff-badge diff-normal">${c.name}</span>`).join('')
+      ? story.cast.slice(0, 2).map(c => `<span class="diff-badge diff-normal">${c.name}</span>`).join('')
       : '';
     const progressBadge = inProgress ? `<span class="diff-badge badge-progress">${t('charlistProgressBadge')}</span>` : '';
     const waitingBadge = waiting ? '<span class="diff-badge badge-full">' + t('charlistWaitingBadge') + '</span>' : '';
@@ -4291,10 +4664,11 @@ async function openStoryIntro(storyId) {
   $('charintro-subtitle').textContent = story.subtitle || '';
   // 실사/일러스트 이미지가 있는 캐릭터는 사각 프레임을 꽉 채우는 큰 사진으로, 없는 캐릭터는 기존 원형 placeholder 아이콘으로.
   const introKey = story.cast[0].key;
-  $('intro-portrait').innerHTML = AVATAR_IMAGE[introKey]
+  $('intro-portrait').innerHTML = (rawStory.nophoto === true) ? renderCoverThumb(storyId) : AVATAR_IMAGE[introKey]
     ? `<img src="${AVATAR_IMAGE[introKey]}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover; object-position:center 22%; display:block;" alt="${t('a11yPortrait')}" decoding="async" fetchpriority="high">`
     : avatarSVG(introKey, 140, story.cast[0].name);
-  $('charintro-cast').innerHTML = story.cast.map(c => `<span class="diff-badge diff-normal">${c.name}</span>`).join('')
+  // 81일차: 이름 배지는 주인공+경쟁자 둘까지만(목록 카드와 같은 규칙).
+  $('charintro-cast').innerHTML = story.cast.slice(0, 2).map(c => `<span class="diff-badge diff-normal">${c.name}</span>`).join('')
     + tagChipsHTML(storyId, 5);
   bindTagChips($('charintro-cast'));
   const approachHints = story.cast.filter(c => c.approachHint).map(c => (story.cast.length > 1 ? `<b>${c.name}</b> ${c.approachHint}` : c.approachHint)).join('<br/><br/>');
@@ -4335,6 +4709,7 @@ async function openStoryIntro(storyId) {
   }
   // ② 상황 — 소개(summary.intro)는 목록 카드에서 이미 읽은 문장이라 중복이므로 뺀다
   introHtml += `<div class="intro-situation">${story.summary.situation}</div>`;
+  introHtml += renderClassicLine(rawStory);   // 80일차: 모티프 고전 한 줄 — classic 이 있는 편만
   // ③ 무너지는 지점 — 공략의 핵심이라 따로 뽑는다
   if (crackBlock) {
     introHtml += `<div class="intro-crack"><span class="k">${t('charintroCrackLabel')}</span><span class="v">${crackBlock.split('무너지는 지점 — ').pop()}</span></div>`;
@@ -4809,6 +5184,57 @@ function maybeAddMediumLabel(container, medium) {
   container.appendChild(el);
 }
 
+// 81일차: cast 에 없는 speaker 키가 "전부 소문자 로마자(+숫자·밑줄·붙임표)"뿐이면 그건 사람을 부르는 이름이 아니라
+// AI 가 지어낸 내부 key 다(wolmae, other, p3, janeeyre_adele ...). 그대로 이름표에 찍으면 정체 모를 영어 낱말이
+// 화자 이름으로 보인다. 그런 키는 이름표를 아예 붙이지 않는다(대사만 이름 없이 나간다).
+// 대문자가 하나라도 섞였거나(Nurse, Mrs. Fairfax) 한글·일본어면 사람이 부르는 이름으로 보고 그대로 쓴다.
+function isRawSpeakerKey(key) {
+  const s = String(key || '').trim();
+  if (!s) return true;
+  let hasLower = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    if (c >= 97 && c <= 122) { hasLower = true; continue; }
+    if (c >= 48 && c <= 57) continue;
+    if (c === 95 || c === 45) continue;
+    return false;
+  }
+  return hasLower;
+}
+
+// 81일차 고침: AI 가 "chunhyang_wolmae" 의 앞머리를 떼고 "wolmae" 로 적는 일이 잦다(40턴 시험에서 실제로 나왔다).
+// 꼬리가 "_적힌키" 로 맞는 cast 가 하나 있으면 그 사람으로 본다. 맞는 사람이 없으면 적힌 값을 그대로 돌려준다.
+function resolveSpeakerKey(story, key) {
+  const k = String(key || '').trim();
+  if (!k || !story || !Array.isArray(story.cast)) return k;
+  if (story.cast.some(c => c.key === k)) return k;
+  const tail = '_' + k;
+  const hit = story.cast.find(c => String(c.key || '').length > tail.length && String(c.key).slice(-tail.length) === tail);
+  return hit ? hit.key : k;
+}
+
+// 81일차 고침: 새 인물(새 라이벌·유저가 데려온 사람)은 대사가 그려진 뒤에야 cast 에 들어간다.
+// 그래서 처음 말하는 턴에는 이름표가 비어 있었다. 이름표 없이 나간 손님 대사를 기억해 뒀다가,
+// 그 사람의 카드가 만들어지는 순간 같은 자리에 이름표를 채워 넣는다.
+let __pendingSpeakerSpans = [];
+function fillPendingSpeakerTags(story) {
+  if (!story || !Array.isArray(story.cast) || !__pendingSpeakerSpans.length) return;
+  const 남은 = [];
+  __pendingSpeakerSpans.forEach(item => {
+    const key = resolveSpeakerKey(story, item.key);
+    const el = item.span;
+    if (!story.cast.some(c => c.key === key)) { if (el && el.parentNode) 남은.push(item); return; }
+    if (!el || !el.parentNode) return;
+    const tag = document.createElement('span');
+    tag.className = 'speaker-tag';
+    tag.textContent = speakerName(story, key);
+    tag.style.color = speakerColor(story, key);
+    el.parentNode.insertBefore(tag, el);
+    el.style.color = speakerColor(story, key);
+  });
+  __pendingSpeakerSpans = 남은;
+}
+
 function renderBeat(container, beat, story) {
   const text = (beat.text || '').trim();
   if (!text) return;
@@ -4826,11 +5252,16 @@ function renderBeat(container, beat, story) {
   const trimmed = text.replace(/^["'“”'‘’]+/, '').replace(/["'“”'‘’]+$/, '').trim();
   if (!trimmed) return;
   // speaker 누락 시 직전 화자로 유추 (2명 이상 등장하는 스토리에서만 의미가 있음)
-  const effectiveSpeaker = beat.speaker || (story.cast.length > 1 ? __lastKnownSpeaker : null);
+  // 81일차: 직전 화자가 cast 에 없는 사람이면 물려받지 않는다 — 틀린 이름을 확신 있게 붙이는 것보다 비우는 편이 낫다.
+  const inheritedSpeaker = (story.cast.length > 1 && __lastKnownSpeaker && story.cast.some(c => c.key === __lastKnownSpeaker)) ? __lastKnownSpeaker : null;
+  // 81일차 고침: AI 가 cast key 의 앞머리를 떼고 적는 일이 잦다(chunhyang_wolmae → wolmae). 꼬리가 맞으면 그 사람으로 본다.
+  const effectiveSpeaker = resolveSpeakerKey(story, beat.speaker) || inheritedSpeaker;
   // 58일차: 1인 스토리라도 cast에 없는 인물(간호사 등)이 말하면 반드시 이름을 보여준다.
   // 그러지 않으면 주인공의 대사와 구분이 안 돼서 대화가 뒤엉킨다.
   const isGuest = !!(effectiveSpeaker && !story.cast.some(c => c.key === effectiveSpeaker));
-  if ((story.cast.length > 1 || isGuest) && effectiveSpeaker) {
+  // 81일차: 손님 화자인데 키 모양(전부 소문자 로마자)이면 이름표를 붙이지 않는다.
+  const showTag = !!effectiveSpeaker && (story.cast.length > 1 || isGuest) && !(isGuest && isRawSpeakerKey(effectiveSpeaker));
+  if (showTag) {
     const tag = document.createElement('span');
     tag.className = 'speaker-tag';
     tag.textContent = speakerName(story, effectiveSpeaker);
@@ -4841,8 +5272,10 @@ function renderBeat(container, beat, story) {
   span.className = 'line dialogue m-' + medium;
   // 문자·편지는 입 밖으로 낸 말이 아니므로 큰따옴표를 붙이지 않는다.
   span.textContent = (medium === 'text' || medium === 'letter') ? trimmed : `“${trimmed}”`;
-  if ((story.cast.length > 1 || isGuest) && effectiveSpeaker) span.style.color = speakerColor(story, effectiveSpeaker);
+  if (showTag) span.style.color = speakerColor(story, effectiveSpeaker);
   container.appendChild(span);
+  // 81일차 고침: 이름표 없이 나간 손님 대사는 기억해 둔다 — 그 사람의 카드가 생기면 그 자리에 이름표를 채운다.
+  if (!showTag && isGuest && effectiveSpeaker) { __pendingSpeakerSpans.push({ key: effectiveSpeaker, span }); if (__pendingSpeakerSpans.length > 20) __pendingSpeakerSpans.shift(); }
   if (effectiveSpeaker) __lastKnownSpeaker = effectiveSpeaker;
 }
 
@@ -5031,7 +5464,7 @@ function openStoryFromUrl() {
     const id = new URLSearchParams(location.search).get('story');
     if (!id) return false;
     history.replaceState(null, '', location.pathname);   // 주소를 깔끔하게 되돌린다
-    loadCatalog().then(() => { if (STORIES[id]) enterChat(id); });   // 74일차: 목록을 받은 뒤 들어간다
+    loadCatalog().then(() => { if (STORIES[id] && STORIES[id].playable) enterChat(id); });   // 74일차: 목록을 받은 뒤 들어간다 · 80일차: 목록에서 내린 편은 공유 주소로도 열지 않는다
     return true;
   } catch (e) { return false; }
 }
@@ -6003,7 +6436,9 @@ function maybeTriggerArc(state, story) {
   if (as.activeArc) return;
   // 64일차 새 구조: 메인 스토리가 있는 스토리는 '메인 클리어'가 아크의 문이다.
   // 없는 기존 스토리는 종전대로 '연인이 됐는가'(마음 4단계)를 문으로 쓴다.
-  const arcGateOpen = story.mainStory ? !!state.mainCleared : isCoupleStageReached(state, story);
+  // 81일차 고침: 원전을 옮긴 편은 준비된 사건(arcEvents)이 곧 원전의 2·3막이고, 중심 매듭은 그 사건들의 끝에서 풀린다.
+  // 이 세 편만 매듭 전에도 아크의 문을 연다 — 안 그러면 "아크가 돌아야 매듭이 풀리고 매듭이 풀려야 아크가 돈다"로 서로를 기다린다.
+  const arcGateOpen = story.mainStory ? (!!state.mainCleared || isSourceClassic(story)) : isCoupleStageReached(state, story);
   if (!arcGateOpen) {
     // 연인 전: 정식 아크 대신 썸 이벤트를 돌린다. 타이머는 미니 이벤트 것을 같이 쓴다
     // (연인이 되는 순간 자연스럽게 미니 이벤트 주기로 이어진다).
@@ -6111,6 +6546,22 @@ function buildArcDirective(state) {
   return `\n[아크 이벤트 지시 - 매우 중요]\n지금부터 다음 사건을 스토리에 자연스럽게 등장시켜라: "${arc.sub}" (분류: ${arc.major} > ${arc.mid}).\n- **이 장면은 이 이야기에서 손에 꼽을 순간이다.** [마음을 움직이는 장면] 규칙을 여기서 쓴다 — 인물이 이 자리에 오기까지 지나온 시간을 물건의 흔적으로 보여주고(닳은 자리, 접힌 자국, 쌓인 기록), 마음은 말로 설명하지 말고 행동과 사물로 드러내며, 세어본 사람만 아는 숫자를 하나 넣어라. 지금 이 순간의 몸 반응(떨림·시선 회피·붉어진 얼굴)만으로 채우지 마라. 그리고 한쪽이 혼자 해내려는 일이라면, 상대가 도와주지 않고 지켜보는 선택도 생각해 보라 — 참는 쪽의 마음이 더 무겁다. **단, 앞선 대화에서 이미 비슷한 방식으로 그린 적이 있다면 이번엔 다른 자리를 골라라** — 같은 수법이 반복되면 유저가 먼저 알아채서 아무 감흥이 없어진다.\n- 사건을 설명하듯 요약해서 말하지 말고, 지금까지의 대화 흐름과 각 인물의 성격에 맞게 자연스럽게 녹여서 전개하라.\n- 이 사건을 한 턴 만에 끝내지 않아도 되고, 몇 턴에 걸쳐 자연스럽게 펼쳐도 된다.\n- 이 사건이 이번 응답에서 자연스럽게 마무리(화해, 정리, 다음 단계로 넘어감 등)되었다고 판단되면 최상위 JSON에 "arc_resolved": true를 포함시켜라. 아직 진행 중이면 "arc_resolved": false로 둬라.\n- 매우 중요 (뜬금없는 사건 금지 — 반드시 지금까지의 삶과 이어질 것): 이 사건은 맨 위 [지금까지 확정된 사실] 목록과 지금까지의 대화에서 이미 확립된 인물의 직업·성격·인간관계·삶의 사건(예: 이미 아이를 낳았다, 이미 이직했다 등)과 자연스럽게 이어지는 "다음 이야기"여야 한다. 그 인물의 기존 설정과 아무 상관 없는 완전히 새로운 신분·직업·사건(예: 갑자기 대기업 사장이 되어 체포된다는 식)을 맥락 없이 새로 지어내지 않는다. 이미 확정된 삶의 사건이 있다면 그걸 적극적으로 활용해서 사건을 만들어라 (예: 이미 출산했다면 그 아이가 이번 사건에 실제로 등장할 수 있다). 또한 라이벌·제3자가 매 사건마다 반복 등장할 필요는 없다 — 등장 여부는 이 사건의 성격에 맞게 자연스럽게 판단하라.`;
 }
 
+// 81일차: 원전을 그대로 옮긴 편(classic.type === 'source' — 춘향전·제인 에어·금색야차)은
+// 원전의 2막·3막(수청과 옥, 삼층의 비밀, 아타미 바닷가)이 뒤에 남아 있다.
+// 그런데 매듭 재촉이 8턴·14턴·18턴에 걸려 고전 3편이 20턴 만에 완결로 찍혔다(40턴 시험).
+// 그래서 이런 편만 재촉 시점을 두 배로 늦추고, 준비된 사건(arcEvents)이 하나도 안 지났으면
+// 완결 보고(main_story_cleared)를 받지 않는다. 다른 편은 지금 그대로다.
+function isSourceClassic(story) {
+  return !!(story && story.classic && story.classic.type === 'source');
+}
+function mainRipeFloor(story) { return isSourceClassic(story) ? 36 : 18; }
+function mainClearStep(story) { return isSourceClassic(story) ? 16 : 8; }
+function mainClearPush(story) { return isSourceClassic(story) ? 28 : 14; }
+// 준비된 사건을 하나라도 넘겼는가 — 안 넘겼으면 원전의 줄기가 아직 시작도 안 된 것이다.
+function plannedArcPassed(st) {
+  return !!(st && st.arcState && (st.arcState.plannedArcIdx || 0) > 0);
+}
+
 function buildSystemPrompt(story, factLedger, recentRivalTriggers, userMessage, playerFacts) {
   const isMulti = story.cast.length > 1;
 
@@ -6179,9 +6630,15 @@ ${playerFacts.map(f => `- ${f}`).join('\n')}` : '';
   // 14턴 이상이면 "이번 턴에 매듭을 지어라"를 싣는다. (고백 촉진 장치와 같은 방식)
   const mainClearNote = (() => {
     const n = (state && state.mainRipeTurns) || 0;
-    if (n < 8) return '';
+    // 81일차: 원전을 옮긴 편은 원전의 2·3막이 남아 있으므로 재촉을 두 배로 늦춘다.
+    if (n < mainClearStep(currentStory)) return '';
     const goal = (currentStory && currentStory.mainStory) ? String(currentStory.mainStory).split('이 매듭이')[0].trim() : '';
-    if (n >= 14) {
+    // 81일차 고침: 준비된 사건을 하나도 안 지난 원전 편은 프로그램이 완결 보고를 받지 않는다.
+    // 그런데 지시문만 "이번 턴에 매듭을 지어라"를 계속 실으면 인물이 결말을 연기하고도 화면에는 아무것도 안 찍힌다.
+    if (isSourceClassic(currentStory) && !plannedArcPassed(state)) {
+      return `\n- **이번 턴 지시 (원전의 다음 막)**: 관계는 깊어졌지만 이 이야기에는 아직 지나야 할 사건이 남아 있다. 중심 매듭("${goal}")을 이번 턴에 끝내지 마라 — 원전의 다음 막을 먼저 열어라. main_story_cleared는 아직 true로 보고하지 않는다.`;
+    }
+    if (n >= mainClearPush(currentStory)) {
       return `\n- **이번 턴 지시 (이야기의 매듭)**: 두 사람의 관계는 이미 충분히 깊은데 이 이야기의 중심 매듭이 ${n}턴째 풀리지 않고 있다. 이번 턴에 그 매듭이 실제로 풀리는 장면을 만들어라 — 미루지 마라. 매듭은 이것이다: "${goal}" 이 장면이 대화 안에서 실제로 일어나고 두 사람이 서로 인정했다면, main_story_cleared를 반드시 true로 보고한다.\n- **이 장면은 이 이야기에서 손에 꼽을 순간이다.** [마음을 움직이는 장면] 규칙을 여기서 쓴다 — 인물이 이 자리에 오기까지 지나온 시간을 물건의 흔적으로 보여주고(닳은 자리, 접힌 자국, 쌓인 기록), 마음은 말로 설명하지 말고 행동과 사물로 드러내며, 세어본 사람만 아는 숫자를 하나 넣어라. 지금 이 순간의 몸 반응(떨림·시선 회피·붉어진 얼굴)만으로 채우지 마라. 그리고 한쪽이 혼자 해내려는 일이라면, 상대가 도와주지 않고 지켜보는 선택도 생각해 보라 — 참는 쪽의 마음이 더 무겁다. **단, 앞선 대화에서 이미 비슷한 방식으로 그린 적이 있다면 이번엔 다른 자리를 골라라** — 같은 수법이 반복되면 유저가 먼저 알아채서 아무 감흥이 없어진다.`;
     }
     return `\n- **이번 턴 지시 (이야기의 매듭에 다가갈 것)**: 관계는 깊어졌는데 이 이야기의 중심 매듭이 아직 풀리지 않았다("${goal}"). 이번 턴에 그쪽으로 한 걸음 나아가는 장면을 만들어라 — 인물이 먼저 그 이야기를 꺼내거나, 미뤄둔 문제를 마주하게 한다. 이미 그 매듭이 대화 안에서 실제로 완결됐다면 main_story_cleared를 true로 보고하는 것을 주저하지 마라.`;
@@ -6686,6 +7143,7 @@ ${__immersionBlock}${__derailBlock}${__quizBlock}${__breakBlock}${__breakupBlock
 
 [기억과 사실]
 [지금까지 확정된 사실]과 이번 대화에서 확정된 설정은 대화창에 안 보여도 유효하다. 다시 부인하거나 처음 듣는 것처럼 반응하지 않는다. 돈·직업·건강·거주지처럼 뼈대가 되는 사실은 분위기 때문에 뒤집지 않는다 — 바뀌려면 그럴 만한 사건이 이야기 안에서 실제로 일어나야 한다.
+반대쪽도 똑같이 지킨다 — **위 기록과 지금까지 나눈 대화에 없는 과거를 새로 지어내지 않는다.** 실제로 오간 적 없는 일을 "지난번에 네가 추천해 준"처럼 사실인 양 꺼내지 마라. 확실하지 않으면 아예 꺼내지 않는 편이 낫고, 꼭 필요할 때만 "그랬던가요?"처럼 한 번 되묻는다(말투는 그 인물의 것으로). 매 턴 되묻지 않는다.
 
 [보내기 전에]
 beats를 다 쓰고 한 번 읽는다. 뜻이 안 맞는 낱말, 장면과 무관한 분야의 비유(감정 장면에 스포츠 장비·기계 부품·IT 용어), 꾸미려다 어색해진 문장, 오타를 고친다. 담백하고 정확한 문장이 화려하고 어색한 문장보다 낫다.
@@ -7081,6 +7539,68 @@ function buildSceneLogContext() {
   } catch (e) { return ''; }
 }
 
+// 81일차: 날짜·시각이 오간 "만날 약속"을 잡는다.
+// 74일차의 findPromise 는 "다시는 안 할게" 같은 다짐만 봤다. 그래서 "토요일 오후 두 시요?",
+// "이튿날 저녁 광한루에서" 같은 만날 약속이 한 건도 기록되지 않았다(40턴 시험: 6편 중 4~5편이 0건).
+// 정규식을 쓰지 않는다 — 패치 과정에서 백슬래시가 유실돼 두 번 깨졌다(findPromise 와 같은 이유).
+const APPOINT_DAY = ['오늘', '내일', '모레', '글피', '이튿날', '다음날', '다음 날', '담날',
+  '이번 주', '이번주', '다음 주', '다음주', '담주', '이번 달', '다음 달', '주말',
+  '월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일', '며칠 뒤', '사흘 뒤', '이틀 뒤'];
+const APPOINT_PART = ['새벽', '아침', '점심', '저녁', '초저녁', '한밤', '밤에', '밤 ', '낮에', '해 질', '해질'];
+const APPOINT_HOUR = ['자시', '축시', '묘시', '삼경', '이경', '정오', '이 시간', '그 시각', '이맘때', '같은 시간'];
+const APPOINT_ACT = ['만나', '만날', '만납', '뵈', '봐요', '보자', '보기로', '볼까', '볼래', '뵙',
+  '가자', '갈게', '갈까', '갑시다', '오세요', '오너라', '와요', '와라', '오시오', '오시', '올게', '올까',
+  '기다릴', '기다리', '기다려', '데리러', '모시러', '약속', '예약', '잡자', '잡아요', '잡을게',
+  '들르', '들를', '찾아갈', '찾아올', '나올게', '나와', '나오'];
+const APPOINT_PAST = ['어제', '어젯', '그제', '그저께', '지난', '저번', '작년', '예전', '그때', '그 때', '아까', '방금', '였잖', '했잖'];
+const APPOINT_NUM = ['한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '열한', '열두', '반'];
+
+// "두 시", "2시", "오후 3시 반"처럼 숫자·수사 바로 뒤의 '시'만 시각으로 본다.
+// ("도시에", "무시하고"의 '시'가 시각으로 잡히지 않게 — 74일차 findPlace 와 같은 조심)
+function hasClockTime(s) {
+  for (let i = 1; i < s.length; i++) {
+    if (s.charAt(i) !== '시') continue;
+    // 81일차 고침: 수사가 앞에 있어도 '시간'·'시라도'는 시각이 아니다("일정 시간에", "한시라도 빨리").
+    const 뒷글자 = s.charAt(i + 1);
+    if (뒷글자 === '간' || 뒷글자 === '라') continue;
+    let j = i - 1;
+    while (j >= 0 && s.charAt(j) === ' ') j--;
+    if (j < 0) continue;
+    const c = s.charCodeAt(j);
+    if (c >= 48 && c <= 57) return true;
+    for (const n of APPOINT_NUM) { if (j + 1 >= n.length && s.slice(j + 1 - n.length, j + 1) === n) return true; }
+  }
+  return false;
+}
+
+// 대사 덩어리에서 만날 약속으로 보이는 문장을 하나만 골라 돌려준다.
+function findAppointments(text) {
+  const src = String(text || '');
+  const 문장 = [];
+  let 시작 = 0;
+  for (let i = 0; i < src.length; i++) {
+    const ch = src.charAt(i);
+    if (ch === '.' || ch === '?' || ch === '!' || ch === '…' || ch === '。' || ch === String.fromCharCode(10)) {
+      문장.push(src.slice(시작, i + 1)); 시작 = i + 1;
+    }
+  }
+  문장.push(src.slice(시작));
+  const 나온것 = [];
+  문장.forEach(원문 => {
+    const s = 원문.trim();
+    if (s.length < 5 || 나온것.length >= 1) return;
+    if (APPOINT_PAST.some(w => s.indexOf(w) >= 0)) return;
+    const day = APPOINT_DAY.some(w => s.indexOf(w) >= 0);
+    const part = APPOINT_PART.some(w => s.indexOf(w) >= 0);
+    const hour = hasClockTime(s) || APPOINT_HOUR.some(w => s.indexOf(w) >= 0);
+    const act = APPOINT_ACT.some(w => s.indexOf(w) >= 0);
+    const 약속인가 = (day && (hour || part)) || ((day || hour || part) && act);
+    if (!약속인가) return;
+    나온것.push(s.slice(0, 60).trim());
+  });
+  return 나온것;
+}
+
 // 74일차: 인물이 한 약속을 찾아 기록한다.
 // 제니퍼 판에서 인물은 여섯 번 약속하고 여섯 번 깼고, 유저는 같은 지시를 다섯 번 해야 했다.
 // "약속해"처럼 대놓고 말한 것과, "다시는 ~ 안 할게"처럼 다짐하는 말을 모두 본다.
@@ -7124,19 +7644,33 @@ function findPromise(text) {
 // 기록해 둔 약속을 지시문에 실어 보낸다. 이게 없으면 인물이 자기 약속을 잊는다.
 function buildPromiseContext() {
   try {
-    const list = (state && Array.isArray(state.promises)) ? state.promises.slice(-5) : [];
-    if (!list.length) return '';
-    const 줄 = list.map(p => {
-      const 몇턴 = Math.max(0, (state.history ? state.history.length : 0) - (p.at || 0));
-      return '- ' + (몇턴 > 1 ? 몇턴 + '턴 전' : '방금') + ': "' + p.text + '"';
-    }).join(String.fromCharCode(10));
-    return String.fromCharCode(10) + '[네가 이미 한 약속 - 매우 중요]' + String.fromCharCode(10) + 줄
-      + String.fromCharCode(10)
-      + '- 이 약속들은 **되돌릴 수 없는 사실**이다. 이미 한 약속을 안 한 것처럼 굴지 마라.'
-      + ' 같은 걱정·같은 흔들림을 다시 꺼내면 유저는 같은 말을 또 해야 하고, 그때 대화가 아니라 씨름이 된다.'
-      + String.fromCharCode(10)
-      + '- 약속을 깨야 이야기가 앞으로 간다면, **깨는 장면을 만들어라**(몰래 연락하다 들킨다든가).'
-      + ' 아무 일 없었다는 듯 흐지부지 되돌리는 것만은 하지 마라.';
+    const all = (state && Array.isArray(state.promises)) ? state.promises : [];
+    if (!all.length) return '';
+    const NL = String.fromCharCode(10);
+    const 언제 = (p) => { const n = Math.max(0, (state.history ? state.history.length : 0) - (p.at || 0)); return n > 1 ? n + '턴 전' : '방금'; };
+    // 81일차 고침: 종류가 다른 둘을 한 칸에 담으면 규칙이 엉뚱한 줄에 걸린다.
+    // ①인물이 한 다짐("다시는 안 그럴게" — 74일차 장치) ②날짜·시각이 잡힌 만날 자리(인물 쪽·유저 쪽 모두).
+    // 자르기도 따로 해서, 만날 자리가 쏟아져도 다짐이 목록 밖으로 밀려나지 않게 한다.
+    const 다짐 = all.filter(p => !p.who).slice(-3);
+    const 자리 = all.filter(p => p.who === 'char' || p.who === 'user').slice(-3);
+    let out = '';
+    if (다짐.length) {
+      out += NL + '[네가 이미 한 약속 - 매우 중요]' + NL
+        + 다짐.map(p => '- ' + 언제(p) + ': "' + p.text + '"').join(NL) + NL
+        + '- 이 약속들은 **되돌릴 수 없는 사실**이다. 이미 한 약속을 안 한 것처럼 굴지 마라.'
+        + ' 같은 걱정·같은 흔들림을 다시 꺼내면 유저는 같은 말을 또 해야 하고, 그때 대화가 아니라 씨름이 된다.' + NL
+        + '- 약속을 깨야 이야기가 앞으로 간다면, **깨는 장면을 만들어라**(몰래 연락하다 들킨다든가).'
+        + ' 아무 일 없었다는 듯 흐지부지 되돌리는 것만은 하지 마라.';
+    }
+    if (자리.length) {
+      out += NL + '[잡아 둔 만날 자리 - 매우 중요]' + NL
+        + 자리.map(p => '- ' + 언제(p) + ' ' + (p.who === 'user' ? '(유저가 한 말)' : '(네가 한 말)') + ': "' + p.text + '"').join(NL) + NL
+        + '- 날짜·시각·장소가 오간 일정이다. 그 자리가 올 때까지 살아 있다 — 없던 일처럼 넘기지 마라.'
+        + ' 시간이나 장소를 바꾸려면 장면 안에서 실제로 다시 이야기해서 바꾼다.' + NL
+        + '- **(유저가 한 말)로 적힌 줄은 유저가 꺼낸 것이다.** 네가 한 약속으로 착각해서 "내가 약속했잖아"라고 말하지 마라.'
+        + ' 아직 오지 않은 일정이니, 일부러 어기는 장면을 만들지 마라.';
+    }
+    return out;
   } catch (e) { return ''; }
 }
 function buildSceneBreakContext() {
@@ -7871,6 +8405,33 @@ async function autoProgress() {
   runTurn(AUTO_PROGRESS_MARKER, { quotaCheck, addUserTurn: false });
 }
 
+// 81일차: 답이 오지 않은 턴을 조용히 넘기지 않는다.
+// 안내 한 줄과 "다시 시도" 버튼을 그 자리에 띄우고, 같은 편에서 두 번 잇따라 실패하면
+// 버튼을 감춘다(같은 실패를 계속 누르게 두지 않는다). 성공한 턴에서 셈은 0으로 돌아간다.
+// 코인·무료 횟수는 서버(/api/chat)가 되돌린다 — 상류가 200이 아니거나 본문이 한 글자도 안 오면 차감을 취소한다.
+let __turnFailStreak = 0, __turnFailStoryId = null;
+function addRetryOffer(message, text, addUserTurn) {
+  // 81일차 고침: 셈은 편마다 따로 센다. A 편에서 한 번 실패한 뒤 B 편으로 옮겨 가 처음 실패했는데
+  // 곧바로 "두 번 잇따라" 안내가 뜨고 버튼이 사라지던 일을 막는다.
+  if (__turnFailStoryId !== currentStoryId) { __turnFailStoryId = currentStoryId; __turnFailStreak = 0; }
+  __turnFailStreak++;
+  if (__turnFailStreak >= 2) {
+    // 81일차 고침: 두 번째부터는 안내를 통째로 갈아 끼운다.
+    // 앞 문구를 이어 붙이면 "다시 시도해 볼까요?" 뒤에 "잠시 뒤에 다시 보내 주세요"가 붙어 제 말을 뒤집었다.
+    addSys(t('chatNoReplyAgain'));
+    return;
+  }
+  addSysWithRetry(message, () => runTurn(text, { isRetry: true, addUserTurn }));
+}
+
+// 81일차 고침: 402(무료 횟수 소진)·401(연결 차단)·시간 초과처럼 이미 사람 말로 번역된 안내만 그대로 보여준다.
+// 그 밖(API 오류 코드, 서버가 뱉은 원문)은 기술 문구다 — 화면에는 "답이 오지 않았어요"만 띄우고 원문은 기록에만 남긴다.
+function isFriendlyChatError(msg) {
+  const m = String(msg || '');
+  if (!m) return false;
+  return m.indexOf(t('chatQuotaExceededPrefix')) === 0 || m === t('chatConnBlockedNotice') || m === t('chatTimeoutMessage');
+}
+
 // 오류 메시지 옆에 "다시 시도" 버튼을 붙여서 보여준다.
 function addSysWithRetry(message, onRetry) {
   const div = document.createElement('div');
@@ -7971,11 +8532,21 @@ async function runTurn(text, opts) {
     // 이번 턴은 없던 것으로 한다(횟수·코인을 차감하지 않는다 — 유저 잘못이 아닐 수도 있으므로).
     if (result.blocked) {
       typingBubble.remove();
+      __turnFailStreak = 0;   // 81일차 고침: 막힌 턴은 '답이 오지 않은 턴'이 아니다 — 셈을 여기서 되돌린다.
       // 68일차: 시스템 문구 대신 캐릭터가 직접 받아친다(형균님 제안) — 이야기가 끊기지 않게.
       await showBlockedAsCharacter();
       logClientError('blocked', result.blocked);
       return;
     }
+    // 81일차: beat 가 하나도 안 왔는데 막힌 사유도 없다 — 통신이 끊겼거나 응답이 비었다.
+    //         지금까지는 빈 장면만 남기고 조용히 넘어갔다. 안내와 다시 보내기를 그 자리에 띄운다.
+    if (!Array.isArray(result.beats) || result.beats.length === 0) {
+      typingBubble.remove();
+      logClientError('noreply', 'beats 0');
+      addRetryOffer(t('chatNoReplyNotice'), text, addUserTurn);
+      return;
+    }
+    __turnFailStreak = 0;
     logTokenUsage(result.__usage);
 
     // 아래는 이번 턴의 응답(result)을 반영하는 처리다. 재시도 턴에서는 이미 처리했으므로 건너뛴다.
@@ -8106,6 +8677,7 @@ async function runTurn(text, opts) {
           resolutionText: resolution ? resolution.text : ''
         };
         currentStory.cast.push(newMember);
+        fillPendingSpeakerTags(currentStory);   // 81일차 고침: 방금 그린 그 사람의 대사에 이름표를 채운다
         if (!Array.isArray(state.dynamicCast)) state.dynamicCast = [];
         state.dynamicCast.push(newMember);
         state.chars[newKey] = { affection: 0, trust: 0, stage: (c.startStage || (typeof story !== 'undefined' && story && story.startStage) || (typeof currentStory !== 'undefined' && currentStory && currentStory.startStage) || 1), distantEventDone: false, secretRevealed: false, rivalGauge: 0, rivalLowStreak: 0, rivalDeparted: false };
@@ -8205,6 +8777,7 @@ async function runTurn(text, opts) {
             relation: __rel0 || __role0,
             playerMade: true, completionRequired: false, placeholder: __placeholder };
           currentStory.cast.push(pm);
+          fillPendingSpeakerTags(currentStory);   // 81일차 고침: 방금 그린 그 사람의 대사에 이름표를 채운다
           if (!Array.isArray(state.dynamicCast)) state.dynamicCast = [];
           state.dynamicCast.push(pm);
           // 76일차: 신뢰는 29까지만 — 가장 뜨거운 단계(연인·신뢰 30 이상)는 이야기 안에서 쌓아야 열린다(검사: 첫 턴부터 열렸다)
@@ -8290,7 +8863,7 @@ async function runTurn(text, opts) {
     // 기준을 낮추고, 18턴이 넘으면 수치와 무관하게 매듭을 향해 밀기 시작한다.
     const __modelTurns = (state.history || []).filter(h => h.role === 'model' && !h.isOpening).length;
     const mainRipe = !state.mainCleared && !!currentStory.mainStory && hasLiveLead(currentStory, state)   // 76일차: 주인공이 모두 끝났으면 매듭을 재촉하지 않는다
-      && (__modelTurns >= 18
+      && (__modelTurns >= mainRipeFloor(currentStory)   // 81일차: 원전을 옮긴 편은 36턴
         || currentStory.cast.some(c => c.completionRequired !== false
           && state.chars[c.key] && !state.chars[c.key].ended && state.chars[c.key].stage >= 3
           && state.chars[c.key].affection >= 35));
@@ -8339,8 +8912,21 @@ async function runTurn(text, opts) {
       const 약속 = findPromise(이번대사);
       if (약속 && !state.promises.some(p => p.text === 약속)) {
         state.promises.push({ text: 약속, at: (state.history || []).length });
-        if (state.promises.length > 12) state.promises = state.promises.slice(-12);
         addDevSys('[개발자 확인용] 인물이 한 약속을 기록했습니다: ' + 약속);
+      }
+      // 81일차: 날짜·시각이 오간 만날 약속도 담는다. 약속은 둘이 주고받는 것이라 유저 쪽 말도 함께 본다.
+      [['char', 이번대사], ['user', String(text || '')]].forEach(([누구, 말]) => {
+        findAppointments(말).forEach(약 => {
+          if (state.promises.some(p => p.text === 약)) return;
+          state.promises.push({ text: 약, at: (state.history || []).length, who: 누구 });
+          addDevSys('[개발자 확인용] 만날 약속을 기록했습니다: ' + 약);
+        });
+      });
+      // 81일차 고침: 상한을 종류별로 나눈다. 한 줄로 12개만 남기면 만날 자리가 쏟아질 때 다짐이 먼저 밀려난다.
+      if (state.promises.length > 12) {
+        const 남길다짐 = state.promises.filter(p => !p.who).slice(-6);
+        const 남길자리 = state.promises.filter(p => p.who).slice(-8);
+        state.promises = state.promises.filter(p => 남길다짐.indexOf(p) >= 0 || 남길자리.indexOf(p) >= 0);
       }
     } catch (e) { }
 
@@ -8383,7 +8969,9 @@ async function runTurn(text, opts) {
       addDevSys(`[개발자 확인용] 숨겨진 사연 이벤트 발동: ${pendingEvents.map(e => `${e.key}:${e.flag}`).join(', ')}`);
     }
     // 메인 스토리 클리어 — 아크의 문이 열리는 순간이자 이 스토리의 첫 승리.
-    if (result.main_story_cleared && currentStory.mainStory && !state.mainCleared && hasLiveLead(currentStory, state)) {   // 76일차: 끝난 주인공의 매듭은 풀리지 않는다
+    // 81일차: 원전을 옮긴 편은 준비된 사건(arcEvents)을 하나도 안 넘겼으면 아직 원전의 줄기가 시작도 안 된 것이다 — 완결로 찍지 않는다.
+    if (result.main_story_cleared && currentStory.mainStory && !state.mainCleared && hasLiveLead(currentStory, state)
+      && (!isSourceClassic(currentStory) || plannedArcPassed(state))) {   // 76일차: 끝난 주인공의 매듭은 풀리지 않는다
       state.mainCleared = true;
       addSys(t('mainClearedNotice'));
     }
@@ -8570,7 +9158,7 @@ async function runTurn(text, opts) {
     } else {
       // 45일차에 채팅이 전부 마비됐을 때 형균님이 직접 겪어서야 알았다. 이제는 기록에 남는다.
       logClientError('chat', err && err.message);
-      addSysWithRetry(t('chatErrorPrefix') + err.message, () => runTurn(text, { isRetry: true, addUserTurn }));
+      addRetryOffer(isFriendlyChatError(err && err.message) ? t('chatErrorPrefix') + err.message : t('chatNoReplyNotice'), text, addUserTurn);
       console.error(err);
     }
   } finally {
@@ -8720,6 +9308,7 @@ $('charlist-search').addEventListener('input', (e) => {
 // 61일차: 사진이 별도 파일이 되면서, 대화에 들어간 뒤에야 배경이 뜨면 어색하다.
 // 스토리 소개를 여는 시점에 미리 받아둔다(브라우저가 캐시에 담아둔다).
 function preloadStoryArt(story) {
+  if (story && story.nophoto === true) return;   // 80일차: 책 표지형 편은 사진이 없다
   const c = (story && story.cast || []).find(c => AVATAR_IMAGE[c.key]);
   if (c) { const im = new Image(); im.src = AVATAR_IMAGE[c.key]; }
 }
@@ -8728,7 +9317,7 @@ function applyChatArt(story) {
   const el = $('chat-art');
   setTimeout(syncArtPeek, 0);   // 71일차: 그림이 있을 때만 밀어넣기 버튼을 보여준다
   if (!el) return;
-  const withArt = (story && story.cast || []).find(c => AVATAR_IMAGE[c.key]);
+  const withArt = (story && story.nophoto === true) ? null : (story && story.cast || []).find(c => AVATAR_IMAGE[c.key]);
   if (withArt) {
     el.style.backgroundImage = `url("${AVATAR_IMAGE[withArt.key]}")`;
     el.classList.add('on');
@@ -8912,7 +9501,9 @@ async function renderMypage() {
 
   const container = $('mypage-stories');
   container.innerHTML = t('mypageLoading');
-  const playableIds = Object.keys(STORIES).filter(id => STORIES[id].playable);
+  // 80일차: 목록에서 내린 편(playable:false, 저장은 남음)도 같이 읽는다 — 안 읽으면 진행 중이던 숨김 편이
+  //   슬롯 하나를 영구히 잠근 채 마이페이지에도 안 보여 초기화할 길이 없다. 내부용 편(genre 없음)은 그대로 제외.
+  const playableIds = Object.keys(STORIES).filter(id => STORIES[id].playable || (STORIES[id].playable === false && typeof STORIES[id].genre === 'string'));
   // 72일차: 예전에는 스토리 130편을 하나씩 **차례로** 읽어서 화면이 아주 느렸다(왕복 130번).
   // 열두 개씩 묶어 동시에 읽으면 왕복이 11번 정도로 줄어든다.
   //   ※ 진행 상태를 컬렉션째로 한 번에 받는 방법도 있지만, 그러면 봉인된 옛 대화 뭉치(__vol)까지
@@ -8952,7 +9543,9 @@ async function renderMypage() {
       // 62일차: 1인 스토리는 제목과 인물 이름이 같아 두 번 보였다 (형균님 지적). 이름은 여럿일 때만.
       rows += `<div class="mypage-char-row"><span>${story.cast.length > 1 ? c.name : ''}</span><b>${label}</b></div>`;
     });
-    block.innerHTML = `<div class="story-title">${story.title}</div>${rows}`;
+    // 80일차: 목록에서 내린 편은 제목 아래 한 줄로 알리고(초기화 버튼은 아래에서 그대로 붙는다) 슬롯을 비울 수 있게 한다
+    const hiddenNote = STORIES[id].playable ? '' : `<div class="mypage-char-row" style="color:var(--faint);"><span>${({ ko: '목록에서 내린 편 · 처음부터 다시 시작하면 슬롯이 비워져요', en: 'Removed from the list · reset it to free the slot', ja: 'リストから外した作品 · リセットすると枠が空きます' })[currentLang] || '목록에서 내린 편'}</span></div>`;
+    block.innerHTML = `<div class="story-title">${story.title}</div>${hiddenNote}${rows}`;
     // 테스트용 초기화 버튼은 DEV_MODE일 때만 노출한다 — UI/UX QA(32일차)에서 실서비스 화면에
     // 테스트용 버튼이 상시 노출되는 게 오조작 위험 + 신뢰도 저하 요인으로 지적됨.
     // 62일차: 원래 DEV_MODE 전용이었는데, 게임 구조가 크게 바뀐 뒤 형균님이 '처음부터 다시
