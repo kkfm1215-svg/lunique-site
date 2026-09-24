@@ -206,7 +206,11 @@ function toOpenAIBody(g) {
     // 73일차 실측: 반복 억제 1.15는 한국어와 JSON 형식을 동시에 깨뜨린다. 1.0으로 둔다.
     repetition_penalty: 1.0,
     max_tokens: gc.maxOutputTokens || 4096,
-    stream: true, stream_options: { include_usage: true },
+    // 로컬은 통째로 받아 검사한 뒤 내보낸다(아래 localToSSE 참고). 그래서 스트리밍을 끈다.
+    stream: false,
+    // 반복억제는 쓰지 않는다 — 1.05 에서도 한국어가 깨지는 것을 실측했다.
+    // 대신 빈도벌점만 가볍게 걸어 같은 말 반복을 줄인다.
+    frequency_penalty: 0.3,
     chat_template_kwargs: { enable_thinking: false }
   };
   if (gc.responseSchema) {
@@ -223,34 +227,35 @@ function toOpenAIBody(g) {
 }
 
 // OpenAI 스트림 → 제미나이 스트림 (브라우저 코드를 하나도 안 고치기 위함)
-function openAIToGemini(stream) {
-  const dec = new TextDecoder(), enc = new TextEncoder();
-  let buf = '', usage = null;
-  return stream.pipeThrough(new TransformStream({
-    transform(chunk, ctrl) {
-      buf += dec.decode(chunk, { stream: true });
-      const lines = buf.split('\n');
-      buf = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith('data:')) continue;
-        const p = line.slice(5).trim();
-        if (!p || p === '[DONE]') continue;
-        let j; try { j = JSON.parse(p); } catch (e) { continue; }
-        if (j.usage) usage = j.usage;
-        const d = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content;
-        if (d) ctrl.enqueue(enc.encode('data: ' + JSON.stringify({ candidates: [{ content: { parts: [{ text: d }] } }] }) + '\n\n'));
-      }
-    },
-    flush(ctrl) {
-      ctrl.enqueue(enc.encode('data: ' + JSON.stringify({
+// 로컬 응답 한 덩어리 → 제미나이 스트림 모양 (브라우저 코드를 하나도 안 고치기 위함)
+// 내보내기 전에 검사한다. 하나라도 어긋나면 null 을 돌려주고, 호출한 쪽이 제미나이로 넘어간다.
+function localToSSE(j, 스키마있음) {
+  const c = j && j.choices && j.choices[0];
+  if (!c || !c.message || typeof c.message.content !== 'string') return null;
+  // 길이 제한에 걸려 잘린 응답 — 무검열 모델이 말을 못 멈춘 경우다
+  if (c.finish_reason === 'length') { console.error('local-ai-runaway', j.usage && j.usage.completion_tokens); return null; }
+  const text = c.message.content;
+  if (!text.trim()) return null;
+  // 형식을 요구한 요청이면 실제로 그 형식인지 확인한다
+  if (스키마있음) {
+    try { JSON.parse(text); } catch (e) { console.error('local-ai-badjson', text.slice(0, 80)); return null; }
+  }
+  const u = j.usage || {};
+  const enc = new TextEncoder();
+  const 줄 = (o) => 'data: ' + JSON.stringify(o) + '\n\n';
+  return new ReadableStream({
+    start(ctrl) {
+      ctrl.enqueue(enc.encode(줄({ candidates: [{ content: { parts: [{ text }] } }] })));
+      ctrl.enqueue(enc.encode(줄({
         candidates: [{ finishReason: 'STOP' }],
-        usageMetadata: usage ? {
-          promptTokenCount: usage.prompt_tokens, candidatesTokenCount: usage.completion_tokens,
-          totalTokenCount: usage.total_tokens, cachedContentTokenCount: 0
-        } : undefined
-      }) + '\n\n'));
+        usageMetadata: {
+          promptTokenCount: u.prompt_tokens || 0, candidatesTokenCount: u.completion_tokens || 0,
+          totalTokenCount: u.total_tokens || 0, cachedContentTokenCount: 0
+        }
+      })));
+      ctrl.close();
     }
-  }));
+  });
 }
 
 // ---------- 본체 ----------
@@ -323,15 +328,32 @@ export default async (request) => {
           body: JSON.stringify(toOpenAIBody(JSON.parse(requestBody))), signal: ac.signal
         });
         clearTimeout(to);
-        if (lr.ok && lr.body) { localBody = openAIToGemini(lr.body); localStatus = 200; quotaHeaders['x-ai'] = 'local'; }
-        else console.error('local-ai-status', lr.status);
+        if (lr.ok) {
+          const lj = await lr.json();
+          const 스키마있음 = !!(JSON.parse(requestBody).generationConfig || {}).responseSchema;
+          const sse = localToSSE(lj, 스키마있음);
+          if (sse) { localBody = sse; localStatus = 200; quotaHeaders['x-ai'] = 'local'; }
+          // sse 가 null 이면 아래 제미나이로 그대로 내려간다 — 유저는 아무것도 못 느낀다
+        } else console.error('local-ai-status', lr.status);
       } catch (e) { console.error('local-ai-error', e && e.message); }
     }
   }
 
+  // ---- 모델 고르기 (91일차) ----
+  // 기본은 지금 쓰는 모델. 시험용 전환은 운영자 시뮬레이터 키가 있을 때만 열린다.
+  const 기본모델 = 'gemini-3.5-flash-lite';
+  const 시험모델 = { lite: 'gemini-3.5-flash-lite', flash: 'gemini-3.5-flash' };
+  let 쓸모델 = 기본모델;
+  if (isSim) {
+    try {
+      const 고른것 = new URL(request.url).searchParams.get('model');
+      if (고른것 && 시험모델[고른것]) 쓸모델 = 시험모델[고른것];
+    } catch (e) { /* 주소를 못 읽으면 기본 모델 */ }
+  }
+
   // ---- Gemini 중계 ----
   const upstream = localBody ? { status: localStatus, body: localBody } : await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:streamGenerateContent?alt=sse',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + 쓸모델 + ':streamGenerateContent?alt=sse',
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
@@ -354,18 +376,41 @@ export default async (request) => {
     const 되돌릴것 = rollback;
     rollback = null;
     let 글자옴 = false;
+    let 모은본문 = '';          // 91일차: 대사가 실제로 있었는지 보려고 본문을 모아 둔다
+    let 남은줄 = '';
     const 디코더 = new TextDecoder();
     const 감시 = new TransformStream({
       transform(chunk, ctrl) {
-        if (!글자옴) {
+        ctrl.enqueue(chunk);   // 91일차: 중계를 먼저 한다 — 아래 계산이 화면을 늦추지 않게
+        try {
           const 조각 = 디코더.decode(chunk, { stream: true });
           // 구글 스트림은 {"text": "..."} 형태로 본문을 담아 보낸다. 빈 문자열은 세지 않는다.
-          if (/"text"\s*:\s*"[^"]/.test(조각)) 글자옴 = true;
-        }
-        ctrl.enqueue(chunk);
+          if (!글자옴 && /"text"s*:s*"[^"]/.test(조각)) 글자옴 = true;
+          // SSE 는 "data: {...}" 줄로 온다. 줄이 잘려 올 수 있어 남은 부분을 이어 붙인다.
+          남은줄 += 조각;
+          const 줄들 = 남은줄.split(String.fromCharCode(10));
+          남은줄 = 줄들.pop() || '';
+          for (const 줄 of 줄들) {
+            const t = 줄.trim();
+            if (t.slice(0, 5) !== 'data:') continue;
+            const 몸 = t.slice(5).trim();
+            if (몸.charAt(0) !== '{') continue;
+            const j = JSON.parse(몸);
+            const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
+            for (const p of parts) if (typeof p.text === 'string') 모은본문 += p.text;
+          }
+        } catch (e) { /* 판정용일 뿐이다 — 여기서 터져도 중계는 이미 끝났다 */ }
       },
       async flush() {
-        if (!글자옴) {
+        let 되돌릴까 = !글자옴;
+        // 91일차: 글자는 왔는데 대사(beats)가 하나도 없는 응답 — 화면은 실패로 안내하는데 코인은 빠져 있던 자리.
+        if (!되돌릴까 && 모은본문) {
+          try {
+            const 답 = JSON.parse(모은본문);
+            if (Array.isArray(답.beats) && 답.beats.length === 0) 되돌릴까 = true;
+          } catch (e) { /* 끝까지 못 읽은 JSON — 확실하지 않으므로 그대로 둔다 */ }
+        }
+        if (되돌릴까) {
           try { await fsCommit(되돌릴것); } catch (e) { console.error('rollback-empty-error', e && e.message); }
         }
       }
