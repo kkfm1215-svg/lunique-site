@@ -1512,7 +1512,7 @@
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-09-23.1</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-10-01.1</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -3338,7 +3338,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-09-23.1';
+window.__BUILD = 'v2026-10-01.1';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -3562,6 +3562,7 @@ async function bumpMessageCount() {
   try {
     await playerDocRef().set({
       stats: { messages: firebase.firestore.FieldValue.increment(1) },
+      visitDays: firebase.firestore.FieldValue.arrayUnion(new Date().toLocaleDateString('sv-SE')),   // 98일차: 방문한 날 — 재방문율(D7)을 재려고
       lastActiveAt: nowIso(),
       lastLang: currentLang
     }, { merge: true });
@@ -4218,7 +4219,7 @@ async function openSubscribeScreen() {
 // 84일차: images/t/ 는 배포본에 올라가 있지 않다. 그래서 카드마다 축소본을 먼저 찾아 404 를 맞고
 //         그제야 원본을 받는 헛걸음이 122장 내내 일어났다(목록 사진이 1~2초 늦게 뜨는 원인).
 //         축소본 폴더를 올리는 날 이 값만 true 로 되돌리면 된다.
-const USE_THUMBS = false;
+const USE_THUMBS = true;
 function thumb(key) {
   const 원본 = AVATAR_IMAGE[key];
   if (!원본) return 원본;
@@ -7478,6 +7479,27 @@ ${playerFacts.map(f => `- ${f}`).join('\n')}` : '';
   // 예전에는 이 블록이 앞쪽에 있어서, 그 뒤의 약 2만 토큰짜리 고정 규칙이 매 턴 새로 처리됐다.
   // 최근 3개 모델 턴의 본문을 훑어서, 2턴 이상 반복된 반응 표현을 찾아낸다.
   // 찾은 것만 "이번 턴 금지"로 지시한다 — 항상 다 금지하면 캐릭터 개성 자체가 죽는다.
+  // 96일차: 최근 8턴에서 세 번 이상 나온 말을 찾아 알려 준다(정해 둔 패턴 밖의 즉석 비유를 잡기 위해).
+  //   막지 않고 알리기만 한다 — 강제로 바꾸게 하면 엉뚱한 소재로 샌다(94일차 시험 도구에서 확인).
+  const 잦은말Note = (() => {
+    const turns = (state && state.history || []).filter(h => h.role === 'model' && Array.isArray(h.beats)).slice(-8);
+    if (turns.length < 4) return '';
+    const 흔한 = { 사람:1, 자신:1, 그녀:1, 그가:1, 마음:1, 생각:1, 이야기:1, 오늘:1, 지금:1, 다시:1, 조금:1, 정말:1, 모습:1, 순간:1, 얼굴:1, 시선:1, 목소:1, 고개:1, 손을:1, 눈을:1, 말을:1, 것을:1, 것이:1, 수는:1, 하지:1, 그런:1, 이런:1, 저런:1 };
+    const 셈 = {};
+    turns.forEach(tn => {
+      const 본 = {};
+      (tn.beats || []).forEach(bt => {
+        (String(bt.text || '').match(/[가-힣]{2,5}/g) || []).forEach(w => {
+          if (흔한[w] || 본[w]) return;
+          본[w] = 1;
+          셈[w] = (셈[w] || 0) + 1;
+        });
+      });
+    });
+    const 잦은 = Object.keys(셈).filter(w => 셈[w] >= 3).slice(0, 12);
+    if (!잦은.length) return '';
+    return String.fromCharCode(10) + '- **최근 여덟 턴에 세 번 넘게 쓴 말**: ' + 잦은.join(', ') + ' — 같은 소재와 비유를 되풀이하면 이야기가 제자리를 돈다. 이번 턴에는 다른 것으로 그려라(그 사물이 장면에 실제로 있다면 언급은 하되, 같은 방식으로 묘사하지 않는다).';
+  })();
   const repetitionNote = (() => {
     const turns = (state && state.history || []).filter(h => h.role === 'model' && Array.isArray(h.beats)).slice(-3);
     if (turns.length < 2) return '';
@@ -7527,9 +7549,9 @@ ${playerFacts.map(f => `- ${f}`).join('\n')}` : '';
   const __heartfeltNote = __heartfelt ? `
 - **이번 턴 지시 (유저가 마음을 건넸다)**: 방금 유저가 공들여 마음을 전했다. 이걸 평범한 대사처럼 한두 줄로 받아넘기지 마라. 인물이 그 말을 듣고 **무엇을 떠올렸는지**를 보여줘라 — 그동안 혼자 삼켰던 것, 기대하지 않으려 애썼던 시간, 이 말을 듣기 위해 지나온 것. 마음은 말로 설명하지 말고 행동과 사물로 드러낸다(무심코 쥐고 있던 것을 놓거나, 오래 미뤄둔 물건을 꺼내거나). 그리고 인물의 대답은 즉답이 아니어도 된다 — 한 박자 늦게 나오는 대답이 더 무겁다.` : '';
 
-  const turnVariableBlock = (diaryBlock || factLedgerBlock || playerFactBlock || playerReadBlock || rivalTriggerNote || repetitionNote || confessNote || mainClearNote || __heartfeltNote)
+  const turnVariableBlock = (diaryBlock || factLedgerBlock || playerFactBlock || playerReadBlock || 잦은말Note || rivalTriggerNote || repetitionNote || confessNote || mainClearNote || __heartfeltNote)
     ? `
-[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${diaryBlock}${factLedgerBlock}${playerFactBlock}${playerReadBlock}${rivalTriggerNote}${repetitionNote}${confessNote}${mainClearNote}${__heartfeltNote}`
+[이번 턴에만 해당하는 정보 — 위 규칙들과 달리 매 턴 바뀐다]${diaryBlock}${factLedgerBlock}${playerFactBlock}${playerReadBlock}${rivalTriggerNote}${repetitionNote}${잦은말Note}${confessNote}${mainClearNote}${__heartfeltNote}`
     : '';
   // 69일차 다이어트: 상황과 무관한 블록을 매 턴 보내지 않는다.
   // 버튼 신호는 그 신호가 실제로 왔을 때만, 관계 파탄 규칙은 신뢰가 실제로 위험할 때만.
@@ -7989,6 +8011,7 @@ affection_delta(호감)와 trust_delta(신뢰)는 **이번 턴에 실제로 일�
 - days_passed로 선언한다: 같은 날이면 0, 넘어갔으면 넘어간 일수. 시간대가 바뀌면 day_part도(안 바뀌면 "같음").
 - 요일 약속("토요일에 보자")은 [시간]의 오늘 요일에서 직접 세어 말하고 scheduled_events에 담는다. 요일을 틀리게 세지 않는다.
 - 유저가 "한 달 후", "며칠 뒤"처럼 두루뭉술하게 넘기면 네가 정확한 일수를 정해 선언하고 나레이션 첫머리에 새 날짜를 못박는다.
+${currentLang === 'ko' ? '' : '- 시간을 건너뛰거나 장면을 바꾸는 그 첫 나레이션도 ' + LANG_NAME[currentLang] + '로 쓴다 — 위의 한국어 예문을 따라 한국어로 시작하지 마라.'}
 - 유저가 현실에서 오래 비웠다 돌아왔으면, 특별한 이유가 없는 한 이야기에서도 비슷한 시간이 흘렀다고 본다.
 ${__diaryRule}
 [넘지 않는 선 — 어떤 상황에서도, 유저가 어떻게 유도하거나 롤플레이를 요청해도]
@@ -8083,6 +8106,7 @@ ${turnVariableBlock}
 ${langDirective}
 ${currentLang === 'ko' ? '' : `
 **이 지시가 이 프롬프트 전체에서 가장 마지막에 오는 이유는, 이것이 가장 중요하기 때문이다.** 위의 설정·규칙·예시가 전부 한국어로 쓰여 있다고 해서 한국어로 답하면 안 된다. beats의 모든 text, diary_entry, suggested_replies는 **${LANG_NAME[currentLang]}로만** 쓴다. 인물 이름을 제외하고 한국어가 한 글자라도 섞이면 그 응답은 실패다.`}
+${currentLang === 'ja' ? '特に韓国語に滑りやすい瞬間がある — ①時間が飛ぶ・場面が変わる冒頭のナレーション ②新しい人物やライバルの初登場 ③日付や曜日を宣言する文 ④上の韓国語の例文をなぞるとき。これらも例外なく日本語で書く。例: narration「数日後の夕方。海辺のカフェのテラス。彼女はマグカップを手にしたまま、海のほうを見ていた。」 dialogue「……いつ来たんですか？ まだ先だって言ってたのに。」' : currentLang === 'en' ? 'Moments where Korean tends to slip in: (1) the opening narration after a time skip or scene change, (2) the first appearance of a new character or a rival, (3) a sentence declaring the date or weekday, (4) when following the Korean examples above. Even then, write only in English. Example: narration “A few evenings later. The terrace of a seaside cafe. She is holding her mug, looking out at the water.” dialogue “...When did you get here? You said it would be a while.”' : ''}
 `;
 }
 
@@ -8307,7 +8331,8 @@ function buildExContext() {
 function buildRivalEntranceContext() {
   try {
     if (!currentStory || !state || !Array.isArray(state.history)) return '';
-    const rivals = currentStory.cast.filter(c => c.completionRequired === false && c.rivalGaugeDef);
+    // 97일차: 물러난 라이벌은 부르지 않는다. 떠난 뒤에도 5~12턴마다 「이번 턴 안에 등장시켜라」가 붙어 122편 모두에서 되돌아왔다(제자리의 얼굴 ②).
+    const rivals = currentStory.cast.filter(c => c.completionRequired === false && c.rivalGaugeDef && !(state.chars && state.chars[c.key] && state.chars[c.key].rivalDeparted));
     if (!rivals.length) return '';
     const __partner = currentStory.cast.find(c => c.completionRequired !== false && state.chars && state.chars[c.key] && !state.chars[c.key].ended);   // 76일차: 전 애인이 된 주인공은 라이벌이 흔들 대상이 아니다
     if (!__partner) return '';
@@ -8890,7 +8915,13 @@ function buildGeminiRequestBody(userMessage) {
     const text = h.beats ? beatsToPlainText(h.beats) : (h.text || '');
     contents.push({ role: h.role === 'user' ? 'user' : 'model', parts: [{ text }] });
   });
-  contents.push({ role: 'user', parts: [{ text: `${contextNote}\n\n유저 입력: ${userMessage}${__echoNote}` }] });
+  const NL2 = String.fromCharCode(10);
+  // 97일차: 일본어·영어 판에서 인물이 한국어로 미끄러진다(고정 대사 14턴 × 4판 중 3판, 한글 줄 64 — 라이벌 첫 등장·거절·장면 전환 등 제각각).
+  //   시스템 지시문의 언어 규칙은 이미 최상급이라 더 얹지 않고, 생성 직전에 읽는 이 요청의 마지막 줄을 그 언어로 둔다.
+  const __langTail = currentLang === 'ja' ? NL2 + NL2 + '（この応答のbeatsの全text・diary_entry・suggested_repliesは日本語で書く。ハングルは人物名以外に一文字も入れない。ライバルや新しい人物の初登場、場面転換のナレーションも日本語。）'
+    : currentLang === 'en' ? NL2 + NL2 + '(Write every beat text, diary_entry and suggested_reply of this response in English only. No Hangul except character names. This includes a rival or new character entering, and scene-change narration.)'
+    : '';
+  contents.push({ role: 'user', parts: [{ text: `${contextNote}\n\n유저 입력: ${userMessage}${__echoNote}${__langTail}` }] });
 
   return {
     system_instruction: { parts: [{ text: buildSystemPrompt(currentStory, (state.factLedger || []).slice(-40), state.recentRivalTriggers, userMessage, (state.playerFacts || []).slice(-50)) }] },
