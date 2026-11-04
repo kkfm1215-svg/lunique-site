@@ -134,7 +134,9 @@ async function sendPush(sub, payload) {
 const MSG = {
   ko: { title: (n) => n + '님에게서 연락이 와 있어요', body: '읽지 않은 이야기가 기다리고 있어요.' },
   en: { title: (n) => n + ' reached out to you', body: 'An unread moment is waiting.' },
-  ja: { title: (n) => n + 'さんから連絡が来ています', body: '読んでいない物語が待っています。' }
+  ja: { title: (n) => n + 'さんから連絡が来ています', body: '読んでいない物語が待っています。' },
+  // 119일차: 기본은 잠금화면에 인물 이름·내용을 보이지 않는다(연애 앱 알림이 남에게 보이는 문제)
+  hidden: { ko: '새 이야기가 도착했습니다.', en: 'A new story has arrived.', ja: '新しい物語が届きました。' }
 };
 
 // ───────── 본체 ─────────
@@ -164,9 +166,15 @@ async function run(opts) {
         const off = int(f, 'pushTz');            // 예: 한국이면 -540
         const localHour = new Date(now - off * 60000).getUTCHours();
         // 미리보기는 "지금이 저녁 8시인가"를 따지지 않는다 — 아니면 늘 0명으로만 나와 확인이 안 된다
-        if (!미리보기 && localHour !== SEND_HOUR) { 결과.건너뜀++; continue; }
+        // 119일차: 이용자가 고른 시각(없으면 저녁 8시)
+        const 고른시각 = (f.pushHour !== undefined) ? int(f, 'pushHour') : SEND_HOUR;
+        if (!미리보기 && localHour !== 고른시각) { 결과.건너뜀++; continue; }
 
-        if (now - int(f, 'pushLastAt') < COOLDOWN_MS) { 결과.건너뜀++; continue; }
+        // 119일차: 이용자가 고른 횟수 — 자주(하루 한 번까지)·보통(사흘에 한 번까지, 기본)·가끔(일주일에 한 번까지)
+        const 횟수 = str(f, 'pushFreq') || 'normal';
+        const 쉬는시간 = 횟수 === 'daily' ? 22 * 60 * 60 * 1000 : 횟수 === 'weekly' ? 7 * 24 * 60 * 60 * 1000 : COOLDOWN_MS;
+        const 멈춘시간 = 횟수 === 'daily' ? 24 * 60 * 60 * 1000 : IDLE_MS;
+        if (now - int(f, 'pushLastAt') < 쉬는시간) { 결과.건너뜀++; continue; }
 
         const endpoint = str(f, 'pushEndpoint');
         const p256dh = str(f, 'pushKey');
@@ -181,7 +189,7 @@ async function run(opts) {
           if (df.archived && df.archived.booleanValue) return;
           if (str(df, 'collectionStatus') && str(df, 'collectionStatus') !== 'active') return;
           const last = int(df, 'lastTurnAt');
-          if (!last || now - last < IDLE_MS) return;
+          if (!last || now - last < 멈춘시간) return;
           if (!후보 || last < 후보.last) 후보 = { last, id: d.name.split('/').pop() };
         });
         if (!후보) { 결과.건너뜀++; continue; }
@@ -190,8 +198,9 @@ async function run(opts) {
         const m = MSG[lang] || MSG.ko;
         const 이름 = str(f, 'pushName') || '';   // 브라우저가 저장해 둔 "가장 최근 인물 이름"
         const payload = JSON.stringify({
-          title: 이름 ? m.title(이름) : m.body,
-          body: m.body,
+          // 119일차: 이름 보이기를 고른 사람만 인물 이름을 띄운다
+          title: (str(f, 'pushPreview') === 'name' && 이름) ? m.title(이름) : 'LUNIQUE',
+          body: (str(f, 'pushPreview') === 'name') ? m.body : (MSG.hidden[lang] || MSG.hidden.ko),
           storyId: 후보.id
         });
 
@@ -224,7 +233,34 @@ async function run(opts) {
   return { statusCode: 200, body: JSON.stringify(결과) };
 }
 
+// ===== 110일차: 탈퇴 기록 1년 보관 후 파기 (처리방침 4항, 형균님 결정 10/14) =====
+// 탈퇴할 때 남기는 deletedPlayers/{uid} = { at: 탈퇴 시각(ms) } 는 가입 보너스 중복 방지용이다.
+// 하루 한 번(UTC 18시 = 한국 새벽 3시) 1년이 지난 것을 지운다. 한 번에 최대 300건.
+async function purgeDeleted() {
+  const tok = await googleToken('https://www.googleapis.com/auth/datastore');
+  const cutoff = Date.now() - 365 * 86400000;
+  const r = await fetch(DOCS() + ':runQuery', {
+    method: 'POST', headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: 'deletedPlayers' }],
+      where: { fieldFilter: { field: { fieldPath: 'at' }, op: 'LESS_THAN', value: { integerValue: String(cutoff) } } }, limit: 300 } })
+  });
+  const rows = await r.json();
+  let n = 0;
+  for (const row of (Array.isArray(rows) ? rows : [])) {
+    if (!row.document) continue;
+    const d = await fetch('https://firestore.googleapis.com/v1/' + row.document.name, { method: 'DELETE', headers: { Authorization: 'Bearer ' + tok } });
+    if (d.ok) n++;
+  }
+  return n;
+}
+
 // 정해진 시각에 도는 입구 (netlify.toml에 매시 정각으로 적혀 있다)
-exports.handler = async () => run({});
+exports.handler = async () => {
+  const r = await run({});
+  if (new Date().getUTCHours() === 18) {
+    try { console.log('purge-deleted', await purgeDeleted()); } catch (e) { console.error('purge-error', e && e.message); }
+  }
+  return r;
+};
 // 확인 전용 창구(push-run.js)가 가져다 쓰는 입구
 exports.run = run;

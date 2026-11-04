@@ -73,12 +73,14 @@ exports.handler = async (event) => {
     const H = { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' };
     if (req.action === 'getAI') {
       const r = await fetch(base, { headers: H });
-      if (r.status === 404) return ok({ enabled: false, url: '', emails: [] });
+      if (r.status === 404) return ok({ enabled: false, url: '', emails: [], everyone: false, appToo: false });
       const f = (await r.json()).fields || {};
       return ok({
         enabled: !!(f.enabled && f.enabled.booleanValue === true),
         url: (f.url && f.url.stringValue) || '',
         emails: (((f.emails || {}).arrayValue || {}).values || []).map(v => v.stringValue || ''),
+        everyone: !!(f.everyone && f.everyone.booleanValue === true),   // 110일차
+        appToo: !!(f.appToo && f.appToo.booleanValue === true),
         updatedAt: (f.updatedAt && f.updatedAt.stringValue) || ''
       });
     }
@@ -86,16 +88,54 @@ exports.handler = async (event) => {
     const emails = (Array.isArray(req.emails) ? req.emails : [])
       .map(s => String(s).trim().toLowerCase()).filter(Boolean).slice(0, 20);
     const on = !!req.enabled;
-    if (on && (!/^https:\/\/[\w.-]+/.test(url) || !emails.length)) return bad(400, 'GPU 주소와 대상 계정이 필요합니다');
+    const everyone = !!req.everyone, appToo = !!req.appToo;   // 110일차: 무검열 전면 교체 스위치
+    if (on && (!/^https:\/\/[\w.-]+/.test(url) || (!emails.length && !everyone))) return bad(400, 'GPU 주소와 대상(계정 또는 모든 사용자)이 필요합니다');
     const body = { fields: {
       enabled: { booleanValue: on }, url: { stringValue: on ? url : '' },
       emails: { arrayValue: { values: emails.map(e => ({ stringValue: e })) } },
+      everyone: { booleanValue: on && everyone }, appToo: { booleanValue: on && appToo },
       updatedAt: { stringValue: new Date().toISOString() }
     } };
-    const mask = ['enabled', 'url', 'emails', 'updatedAt'].map(k => 'updateMask.fieldPaths=' + k).join('&');
+    const mask = ['enabled', 'url', 'emails', 'everyone', 'appToo', 'updatedAt'].map(k => 'updateMask.fieldPaths=' + k).join('&');
     const w = await fetch(base + '?' + mask, { method: 'PATCH', headers: H, body: JSON.stringify(body) });
     if (!w.ok) return bad(502, '저장 실패: ' + (await w.text()).slice(0, 150));
-    return ok({ enabled: on, url: on ? url : '', emails });
+    return ok({ enabled: on, url: on ? url : '', emails, everyone: on && everyone, appToo: on && appToo });
+  }
+
+  // ===== 113일차: 구글 심사용 계정 목록 — 대화 서버가 config/reviewers 를 보고 차감하지 않는다 =====
+  if (req.action === 'getReviewers' || req.action === 'setReviewers') {
+    const base = 'https://firestore.googleapis.com/v1/projects/' + sa().project_id + '/databases/(default)/documents/config/reviewers';
+    const tok = await googleToken();
+    const H = { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' };
+    if (req.action === 'getReviewers') {
+      const r = await fetch(base, { headers: H });
+      if (r.status === 404) return ok({ emails: [] });
+      const f = (await r.json()).fields || {};
+      return ok({ emails: (((f.emails || {}).arrayValue || {}).values || []).map(v => v.stringValue || '') });
+    }
+    const emails = (Array.isArray(req.emails) ? req.emails : []).map(s => String(s).trim().toLowerCase()).filter(s => s.indexOf('@') > 0).slice(0, 10);
+    const body = { fields: { emails: { arrayValue: { values: emails.map(e => ({ stringValue: e })) } }, updatedAt: { stringValue: new Date().toISOString() } } };
+    const w = await fetch(base + '?updateMask.fieldPaths=emails&updateMask.fieldPaths=updatedAt', { method: 'PATCH', headers: H, body: JSON.stringify(body) });
+    if (!w.ok) return bad(502, '저장 실패: ' + (await w.text()).slice(0, 150));
+    return ok({ emails });
+  }
+
+  // ===== 110일차: AI 답변 신고 목록 =====
+  // 이용자가 [이 답변 신고하기]로 보낸 글은 players/{uid}/feedback 에 kind=report 로 쌓인다.
+  // 컬렉션 그룹을 조건 없이 읽고 여기서 거른다 — 조건을 걸면 콘솔에서 색인을 따로 만들어야 해서.
+  if (req.action === 'reports') {
+    const rows = await runQuery({ structuredQuery: { from: [{ collectionId: 'feedback', allDescendants: true }], limit: 1000 } });
+    const list = [];
+    (rows || []).forEach(row => {
+      if (!row.document) return;
+      const f = row.document.fields || {};
+      if (V(f.kind) !== 'report') return;
+      const parts = row.document.name.split('/');
+      const uid = parts[parts.indexOf('players') + 1] || '';
+      list.push({ uid: uid.slice(0, 8), storyId: V(f.storyId) || '', createdAt: V(f.createdAt) || '', lang: V(f.lang) || '', build: V(f.build) || '', text: String(V(f.text) || '').slice(0, 1200) });
+    });
+    list.sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
+    return ok({ reports: list.slice(0, 200), total: list.length });
   }
 
   try {
