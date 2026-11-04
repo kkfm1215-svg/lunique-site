@@ -155,20 +155,33 @@ async function applyCharge(uid, decision, today) {
 // 무검열 모델을 얹은 GPU 서버로 "허락된 계정만" 보낸다. 나머지는 지금까지와 똑같이 구글로 간다.
 //
 // 켜고 끄는 곳은 코드가 아니라 Firestore 문서 `config/localAI` 다.
-//   { enabled: true/false, url: "https://xxx-8000.proxy.runpod.net", emails: ["a@b.com", ...] }
+//   { enabled: true/false, url: "https://xxx-8000.proxy.runpod.net", emails: ["a@b.com", ...],
+//     everyone: true/false,   // 110일차: 켜면 허락 목록과 상관없이 모든 사용자 (무검열 전면 교체 스위치)
+//     appToo: true/false }    // 110일차: 앱(구글 플레이) 요청도 포함할지. 기본 false — 플레이는 성적 콘텐츠 금지
 // GPU 서버 주소는 켤 때마다 바뀌는데, 이 문서만 고치면 되므로 **다시 배포하지 않아도 된다.**
 // 문서가 없거나 enabled=false 면 아무 일도 일어나지 않는다(기존 동작 그대로).
+// 113일차: 구글 심사용 계정 목록(config/reviewers.emails). 1분 캐시.
+let rvList = null, rvAt = 0;
+async function reviewerEmails() {
+  if (rvList && Date.now() - rvAt < 60000) return rvList;
+  let list = [];
+  try { const f = ((await fsGet('config/reviewers')) || {}).fields || {}; list = (((f.emails || {}).arrayValue || {}).values || []).map((v) => (v.stringValue || '').toLowerCase()).filter(Boolean); } catch (e) { }
+  rvList = list; rvAt = Date.now();
+  return list;
+}
 let lcCfg = null, lcAt = 0;
 async function localAIConfig() {
   if (lcCfg && Date.now() - lcAt < 60000) return lcCfg;   // 1분 캐시 — 매 턴 읽지 않는다
-  let c = { enabled: false, url: '', emails: [] };
+  let c = { enabled: false, url: '', emails: [], everyone: false, appToo: false };
   try {
     const f = ((await fsGet('config/localAI')) || {}).fields || {};
     c = {
       enabled: !!(f.enabled && f.enabled.booleanValue === true),
       url: ((f.url && f.url.stringValue) || '').replace(/\/+$/, ''),
       emails: (((f.emails || {}).arrayValue || {}).values || [])
-        .map((v) => (v.stringValue || '').toLowerCase()).filter(Boolean)
+        .map((v) => (v.stringValue || '').toLowerCase()).filter(Boolean),
+      everyone: !!(f.everyone && f.everyone.booleanValue === true),
+      appToo: !!(f.appToo && f.appToo.booleanValue === true)
     };
   } catch (e) { /* 못 읽으면 그냥 구글로 간다 */ }
   lcCfg = c; lcAt = Date.now();
@@ -276,6 +289,10 @@ export default async (request) => {
   // 로컬 QA 시뮬레이터 통행 키(운영자 전용). SIM_KEY 환경변수가 없으면 이 우회는 아예 작동하지 않는다.
   const simKey = Deno.env.get('SIM_KEY');
   const isSim = !!(simKey && request.headers.get('x-sim-key') === simKey);
+  // 112일차: 막힌 장면을 인물이 대신 받는 짧은 대사는 이용자 잘못이 아니므로 차감하지 않는다(요금 약속).
+  //   악용을 막으려고 짧은 요청(4천 자 미만)·짧은 출력(150토큰 미만)일 때만 인정한다.
+  const 무료요청 = request.headers.get('x-lq-free') === 'blocked-line' && requestBody.length < 4000
+    && /"maxOutputTokens":(1[0-4][0-9]|[1-9][0-9]?)[,}]/.test(requestBody);
 
   let quotaHeaders = {};
   let rollback = null;
@@ -295,11 +312,18 @@ export default async (request) => {
       const today = todayUTC();
       player = parsePlayerDoc(await fsGet('players/' + uid));
       decision = decideQuota(player, today);
-      if (decision.mode === 'blocked') {
+      // 113일차: 구글 심사용 계정 — 차감 없이 무제한. 화면에도 구독 중으로 보이게 처음 한 번 기록한다.
+      if (userEmail && (await reviewerEmails()).includes(String(userEmail).toLowerCase())) {
+        decision = { mode: 'subscription' };
+        if (!player.subActive) {
+          try { await fsCommit([{ update: { name: fsDocName('players/' + uid), fields: { subscription: { mapValue: { fields: { active: { booleanValue: true }, reviewer: { booleanValue: true } } } } } }, updateMask: { fieldPaths: ['subscription.active', 'subscription.reviewer'] } }]); } catch (e) { console.error('reviewer-mark', e && e.message); }
+        }
+      }
+      if (decision.mode === 'blocked' && !무료요청) {
         return new Response(JSON.stringify({ error: 'quota', coins: player.coins }),
           { status: 402, headers: { 'Content-Type': 'application/json' } });
       }
-      rollback = (await applyCharge(uid, decision, today)).rollback;
+      rollback = 무료요청 ? null : (await applyCharge(uid, decision, today)).rollback;
     } catch (e) {
       // 판정/차감 자체가 죽으면 유저를 막지 않는다 — 서버 장애로 게임까지 멈추는 게 더 나쁘다.
       // (이 경우 이번 한 턴은 차감 없이 나간다. Netlify 함수 로그에 남는다.)
@@ -319,7 +343,9 @@ export default async (request) => {
   let localBody = null, localStatus = 0;
   if (!isSim && userEmail) {
     const cfg = await localAIConfig();
-    if (cfg.enabled && cfg.url && cfg.emails.includes(userEmail)) {
+    const 앱요청 = request.headers.get('x-lq-app') === '1';   // 110일차: 앱에서 온 요청 표시
+    const 대상 = cfg.emails.includes(userEmail) || cfg.everyone;
+    if (cfg.enabled && cfg.url && 대상 && (!앱요청 || cfg.appToo)) {
       try {
         const ac = new AbortController();
         const to = setTimeout(() => ac.abort(), 20000);   // 20초 안에 시작 못 하면 구글로 돌아간다
@@ -378,6 +404,7 @@ export default async (request) => {
     let 글자옴 = false;
     let 모은본문 = '';          // 91일차: 대사가 실제로 있었는지 보려고 본문을 모아 둔다
     let 남은줄 = '';
+    let 끝사유 = '';            // 112일차: 답이 왜 끝났나(STOP 이 아니면 안전장치 등으로 끊긴 것)
     const 디코더 = new TextDecoder();
     const 감시 = new TransformStream({
       transform(chunk, ctrl) {
@@ -398,11 +425,17 @@ export default async (request) => {
             const j = JSON.parse(몸);
             const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
             for (const p of parts) if (typeof p.text === 'string') 모은본문 += p.text;
+            const fr = ((j.candidates || [])[0] || {}).finishReason;
+            if (fr) 끝사유 = fr;
           }
         } catch (e) { /* 판정용일 뿐이다 — 여기서 터져도 중계는 이미 끝났다 */ }
       },
       async flush() {
-        let 되돌릴까 = !글자옴;
+        // 112일차: 위 글자옴 검사식은 구글 형식("text": "…" — 콜론 뒤 공백)을 못 알아봐 72일차부터 모든 차감을 되돌리고 있었다.
+        //         실제로 모은 본문으로 판단한다.
+        let 되돌릴까 = !글자옴 && !모은본문;
+        // 112일차: 안전장치 등으로 중간에 끊긴 답은 이용자 잘못이 아니다 — 되돌린다(요금 약속).
+        if (끝사유 && 끝사유 !== 'STOP' && 끝사유 !== 'MAX_TOKENS') 되돌릴까 = true;
         // 91일차: 글자는 왔는데 대사(beats)가 하나도 없는 응답 — 화면은 실패로 안내하는데 코인은 빠져 있던 자리.
         if (!되돌릴까 && 모은본문) {
           try {
