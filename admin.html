@@ -69,7 +69,7 @@
     </div>
     <div class="card" style="margin-bottom:4px;"><div class="k">가입자 성별</div><div style="color:var(--dim); font-size:13px; margin-top:6px;" id="c-gender">–</div></div>
 
-    <div class="sect">무검열 AI 테스트 <span style="color:var(--faint); letter-spacing:0;">— 적어둔 계정만 GPU 서버로 보냅니다. 나머지는 그대로 구글입니다.</span></div>
+    <div class="sect">무검열 AI 스위치 <span style="color:var(--faint); letter-spacing:0;">— 적어둔 계정만, 또는 '모든 사용자'를 GPU 서버로 보냅니다. 앱(구글 플레이) 요청은 '앱 포함'을 켜야만 갑니다.</span></div>
     <div class="card" style="margin-bottom:18px;">
       <div id="ai-state" style="margin-bottom:12px; font-size:14px;">불러오는 중…</div>
       <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
@@ -77,10 +77,27 @@
           style="flex:1 1 340px; min-width:260px; background:#0E0B1A; color:var(--paper); border:1px solid var(--line); border-radius:8px; padding:9px 12px; font-size:13px;">
         <input id="ai-emails" placeholder="대상 계정 (쉼표로 구분)" spellcheck="false"
           style="flex:1 1 240px; min-width:200px; background:#0E0B1A; color:var(--paper); border:1px solid var(--line); border-radius:8px; padding:9px 12px; font-size:13px;">
+        <label style="font-size:13px; color:var(--dim); white-space:nowrap;"><input type="checkbox" id="ai-everyone"> 모든 사용자</label>
+        <label style="font-size:13px; color:var(--dim); white-space:nowrap;" title="구글 플레이는 성적 콘텐츠 금지 — 켜면 앱 삭제·계정 정지 위험"><input type="checkbox" id="ai-apptoo"> 앱 포함(위험)</label>
         <button onclick="setAI(true)">켜기</button>
         <button class="ghost" onclick="setAI(false)">끄기</button>
       </div>
       <div id="ai-msg" style="margin-top:10px; font-size:12px; color:var(--dim); min-height:16px;"></div>
+    </div>
+
+    <div class="sect">구글 심사용 계정 <span style="color:var(--faint); letter-spacing:0;">— 여기 적은 구글 계정은 횟수·코인 차감 없이 무제한(구독 중으로 표시). 최대 10개</span></div>
+    <div class="card" style="margin-bottom:18px;">
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+        <input id="rv-emails" placeholder="심사용 계정 이메일 (쉼표로 구분)" spellcheck="false" style="flex:1 1 340px; min-width:260px; background:#0E0B1A; color:var(--paper); border:1px solid var(--line); border-radius:8px; padding:9px 12px; font-size:13px;">
+        <button onclick="saveReviewers()">저장</button>
+      </div>
+      <div id="rv-msg" style="margin-top:10px; font-size:12px; color:var(--dim); min-height:16px;"></div>
+    </div>
+
+    <div class="sect">AI 답변 신고 <span style="color:var(--faint); letter-spacing:0;">— 이용자가 [이 답변 신고하기]로 보낸 글. 최근 200건</span></div>
+    <div class="card" style="margin-bottom:18px;">
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;"><button class="ghost" onclick="loadReports()">새로 읽기</button><span id="rp-count" style="font-size:13px; color:var(--dim);"></span></div>
+      <div id="rp-list" style="font-size:13px; line-height:1.7;">불러오는 중…</div>
     </div>
 
     <div class="sect">AI 대화 비용 <span style="color:var(--faint); letter-spacing:0;">— gemini-3.5-flash-lite단가 기준 추정</span></div>
@@ -151,6 +168,8 @@ async function load() {
   document.getElementById('who').style.display = 'block';
   document.getElementById('board').style.display = 'block';
   loadAI();
+  loadReports();
+  loadReviewers();   // 113일차
 }
 
 // ===== 73일차: 무검열 AI 갈림길 =====
@@ -169,12 +188,35 @@ function showAI(j) {
   const el = document.getElementById('ai-state');
   if (j.enabled) {
     el.innerHTML = '<span style="color:var(--good, #7FB77E);">● 켜져 있습니다</span> — '
-      + (j.emails || []).map(e => '<b>' + e + '</b>').join(', ') + ' 만 무검열 AI로 갑니다';
+      + (j.everyone ? '<b>모든 사용자</b>가' : (j.emails || []).map(e => '<b>' + e + '</b>').join(', ') + ' 만')
+      + ' 무검열 AI로 갑니다' + (j.appToo ? ' (앱 포함)' : ' (앱 제외)');
   } else {
     el.innerHTML = '<span style="color:var(--dim);">○ 꺼져 있습니다</span> — 모두 구글 제미나이로 갑니다';
   }
   if (j.url) document.getElementById('ai-url').value = j.url;
+  document.getElementById('ai-everyone').checked = !!j.everyone;
+  document.getElementById('ai-apptoo').checked = !!j.appToo;
   if (j.emails && j.emails.length) document.getElementById('ai-emails').value = j.emails.join(', ');
+}
+async function loadReports() {   // 110일차
+  const box = document.getElementById('rp-list');
+  box.textContent = '불러오는 중…';
+  try {
+    const j = await aiApi({ action: 'reports' });
+    document.getElementById('rp-count').textContent = '전체 ' + j.total + '건';
+    if (!j.reports.length) { box.textContent = '아직 신고가 없습니다.'; return; }
+    box.innerHTML = j.reports.map(r => '<div style="border-top:1px solid var(--line); padding:8px 0;"><div style="color:var(--faint); font-size:12px;">'
+      + esc(r.createdAt) + ' · ' + esc(r.storyId || '-') + ' · ' + esc(r.lang) + ' · ' + esc(r.build) + ' · 계정 ' + esc(r.uid) + '…</div><div style="white-space:pre-wrap;">' + esc(r.text) + '</div></div>').join('');
+  } catch (e) { box.textContent = '못 읽었습니다: ' + e.message; }
+}
+async function loadReviewers() {   // 113일차: 구글 심사용 계정
+  try { const j = await aiApi({ action: "getReviewers" }); document.getElementById("rv-emails").value = (j.emails || []).join(", "); document.getElementById("rv-msg").textContent = (j.emails || []).length ? "지금 " + j.emails.length + "개 계정이 무제한입니다." : "아직 없습니다."; }
+  catch (e) { document.getElementById("rv-msg").textContent = "못 읽었습니다: " + e.message; }
+}
+async function saveReviewers() {
+  const msg = document.getElementById("rv-msg"); msg.textContent = "저장 중…";
+  try { const j = await aiApi({ action: "setReviewers", emails: document.getElementById("rv-emails").value.split(",").map(s => s.trim()).filter(Boolean) }); document.getElementById("rv-emails").value = j.emails.join(", "); msg.textContent = "저장했습니다(" + j.emails.length + "개). 1분 안에 반영됩니다."; }
+  catch (e) { msg.textContent = "실패: " + e.message; }
 }
 async function loadAI() {
   try { showAI(await aiApi({ action: 'getAI' })); }
@@ -187,7 +229,9 @@ async function setAI(on) {
     const j = await aiApi({
       action: 'setAI', enabled: on,
       url: document.getElementById('ai-url').value,
-      emails: document.getElementById('ai-emails').value.split(',').map(s => s.trim()).filter(Boolean)
+      emails: document.getElementById('ai-emails').value.split(',').map(s => s.trim()).filter(Boolean),
+      everyone: document.getElementById('ai-everyone').checked,
+      appToo: document.getElementById('ai-apptoo').checked
     });
     showAI(j);
     msg.textContent = on ? '켰습니다. 사이트에 반영되기까지 최대 1분 걸립니다.' : '껐습니다. 최대 1분 뒤 모두 구글로 돌아갑니다.';
