@@ -1322,6 +1322,245 @@ window.__lqPush = function () { try { return sessionStorage.getItem('lq_push') =
     /* v2026-09-16.7 에서 맞춘 글 칸 704px(760 - 28·2)에 의견 화면도 같이 맞춘다 */
     #screen-feedback > .pad, #screen-feedback > header { max-width: 760px; padding-left: 28px; padding-right: 28px; }
   }
+
+  /* ===== 133일차: 달빛 서가 대화 화면 (세 AI 합의안) =====
+     낮(07~19시)은 아이보리 종이, 밤은 짙은 남색. 배치는 같고 색만 바뀐다.
+     인물 그림은 뒤에 깔지 않고 금테 아치 액자에 담는다: 읽기 시작 150px → 스크롤하면 96px 얼굴 띠.
+     액자를 누르면 그림 전체, 처음 여는 이야기는 표지부터. body.lq 가 붙어 있을 때만 적용된다. */
+  body.lq-day #screen-chat {
+    --lq-paper:#F8F4EC; --lq-card:#FFFDF8; --lq-ink:#29242B; --lq-soft:#6B6168; --lq-faint:#8E8389;
+    --lq-thread:#913F50; --lq-send:#913F50; --lq-gold:#B69A65; --lq-gl:rgba(182,154,101,.55); --lq-gl2:rgba(182,154,101,.26);
+    --lq-user:#F1E6E1; --lq-uink:#4A2730; --lq-scene:#8C7447; --lq-dim:rgba(41,36,43,.55);
+    --lq-sh:0 1px 2px rgba(60,40,30,.06),0 6px 18px rgba(60,40,30,.07);
+  }
+  body.lq-night #screen-chat {
+    --lq-paper:#12131A; --lq-card:#202633; --lq-ink:#F0E9DD; --lq-soft:#C9C0B4; --lq-faint:#8E8778;
+    --lq-thread:#D58C9B; --lq-send:#C24B57; --lq-gold:#C3A879; --lq-gl:rgba(195,168,121,.5); --lq-gl2:rgba(195,168,121,.22);
+    --lq-user:#41303D; --lq-uink:#FFF2F2; --lq-scene:#C3A879; --lq-dim:rgba(5,6,10,.72);
+    --lq-sh:0 8px 24px rgba(0,0,0,.35);
+  }
+  body.lq #screen-chat { background: var(--lq-paper); color: var(--lq-ink); transition: background-color .5s ease, color .5s ease; }
+  body.lq #screen-chat .chat-art, body.lq #screen-chat > #art-peek, body.lq #screen-chat > #art-restore { display: none !important; }
+  body.lq #screen-chat > #chat-rail { display: none !important; }
+
+  /* 머리줄: 뒤로 · 제목과 매듭 다섯 · 낮밤 */
+  body.lq #screen-chat > header { background: var(--lq-paper); border-bottom: 0; }
+  body.lq #screen-chat > header .back { color: var(--lq-soft); }
+  body.lq #screen-chat #chat-title { font-family: var(--serif); color: var(--lq-ink); font-size: 17px; }
+  body.lq #screen-chat #chat-head-stat { background: none; border: 0; color: var(--lq-faint); display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; padding: 4px 2px; }
+  #chat-head-stat .lq-knots { width: 74px; height: 10px; flex: 0 0 auto; }
+  #chat-head-stat .lq-knots path { stroke: var(--lq-thread, var(--brass)); stroke-width: 1.1; fill: none; opacity: .55; }
+  #chat-head-stat .lq-knots circle { fill: var(--lq-paper, var(--ink)); stroke: var(--lq-thread, var(--brass)); stroke-width: 1.1; }
+  #chat-head-stat .lq-knots circle.on { fill: var(--lq-thread, var(--brass)); }
+  body.lq #screen-chat #chat-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  @media (max-width: 420px) { body.lq #screen-chat #chat-head-stat span { display: none; } }
+  #lq-mode-btn { display: none; }
+  body.lq #lq-mode-btn { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 auto; background: none; border: 0; color: var(--lq-gold); cursor: pointer; border-radius: 50%; padding: 0; }
+  body.lq #lq-mode-btn svg { width: 20px; height: 20px; }
+
+  /* AI 고지·신고: 작게, 바탕에 녹아들게 (지우지 않는다) */
+  body.lq #screen-chat [data-i18n="chatAiNotice"] { color: var(--lq-faint) !important; background: none; font-size: 10.5px !important; }
+  body.lq #screen-chat .chat-report-btn { color: var(--lq-faint); }
+  body.lq #screen-chat .chat-report-row { background: none; }
+
+  /* 금테 아치 액자 — 무대·표지·그림 보기 모두 같은 액자 */
+  .lq-arch { position: relative; overflow: hidden; border-radius: 50% 50% 6px 6px / 120px 120px 6px 6px;
+    box-shadow: 0 0 0 1px var(--lq-gl), 0 0 0 5px var(--lq-paper), 0 0 0 6px var(--lq-gl2), var(--lq-sh); background: var(--lq-card); }
+  .lq-arch img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #lq-stage { display: none; }
+  body.lq #screen-chat.lq-has-art #lq-stage { display: block; padding: 6px 18px 10px; flex: 0 0 auto; }
+  #lq-stage .lq-arch { height: 150px; cursor: zoom-in; transition: height .3s cubic-bezier(.3,.7,.2,1), border-radius .3s; }
+  #lq-stage .lq-arch img { object-position: 50% 20%; transition: object-position .3s; }
+  #lq-stage .lq-tip { position: absolute; right: 10px; bottom: 8px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: rgba(0,0,0,.42); pointer-events: none; }
+  #screen-chat.lq-fold #lq-stage .lq-arch { height: 96px; border-radius: 48px 48px 6px 6px; }
+  #screen-chat.lq-fold #lq-stage .lq-arch img { object-position: 50% 22%; }
+  #screen-chat.lq-fold #lq-stage .lq-tip { display: none; }
+
+  /* 본문: 지문은 말풍선 없는 명조, 대사는 고딕 카드 */
+  body.lq #screen-chat #chat { gap: 18px; padding-top: 14px;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22px); mask-image: linear-gradient(180deg, transparent 0, #000 22px); }
+  body.lq #screen-chat .turn-char .scene-card, body.lq #screen-chat .turn-char .scene-card.scene-card-opening {
+    background: none; border: 0; border-radius: 0; padding: 0; gap: 12px; max-width: 100%; }
+  body.lq #screen-chat .line.narration { color: var(--lq-ink); font-style: normal; font-size: 16.5px; line-height: 1.75; max-width: 36em; overflow-wrap: anywhere; }
+  body.lq #screen-chat .turn-char .line.dialogue { align-self: flex-start; max-width: 92%; background: var(--lq-card); border-left: 2px solid var(--lq-thread);
+    border-radius: 4px 14px 14px 14px; padding: 9px 14px; box-shadow: var(--lq-sh); font-family: var(--sans); font-size: 16px; line-height: 1.6; color: var(--lq-ink) !important; }
+  body.lq #screen-chat .speaker-tag { font-family: var(--sans); font-size: 12px; letter-spacing: .04em; text-transform: none; font-weight: 600;
+    color: var(--lq-thread) !important; margin: 0 0 -6px 16px; }
+  body.lq #screen-chat .turn-player .line.dialogue { background: var(--lq-user); color: var(--lq-uink); border: 0; border-radius: 16px 16px 4px 16px;
+    font-family: var(--sans); font-size: 15.5px; line-height: 1.55; padding: 10px 15px; max-width: 82%; }
+  body.lq #screen-chat .turn-player .line.narration { color: var(--lq-soft); font-size: 15px; text-align: right; }
+  body.lq #screen-chat .opening-scene-label, body.lq #screen-chat .medium-label { color: var(--lq-scene); font-family: var(--serif); letter-spacing: .1em; text-transform: none; font-size: 12.5px; }
+  body.lq #screen-chat .opening-scene-label::before, body.lq #screen-chat .opening-scene-label::after, body.lq #screen-chat .medium-label::after { background: var(--lq-gl); }
+  body.lq #screen-chat .stage-shift-label { color: var(--lq-thread); font-family: var(--serif); text-transform: none; letter-spacing: .1em; }
+  body.lq #screen-chat .stage-shift-label::before, body.lq #screen-chat .stage-shift-label::after { background: var(--lq-thread); opacity: .5; }
+  body.lq #screen-chat .stage-shift-desc { color: var(--lq-soft); }
+  body.lq #screen-chat .sys { background: var(--lq-card); border-color: var(--lq-gl2); color: var(--lq-soft); font-family: var(--sans); }
+  body.lq #screen-chat .line.dialogue.m-text { background: var(--lq-card); border: 1px solid var(--lq-gl2); border-left: 2px solid var(--lq-thread); }
+  body.lq #screen-chat .line.dialogue.m-letter { font-family: var(--serif); background: var(--lq-card); }
+  body.lq #screen-chat .share-scene { color: var(--lq-faint); }
+  body.lq #screen-chat .turn-rewind-btn { color: var(--lq-faint); border-color: var(--lq-gl2); }
+  body.lq #screen-chat .safety-notice { color: var(--lq-soft); }
+  body.lq #screen-chat .revive-offer .ro-body, body.lq #screen-chat .revive-offer .ro-alt { color: var(--lq-soft); }
+
+  /* 추천 답변 · 입력창: 둥근 한 줄 */
+  body.lq #screen-chat #suggest-row { background: none; }
+  body.lq #screen-chat .suggest-chip { background: var(--lq-card); border: 1px solid var(--lq-gl); color: var(--lq-ink); border-radius: 999px; font-family: var(--sans); }
+  body.lq #screen-chat #inputbar { margin: 4px 12px 12px; padding: 5px 5px 5px 8px; align-items: center; gap: 4px;
+    background: var(--lq-card); border: 1px solid var(--lq-gl); border-radius: 28px; box-shadow: var(--lq-sh); }
+  body.lq #screen-chat #inputbar textarea { background: none; border: 0; color: var(--lq-ink); min-height: 40px; padding: 9px 6px; font-size: 15px; }
+  body.lq #screen-chat #inputbar textarea::placeholder { color: var(--lq-faint); }
+  body.lq #screen-chat #inputbar textarea::placeholder { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body.lq #screen-chat [data-i18n="chatAiNotice"] { padding: 0 12px 2px !important; }
+  body.lq #screen-chat .chat-report-row { padding-top: 0; padding-bottom: 2px; margin: 0; }
+  body.lq #screen-chat .chat-report-btn { font-size: 10.5px; padding: 2px 6px; min-height: 0; }
+  body.lq #screen-chat #inputbar .inline-act { background: none; border: 0; color: var(--lq-gold); padding: 6px; min-width: 32px; }
+  body.lq #screen-chat #inputbar #send-btn { background: var(--lq-send); border: 0; color: #fff; border-radius: 22px; min-height: 42px; padding: 0 16px; font-weight: 600; }
+  body.lq #screen-chat #inputbar #send-btn:disabled { background: var(--lq-gl2); color: var(--lq-faint); }
+  body.lq #screen-chat #inputbar button.cancel { background: none; color: var(--warn); border: 1px solid rgba(217,138,106,.55); }
+  body.lq #screen-chat #char-count { color: var(--lq-faint); }
+
+  /* 그림 크게 보기 */
+  #screen-chat > #lq-view { position: absolute; inset: 0; z-index: 30; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    padding: 20px; background: var(--lq-dim); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); cursor: zoom-out; }
+  #screen-chat.lq-viewing #lq-view { display: flex; }
+  #lq-view .lq-arch { width: 100%; max-width: 520px; aspect-ratio: 3 / 4; max-height: 80%; height: auto; }
+  #lq-view .lq-arch img { object-fit: contain; background: var(--lq-card); }
+  #lq-view p { color: #F0E9DD; font-size: 13px; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+
+  /* 표지: 처음 여는 이야기에서만 */
+  #screen-chat > #lq-cover { position: absolute; inset: 0; z-index: 25; display: none; flex-direction: column; align-items: center;
+    padding: 18px 22px 26px; background: var(--lq-paper); color: var(--lq-ink); text-align: center; }
+  #screen-chat.lq-covering #lq-cover { display: flex; }
+  #lq-cover .lq-arch { width: 100%; flex: 1 1 auto; min-height: 200px; max-height: 500px; max-width: 420px; }
+  #lq-cover .lq-arch img { object-position: 50% 24%; }
+  #lq-cover .lq-eyebrow { margin-top: 20px; font-size: 12px; letter-spacing: .2em; color: var(--lq-scene); }
+  #lq-cover h2 { font-family: var(--serif); font-size: 26px; font-weight: 700; margin: 6px 0 6px; color: var(--lq-ink); }
+  #lq-cover p { font-family: var(--serif); font-size: 15px; line-height: 1.65; color: var(--lq-soft); max-width: 22em; overflow-wrap: anywhere; text-wrap: balance; }
+  #lq-cover button { margin-top: 18px; width: 100%; max-width: 320px; padding: 14px; border-radius: 999px; border: 0; background: var(--lq-send); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
+  #screen-chat.lq-covering #lq-cover > * { animation: fadeUp .5s ease both; }
+
+  /* 낮밤이 바뀔 때 한 줄 알림 */
+  #screen-chat > #lq-toast { position: absolute; left: 50%; top: 70px; z-index: 40; transform: translate(-50%, -6px); opacity: 0; pointer-events: none;
+    font-family: var(--serif); font-size: 14px; padding: 8px 16px; border-radius: 999px; background: rgba(16,23,34,.86); color: #F0E9DD;
+    border: 1px solid rgba(195,168,121,.4); transition: opacity .4s, transform .4s; white-space: nowrap; }
+  #lq-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* PC: 왼쪽 큰 액자, 오른쪽 대화 */
+  @media (min-width: 900px) {
+    body.lq #screen-chat.lq-has-art #lq-stage { position: absolute; left: 0; top: 0; bottom: 0; width: 42%; padding: 36px 40px; display: flex; align-items: center; justify-content: center;
+      border-right: 1px solid var(--lq-gl2); }
+    body.lq #screen-chat.lq-has-art #lq-stage .lq-arch, body.lq #screen-chat.lq-has-art.lq-fold #lq-stage .lq-arch { height: auto; width: 100%; max-width: 560px; max-height: 100%; aspect-ratio: 3 / 4;
+      border-radius: 50% 50% 6px 6px / 200px 200px 6px 6px; }
+    body.lq #screen-chat.lq-has-art #lq-stage .lq-arch img { object-position: 50% 30%; }
+    body.lq #screen-chat.lq-has-art #lq-stage .lq-tip { display: grid; }
+    body.lq #screen-chat.lq-has-art > header, body.lq #screen-chat.lq-has-art .chat-report-row, body.lq #screen-chat.lq-has-art [data-i18n="chatAiNotice"] { margin-left: 42%; }
+    body.lq #screen-chat #chat, body.lq #screen-chat #suggest-row { padding-left: max(32px, calc((100% - 680px) / 2)); padding-right: max(32px, calc((100% - 680px) / 2)); }
+    body.lq #screen-chat.lq-has-art #chat, body.lq #screen-chat.lq-has-art #suggest-row, body.lq #screen-chat.lq-has-art #stat-bar, body.lq #screen-chat.lq-has-art #chat-billing-status {
+      margin-left: 42%; padding-left: max(32px, calc((58% - 640px) / 2)); padding-right: max(32px, calc((58% - 640px) / 2)); }
+    body.lq #screen-chat.lq-has-art #inputbar { margin-left: calc(42% + 28px); margin-right: 28px; }
+    #lq-cover .lq-arch { max-width: 380px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #lq-stage .lq-arch, #lq-stage .lq-arch img, body.lq #screen-chat, #lq-toast { transition: none; }
+    #screen-chat.lq-covering #lq-cover > * { animation: none; }
+  }
+
+  /* 134: 표지의 첫마디 · 답 기다리는 연출 */
+  #lq-cover .lq-greet { margin-top: 14px; max-width: 340px; width: 100%; text-align: left; background: var(--lq-card); border-left: 2px solid var(--lq-thread);
+    border-radius: 4px 14px 14px 14px; padding: 10px 14px; box-shadow: var(--lq-sh); }
+  #lq-cover .lq-greet[hidden] { display: none; }
+  #lq-cover .lq-g-who { display: block; font-size: 12px; font-weight: 600; color: var(--lq-thread); margin-bottom: 2px; }
+  #lq-cover .lq-g-line { display: block; font-size: 15.5px; line-height: 1.55; color: var(--lq-ink); overflow-wrap: anywhere; }
+  #lq-cover p#lq-cover-hook { font-size: 14px; }
+  .lq-wait { align-self: flex-start; display: flex; align-items: center; gap: 10px; padding: 6px 2px; color: var(--lq-faint, var(--faint));
+    font-family: var(--serif); font-size: 14px; font-style: italic; }
+  .lq-wait svg { width: 46px; height: 10px; flex: 0 0 auto; overflow: visible; }
+  .lq-wait path { stroke: var(--lq-thread, var(--brass)); stroke-width: 1.1; fill: none; opacity: .45; }
+  .lq-wait circle { fill: var(--lq-thread, var(--brass)); opacity: .25; animation: lqBreath 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .lq-wait circle:nth-of-type(2) { animation-delay: .3s; }
+  .lq-wait circle:nth-of-type(3) { animation-delay: .6s; }
+  @keyframes lqBreath { 0%, 100% { opacity: .25; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.1); } }
+  @media (prefers-reduced-motion: reduce) { .lq-wait circle { animation: none; opacity: .7; } }
+
+  /* ===== 135: 앱 전체 낮·밤 (달빛 서가 색으로 통일) =====
+     바탕 색 묶음만 갈아 끼우고, 색이 직접 박혀 있던 자리만 따로 맞춘다. 대화 화면은 위 133 묶음이 따로 맡는다. */
+  body.lq-night {
+    --void:#12131A; --ink:#181B24; --ink2:#202633; --paper:#F0E9DD; --dim:#C9C0B4; --faint:#958D80;
+    --brass:#C3A879; --brass-mid:rgba(195,168,121,.45); --brass-dim:rgba(195,168,121,.14);
+    --hair:rgba(240,233,221,.12); --hair-soft:rgba(240,233,221,.06);
+    --moon:#D58C9B; --moon-dim:rgba(213,140,155,.14);
+    --lq-btn:#C24B57; --lq-btn-ink:#FFFFFF;
+    background:#0D0E13;
+  }
+  body.lq-day {
+    --void:#F8F4EC; --ink:#F2ECE1; --ink2:#FFFDF8; --paper:#29242B; --dim:#5E555B; --faint:#7E7379;
+    --brass:#8A6A30; --brass-mid:rgba(138,106,48,.42); --brass-dim:rgba(182,154,101,.16);
+    --hair:rgba(41,36,43,.13); --hair-soft:rgba(41,36,43,.06);
+    --moon:#913F50; --moon-dim:rgba(145,63,80,.10); --warn:#B4532F;
+    --lq-btn:#913F50; --lq-btn-ink:#FFFFFF;
+    background:#EDE7DB; color-scheme: light;
+  }
+  body.lq #app { background: radial-gradient(900px 600px at 88% -8%, var(--moon-dim), transparent 60%), radial-gradient(700px 500px at -12% 108%, var(--brass-dim), transparent 55%), var(--void); }
+  body.lq .btn { background: var(--lq-btn); border-color: var(--lq-btn); color: var(--lq-btn-ink); border-radius: 999px; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+  body.lq .btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,.16); }
+  body.lq .btn.secondary { background: transparent; color: var(--paper); border-color: var(--hair); box-shadow: none; }
+  body.lq .btn.loading::after { border-color: rgba(255,255,255,.35); border-top-color: #fff; }
+  body.lq header { background: color-mix(in srgb, var(--void) 92%, transparent); }
+  body.lq #lang-switcher { background: var(--ink2); }
+  body.lq .mem-box, body.lq .mem-btns { background: var(--ink2); }
+  body.lq .hc, body.lq .hero-feats .hf { background: color-mix(in srgb, var(--ink2) 86%, transparent); }
+  body.lq .sticky-cta { background: linear-gradient(to top, var(--void) 62%, transparent); }
+  body.lq .stage-shift-desc { color: var(--dim); }
+  body.lq-day .screen::-webkit-scrollbar-thumb { background: rgba(41,36,43,.18); }
+  body.lq-day .starfield { display: none; }
+  /* 첫 화면: 낮에는 달의 서가 그림 위에 아이보리 막을 덮어 밝은 서재로 */
+  body.lq-day #screen-landing { background-image:
+      linear-gradient(90deg, rgba(248,244,236,.94) 0%, rgba(248,244,236,.86) 45%, rgba(248,244,236,.72) 75%, rgba(248,244,236,.82) 100%),
+      linear-gradient(0deg, rgba(248,244,236,.96) 0%, transparent 46%),
+      url('images/prologue.jpg'),
+      linear-gradient(var(--void), var(--void)); }
+  body.lq-night #screen-landing { background-image:
+      linear-gradient(90deg, rgba(18,19,26,.9) 0%, rgba(18,19,26,.6) 45%, rgba(18,19,26,.25) 75%, rgba(18,19,26,.5) 100%),
+      linear-gradient(0deg, rgba(18,19,26,.92) 0%, transparent 42%),
+      url('images/prologue.jpg'),
+      linear-gradient(var(--void), var(--void)); }
+  @media (min-width: 900px) {
+    body.lq-day #screen-landing { background-image:
+      linear-gradient(90deg, rgba(248,244,236,.78) 0%, rgba(248,244,236,.9) 30%, rgba(248,244,236,.92) 50%, rgba(248,244,236,.88) 72%, rgba(248,244,236,.76) 100%),
+      linear-gradient(0deg, rgba(248,244,236,.94) 0%, transparent 46%), url('images/prologue.jpg'), linear-gradient(var(--void), var(--void)); }
+    body.lq-night #screen-landing { background-image:
+      linear-gradient(90deg, rgba(18,19,26,.55) 0%, rgba(18,19,26,.76) 28%, rgba(18,19,26,.82) 50%, rgba(18,19,26,.68) 74%, rgba(18,19,26,.5) 100%),
+      linear-gradient(0deg, rgba(18,19,26,.88) 0%, transparent 46%), url('images/prologue.jpg'), linear-gradient(var(--void), var(--void)); }
+  }
+  /* 마이페이지: 화면 밝기 고르기 (자동 / 낮 / 밤) */
+  .lq-theme-row { align-items: center; }
+  .lq-theme-row .lbl { color: var(--dim); font-size: 13px; }
+  .lq-seg { display: inline-flex; border: 1px solid var(--hair); border-radius: 999px; overflow: hidden; }
+  .lq-seg button { background: none; border: 0; color: var(--dim); font: inherit; font-size: 13px; padding: 7px 14px; cursor: pointer; min-height: 34px; }
+  .lq-seg button[aria-pressed="true"] { background: var(--lq-btn); color: var(--lq-btn-ink); }
+  /* 옛 색 이름(별칭)은 :root 에서 한 번 계산돼 굳어 있으므로, 낮·밤에서 다시 이어 준다 */
+  body.lq { --bg-deep: var(--void); --bg-mid: var(--ink); --bg-panel: var(--ink2); --bg-panel-solid: var(--ink2); --border-glow: var(--hair);
+    --rose: var(--brass); --rose-deep: var(--brass-mid); --gold: var(--brass); --gold-light: var(--brass); --gold-deep: var(--brass-mid);
+    --lavender: var(--dim); --lavender-deep: var(--faint); --text-main: var(--paper); --text-sub: var(--dim); --text-faint: var(--faint); color: var(--paper); }
+  /* 라벤더로 박혀 있던 고른 표시들 → 실 색 */
+  body.lq .tag-chip.on, body.lq .tag-chip:hover, body.lq .filter-chip.on { color: var(--moon); border-color: var(--moon); background: var(--moon-dim); }
+  body.lq .filter-chip:hover, body.lq .cont-card:hover, body.lq .coin-card:hover, body.lq .fp-card:hover, body.lq .btn.secondary:hover { border-color: var(--moon); }
+  body.lq .rel-tag { color: var(--moon); }
+  body.lq .fb-list-title { color: var(--brass); }
+  body.lq .filter-chip:focus-visible { outline-color: var(--moon); }
+  body.lq .fp-card:hover { background: var(--moon-dim); }
+  /* 프롤로그(달의 서가)는 밤 장면이라 낮에도 밤 색으로 둔다 */
+  body.lq-day #screen-manifesto { --void:#12131A; --ink:#181B24; --ink2:#202633; --paper:#F0E9DD; --dim:#C9C0B4; --faint:#958D80;
+    --brass:#C3A879; --brass-mid:rgba(195,168,121,.45); --hair:rgba(240,233,221,.12); --moon:#D58C9B; --text-main:#F0E9DD; --text-sub:#C9C0B4; --text-faint:#958D80;
+    --lq-btn:#C24B57; color:#F0E9DD; }
+  body.lq-day #screen-manifesto .starfield { display: block; }
+  /* 한국어만 단어 단위 줄바꿈 (일본어에 주면 줄이 안 넘어가 화면 밖으로 나간다) */
+  :lang(ko) body.lq #screen-chat .line, :lang(ko) #lq-cover p, :lang(ko) #lq-cover .lq-g-line { word-break: keep-all; }
+  /* 폰 가독성 (두 AI 검수): 첫 화면 작은 설명문 키우기 */
+  body.lq .hero-feats b { font-size: 14px; }
+  body.lq .hero-feats span { font-size: 12.5px; line-height: 1.65; color: var(--dim); }
+  body.lq .hero-safety { font-size: 12px; }
+  body.lq .hero-legal { font-size: 12px; }
 </style>
 </head>
 <body>
@@ -1347,7 +1586,6 @@ window.__lqPush = function () { try { return sessionStorage.getItem('lq_push') =
     <div class="hero-body">
       <div class="hero-copy">
         <div class="brand-mark"><span class="moon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M10 1.5a6.5 6.5 0 1 0 0 13 5.5 5.5 0 0 1 0-13Z" fill="var(--brass)"/></svg></span> <b>LUNIQUE</b></div>
-        <div class="eyebrow"><span class="diamond" aria-hidden="true"></span> <span data-i18n="landingEyebrow">한·영·일 3개 언어로 운영 중</span></div>
         <h1 class="hero-title2" data-i18n-html="heroTitle2">작품 속 주인공이 되는<br>AI 이야기</h1>
         <p class="hero-sub" data-i18n="heroSub2">좋아하는 장르의 작품에 들어가 인물과 이야기를 이어 갑니다. 인물은 나눈 대화를 전부 기억합니다.</p>
         <div class="hero-stats" data-i18n-stat-alt="heroStatBandAlt" data-i18n-stat="heroStatBand" hidden></div>
@@ -1363,8 +1601,6 @@ window.__lqPush = function () { try { return sessionStorage.getItem('lq_push') =
         <div class="hf"><b data-i18n="heroFeat3T">이야기는 결말로 갑니다</b><span data-i18n="heroFeat3B">관계는 5단계로 나아가고, 이야기마다 라이벌이 있습니다. 헤어짐과 재회도 있으며, 끝까지 완성한 이야기는 앨범에 남습니다.</span></div>
       </div>
       <div class="hero-safety" data-i18n="heroSafety">만 18세 이상 이용 · 표현 수위는 관계 단계에 따라 제한합니다 · 위험 신호가 보이면 상담 창구를 안내합니다</div>
-      <div class="hero-partners"><button type="button" class="btn secondary" onclick="goTo('screen-partners')" data-i18n="heroPartnersBtn">원작 창작자·중소 콘텐츠 기업과 수익을 나눕니다 — 제휴 안내</button></div>
-      <div class="hero-peek"><button type="button" class="linky" onclick="goTo('screen-partners')" data-i18n="heroPeekBtn">로그인 없이 실제 화면 3장을 볼 수 있습니다</button></div>
       <div class="hero-cta">
         <button class="btn" onclick="goTo('screen-manifesto')" data-i18n="landingStartBtn">이야기 시작하기</button>
       </div>
@@ -1405,34 +1641,6 @@ window.__lqPush = function () { try { return sessionStorage.getItem('lq_push') =
       <button class="btn" style="width:100%; margin-top:18px;" id="google-login-btn" onclick="signInWithGoogle()" data-i18n="loginGoogleBtn">G 구글 계정으로 로그인</button>
       <div class="legal-links" style="margin-top:14px;" data-i18n-html="loginLegalNote">계속하면 <a onclick="event.preventDefault(); openLegal('terms')">이용약관</a>과 <a onclick="event.preventDefault(); openLegal('privacy')">개인정보처리방침</a>에 동의하게 됩니다.</div>
       <div class="error-msg" id="login-error"></div>
-    </div>
-  </div>
-
-  <!-- 화면: 원작 창작자·중소 콘텐츠 기업 제휴 안내 (79일차 사이트 개편 — 첫 화면 버튼에서 들어온다. 캡처 3장은 data/partners-1~3.png) -->
-  <div class="screen" id="screen-partners">
-    <header><button type="button" class="back" aria-label="뒤로 가기" data-i18n-aria="a11yBack" onclick="goBack('screen-landing')">←</button><h1 data-i18n="partnersHeader">제휴 안내</h1></header>
-    <div class="pad partners-body">
-      <h2 class="partners-title" data-i18n="partnersTitle">완결된 작품을, 독자가 주인공이 되는 AI 이야기로</h2>
-      <p class="partners-lead" data-i18n="partnersLead">원작 창작자와 중소 콘텐츠 기업을 위한 안내입니다.</p>
-      <h3 data-i18n="partnersS1H">작품 속 인물과 세계관을 AI 이야기로</h3>
-      <p data-i18n="partnersS1B">완결된 소설·웹툰·영상 작품의 인물과 세계관을 AI 이야기로 옮깁니다. 독자는 주인공이 되어 인물과 대화하며 이야기를 이어 가고, 인물은 독자와 나눈 대화를 전부 기억합니다.</p>
-      <h3 data-i18n="partnersS2H">원작을 따라가는 길, 새 이야기를 만드는 길</h3>
-      <p data-i18n="partnersS2B">원작 흐름을 따라가는 길과 독자가 새 이야기를 만드는 길을 함께 둡니다. 원작의 주요 장면은 이야기 속 사건으로 준비하고, 그 사이의 전개는 독자의 말에 따라 달라집니다.</p>
-      <h3 data-i18n="partnersS3H">한국어·영어·일본어 동시 출시</h3>
-      <p data-i18n-stat-alt="partnersS3BAlt" data-i18n-stat="partnersS3B" hidden></p>
-      <h3 data-i18n="partnersS4H">수익은 원작 측과 나눕니다</h3>
-      <p data-i18n="partnersS4B">이야기에서 생기는 수익은 원작 측과 나눕니다. 나누는 방식과 비율은 작품마다 협의해 정합니다.</p>
-      <h3 data-i18n="partnersS5H">제휴 작품은 원작자 승인 없이는 올리지 않습니다</h3>
-      <p data-i18n-stat-alt="partnersS5BAlt" data-i18n-stat="partnersS5B" hidden></p>
-      <h3 data-i18n="partnersShotsH">이렇게 보입니다</h3>
-      <p class="partners-note" data-i18n-stat-alt="partnersShotsNoteAlt" data-i18n-stat="partnersShotsNote" hidden></p>
-      <div class="partners-shots">
-        <figure class="partners-shot"><img src="data/partners-1.png" alt="이야기 고르기 — 이야기마다 제목과 한 줄 소개, 등장인물이 보입니다." data-i18n-aria="partnersShot1" loading="lazy" width="400" height="860"><figcaption data-i18n="partnersShot1">이야기 고르기 — 이야기마다 제목과 한 줄 소개, 등장인물이 보입니다.</figcaption></figure>
-        <figure class="partners-shot"><img src="data/partners-2.png" alt="대화 — 인물이 지난 대화를 기억해 이어서 말합니다." data-i18n-aria="partnersShot2" loading="lazy" width="400" height="860"><figcaption data-i18n="partnersShot2">대화 — 인물이 지난 대화를 기억해 이어서 말합니다.</figcaption></figure>
-        <figure class="partners-shot"><img src="data/partners-3.png" alt="먼저 온 메시지 — 이틀 넘게 대화가 없다가 다시 들어오면, 인물이 먼저 말을 겁니다." data-i18n-aria="partnersShot3" loading="lazy" width="400" height="860"><figcaption data-i18n="partnersShot3">먼저 온 메시지 — 이틀 넘게 대화가 없다가 다시 들어오면, 인물이 먼저 말을 겁니다.</figcaption></figure>
-      </div>
-      <a class="btn partners-mail" href="mailto:kkfm1215@gmail.com" data-i18n="partnersContactBtn">제휴 문의하기</a>
-      <p class="partners-mail-note" data-i18n="partnersContactNote">문의: kkfm1215@gmail.com</p>
     </div>
   </div>
 
@@ -1537,7 +1745,10 @@ window.__lqPush = function () { try { return sessionStorage.getItem('lq_push') =
         <h1 id="chat-title" style="margin:0;">스토리</h1>
         <button type="button" id="chat-head-stat" onclick="toggleChatDetails()" aria-expanded="false"></button>
       </div>
+      <button type="button" id="lq-mode-btn"></button>
     </header>
+    <!-- 133일차: 금테 아치 액자 무대 (읽으면 얼굴 띠로 접힌다, 누르면 그림 전체) -->
+    <div id="lq-stage"><div class="lq-arch"><img id="lq-stage-img" alt=""><span class="lq-tip" id="lq-stage-tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></span></div></div>
     <div class="chat-toolbar">
       <button id="autoprogress-btn" class="chat-action-btn" onclick="autoProgress()" data-i18n="chatAutoprogressBtn" data-i18n-title="chatAutoprogressTooltip" title="누르면 내가 아무 말도 안 해도 AI가 알아서 다음 장면을 진행시켜요.">자동진행</button>
       <button id="suggest-btn" class="chat-action-btn" onclick="requestSuggestions()" data-i18n="chatSuggestBtn" data-i18n-title="chatSuggestTooltip" title="누르면 지금 대화에 어울리는 대사 3개를 추천해줘요. 눌러서 바로 보낼 수 있어요.">대사 추천</button>
@@ -1555,6 +1766,10 @@ window.__lqPush = function () { try { return sessionStorage.getItem('lq_push') =
       <textarea id="msg-input" rows="1" maxlength="500" placeholder="대사를 입력하세요... (*이렇게 쓰면 행동/속마음*)" data-i18n-placeholder="chatInputPlaceholder"></textarea><span id="char-count" aria-hidden="true"></span>
       <button id="send-btn" data-i18n="chatSendBtn">전송</button>
     </div>
+    <!-- 133일차: 그림 크게 보기 · 처음 여는 이야기의 표지 · 낮밤 알림 -->
+    <div id="lq-view" role="dialog" aria-modal="true"><div class="lq-arch"><img id="lq-view-img" alt=""></div><p id="lq-view-tip"></p></div>
+    <div id="lq-cover"><div class="lq-arch"><img id="lq-cover-img" alt=""></div><div class="lq-eyebrow" id="lq-cover-eyebrow"></div><h2 id="lq-cover-title"></h2><p id="lq-cover-hook"></p><div class="lq-greet" id="lq-cover-greet" hidden><span class="lq-g-who"></span><span class="lq-g-line"></span></div><button type="button" id="lq-cover-go"></button></div>
+    <div id="lq-toast" role="status" aria-live="polite"></div>
     <aside id="chat-rail" aria-label="인연 기록"></aside>
     <div class="format-hint" data-i18n="chatFormatHint">*별표로 감싸면* 행동·속마음·상황 묘사로 처리돼요. 그냥 쓰면 실제 대사예요.</div>
     <div class="hint" id="chat-dev-hint" data-i18n="chatDevHint">개발/테스트용 화면이에요. 스탯 숫자는 확인용으로 노출해뒀어요 (실제 서비스에서는 숨김). "자동진행"은 누를 때마다 AI가 내 의지와 무관하게 상황을 한 턴 진행시켜요. "대사 추천"은 누르면 지금까지의 대화를 분석해서 보낼 만한 대사 3개를 보여줘요 (클릭하면 바로 전송).</div>
@@ -1567,6 +1782,7 @@ window.__lqPush = function () { try { return sessionStorage.getItem('lq_push') =
     <div class="mypage-row"><span data-i18n="mypageLabelCoins">코인 잔액</span><b id="my-coins">0개</b></div>
     <div class="mypage-row"><span data-i18n="mypageLabelSubscription">구독 상태</span><b id="my-subscription">-</b></div>
     <div class="mypage-row"><span data-i18n="mypageLabelFreeQuota">오늘 무료 대화</span><b id="my-free-quota">-</b></div>
+    <div class="mypage-row lq-theme-row"><span class="lbl" id="lq-theme-lbl">화면</span><span class="lq-seg" id="lq-seg" role="group"><button type="button" data-v="auto">자동</button><button type="button" data-v="day">낮</button><button type="button" data-v="night">밤</button></span></div>
     <div class="pad" style="padding-bottom:8px;">
       <button class="btn secondary" style="width:100%;" onclick="goTo('screen-profile')" data-i18n="mypageEditProfileBtn">내 정보 수정</button>
       <button type="button" class="btn secondary" style="width:100%; margin-top:8px;" onclick="openFeedback()" data-i18n="mypageFeedbackBtn">의견 보내기</button>
@@ -1576,13 +1792,13 @@ window.__lqPush = function () { try { return sessionStorage.getItem('lq_push') =
       <button type="button" onclick="deleteAccount()" style="display:block; width:100%; margin-top:14px; background:none; border:none; color:var(--faint); font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-decoration:underline; cursor:pointer;" data-i18n="mypageDeleteAccountBtn">회원탈퇴</button>
     </div>
     <div class="pad" style="padding-top:0; padding-bottom:0; font-size:11.5px; color:var(--text-faint);" id="mypage-slot-status"></div>
-    <div class="pad" style="padding-top:4px; padding-bottom:8px; color:#cbb8e8; font-size:13px; font-weight:700;" data-i18n="mypageStoryProgressLabel">스토리별 진행 상태</div>
+    <div class="pad" style="padding-top:4px; padding-bottom:8px; color:var(--brass); font-size:13px; font-weight:700;" data-i18n="mypageStoryProgressLabel">스토리별 진행 상태</div>
     <div id="mypage-stories"></div>
     <div style="flex:1;"></div>
     <!-- 지금 브라우저가 어느 버전을 돌리고 있는지 눈으로 확인하기 위한 표시. 파일을 새로 올릴 때마다 올린다.
          62일차에 "고쳤는데 여전히 안 된다"가 반복됐는데, 브라우저가 옛 파일을 들고 있는 건지
          정말 안 고쳐진 건지 구분할 방법이 없어서 넣었다. -->
-    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-11-03.1</div>
+    <div class="pad" style="padding-top:0; padding-bottom:6px; font-size:11px; color:var(--text-faint); text-align:center;" id="build-stamp">v2026-11-19.1</div>
     <div class="pad" style="display:flex; gap:8px;">
       <button class="btn secondary pay-only" style="width:100%;" onclick="goTo('screen-coin')" data-i18n="mypageCoinBtn">코인 충전</button>
       <button class="btn pay-only" style="width:100%;" onclick="openSubscribeScreen()" data-i18n="mypageSubscribeBtn">구독하기</button>
@@ -1947,7 +2163,7 @@ const I18N = {
     heroFeat2T: "인물이 먼저 연락합니다", heroFeat2B: "이틀 넘게 대화가 없으면, 다시 들어왔을 때 인물이 먼저 말을 걸어 옵니다. 마지막 대화와 약속, 다가오는 일정을 이어서 말합니다. 알림을 켜 두면 연락이 왔다는 소식을 폰으로 받습니다.",
     heroFeat3T: "이야기는 결말로 갑니다", heroFeat3B: "관계는 5단계로 나아가고, 이야기마다 라이벌이 있습니다. 헤어짐과 재회도 있으며, 끝까지 완성한 이야기는 앨범에 남습니다.",
     heroPricing: '무료로 시작 — 매일 10회 무료 대화 · 가입 시 코인 50개 · 기억은 요금제와 무관 · 코인 $0.99부터 · 프리미엄 월 $9.99',
-    heroStatBand: "{STORIES}편 · 등장인물 {CHARACTERS}명 · 미리 준비된 사건 {EVENTS}개",   // 79일차 사이트 개편: 실적 띠·안전 한 줄·제휴 버튼·장르 줄·장르 탭 전체·탭 제목·제휴 안내 화면 ({STORIES} 등은 renderHeroStats 가 catalog 에서 채움)
+    heroStatBand: "이야기 {STORIES}편",   // 79일차 사이트 개편: 실적 띠·안전 한 줄·제휴 버튼·장르 줄·장르 탭 전체·탭 제목·제휴 안내 화면 ({STORIES} 등은 renderHeroStats 가 catalog 에서 채움)
     heroSafety: "만 18세 이상 이용 · 표현 수위는 관계 단계에 따라 제한합니다 · 위험 신호가 보이면 상담 창구를 안내합니다",
     heroPartnersBtn: "원작 창작자·중소 콘텐츠 기업과 수익을 나눕니다 — 제휴 안내",
     heroPeekBtn: "로그인 없이 실제 화면 3장을 볼 수 있습니다",
@@ -2294,7 +2510,7 @@ const I18N = {
     heroFeat2T: "Characters reach out first", heroFeat2B: "After two days without a conversation, the character reaches out first when you come back, picking up your last talk, a promise, or something coming up. Switch on notifications to get a heads-up on your phone.",
     heroFeat3T: "Stories reach an ending", heroFeat3B: "Relationships move through five stages, and each story has a rival. There are breakups and reunions, and a story you see through to the end is kept in your album.",
     heroPricing: 'Start free — 10 free chats daily · 50 bonus coins on signup · Memory on every plan · Coins from $0.99 · Premium $9.99/mo',
-    heroStatBand: "{STORIES} stories · {CHARACTERS} characters · {EVENTS} built-in story events",   // 79일차 사이트 개편: 실적 띠·안전 한 줄·제휴 버튼·장르 줄·장르 탭 전체·탭 제목·제휴 안내 화면 ({STORIES} 등은 renderHeroStats 가 catalog 에서 채움)
+    heroStatBand: "{STORIES} stories",   // 79일차 사이트 개편: 실적 띠·안전 한 줄·제휴 버튼·장르 줄·장르 탭 전체·탭 제목·제휴 안내 화면 ({STORIES} 등은 renderHeroStats 가 catalog 에서 채움)
     heroSafety: "18+ only · How far expression can go is limited by the relationship stage · We point to a helpline when warning signs appear",
     heroPartnersBtn: "We share revenue with original creators & content companies — Partnerships",
     heroPeekBtn: "See three real screens without signing in",
@@ -2641,7 +2857,7 @@ const I18N = {
     heroFeat2T: "人物のほうから連絡が来る", heroFeat2B: "2日以上会話がないと、次に開いたとき人物のほうから話しかけてきます。最後の会話や約束、近づく予定の話を続けます。通知をオンにすると、連絡が来たことをスマホでお知らせします。",
     heroFeat3T: "物語は結末へ向かう", heroFeat3B: "関係は5つの段階で進み、物語ごとにライバルがいます。別れや再会もあり、最後まで完成させた物語はアルバムに残ります。",
     heroPricing: '無料で開始 — 毎日10回無料チャット · 登録時コイン50枚 · 記憶はプランを問わず · コインは$0.99から · プレミアム月額$9.99',
-    heroStatBand: "{STORIES}作品 · 登場人物{CHARACTERS}人 · 用意された出来事{EVENTS}件",   // 79일차 사이트 개편: 실적 띠·안전 한 줄·제휴 버튼·장르 줄·장르 탭 전체·탭 제목·제휴 안내 화면 ({STORIES} 등은 renderHeroStats 가 catalog 에서 채움)
+    heroStatBand: "{STORIES}の物語",   // 79일차 사이트 개편: 실적 띠·안전 한 줄·제휴 버튼·장르 줄·장르 탭 전체·탭 제목·제휴 안내 화면 ({STORIES} 등은 renderHeroStats 가 catalog 에서 채움)
     heroSafety: "18歳以上の方のみ · 表現の深さは関係の段階に応じて制限します · 危険な兆候が見えたら相談窓口をご案内します",
     heroPartnersBtn: "原作者・コンテンツ企業と収益を分け合います — 提携のご案内",
     heroPeekBtn: "ログインなしで実際の画面3枚をご覧いただけます",
@@ -2918,7 +3134,7 @@ function goTo(screenId, opts) {
   updateTabbar(screenId);
   document.body.classList.toggle('in-chat', screenId === 'screen-chat');   // 80일차: 대화 화면에서는 언어 버튼을 감춘다(머리줄의 단계 표시와 겹침)
   if (screenId === 'screen-coin') { renderCoinScreen(); markFunnel('viewedCoinScreen'); }
-  if (screenId === 'screen-mypage') renderMypage();
+  if (screenId === 'screen-mypage') { renderMypage(); try { lqRenderSeg(); } catch (e) { } }
   if (screenId === 'screen-charlist') renderStoryList();
   if (screenId === 'screen-album') renderAlbum();
   if (screenId === 'screen-firstpick') renderFirstPick();
@@ -3516,7 +3732,7 @@ function logClientError(kind, message) {
   try { playerDocRef().set({ recentErrors: __recentErrors, lastErrorAt: rec.at }, { merge: true }); } catch (e) {}
 }
 
-window.__BUILD = 'v2026-11-03.1';
+window.__BUILD = 'v2026-11-19.1';
 // =====================================================
 // 자동 QA (62일차, 형균님 요청) — "100회 이상 대화해보고 평가해주는 기능"
 // ?qa=1 로 열면 대화 화면에 패널이 뜬다. 가짜 플레이어가 실제 게임 경로(runTurn)로
@@ -6051,7 +6267,14 @@ function renderChatHeadStat() {
   const c = liveHearts(currentStory, state)[0] || currentStory.cast.find(x => x.completionRequired !== false);   // 76일차: 끝난 사람이 아니라 지금 마음이 오가는 사람
   const cs = c && state.chars[c.key];
   if (!cs) { btn.textContent = ''; return; }
-  btn.textContent = `${cs.ended ? t('chatStatEx') : stageLabel(currentStory, cs.stage)} · ${cs.affection}/${cs.trust} ▾`;
+  // 133일차: 단계 이름 앞에 붉은 실 위 매듭 다섯 개
+  const lqN = cs.ended ? 0 : Math.min(5, Math.max(1, cs.stage || 1));
+  let lqK = '';
+  for (let i = 1; i <= 5; i++) lqK += '<circle cx="' + (7 + (i - 1) * 15) + '" cy="' + (i % 2 ? 4.6 : 5.6) + '" r="3"' + (i <= lqN ? ' class="on"' : '') + '/>';
+  btn.innerHTML = '<svg class="lq-knots" viewBox="0 0 74 10" aria-hidden="true"><path d="M0 5 C15 2 30 8 37 5 S60 2 74 5"/>' + lqK + '</svg>';
+  const lqS = document.createElement('span');
+  lqS.textContent = (cs.ended ? t('chatStatEx') : stageLabel(currentStory, cs.stage)) + ' ▾';
+  btn.appendChild(lqS);
 }
 
 function renderStats() {
@@ -10134,7 +10357,7 @@ async function runTurn(text, opts) {
     await noHang(persist());
   }
 
-  const typingBubble = addSys('...');
+  const typingBubble = (typeof lqWaiting === 'function' && lqWaiting()) || addSys('...');   // 134: 매듭이 숨 쉬는 대기
   let charTurn = null;
   const pendingEvents = getPendingSecretEvents(); // 이번 턴에 발동될 이벤트가 있으면 미리 기록해둔다.
 
@@ -11054,6 +11277,246 @@ function preloadStoryArt(story) {
   if (c) { const im = new Image(); im.src = AVATAR_IMAGE[c.key]; }
 }
 
+// ===== 133일차: 달빛 서가 대화 화면 (세 AI 합의안) =====
+// 낮(07~19시)·밤 자동 전환 + 금테 액자 무대(읽으면 얼굴 띠로 접힘) + 그림 크게 보기 + 처음 여는 이야기의 표지.
+// 설정은 이 기기에만 저장한다(lq_theme_pref: auto | day | night).
+const LQ_TXT = {
+  ko: { auto: '자동', day: '낮', night: '밤', moonUp: '달이 떴어요', morning: '아침이 밝았어요', autoNote: '시간에 맞춰 바뀌어요', start: '이야기 시작', view: '그림 크게 보기', back: '아무 곳이나 누르면 대화로 돌아가요' },
+  ja: { auto: '自動', day: '昼', night: '夜', moonUp: '月が昇りました', morning: '朝になりました', autoNote: '時間に合わせて切り替わります', start: '物語を始める', view: '絵を大きく見る', back: 'どこかを押すと会話に戻ります' },
+  en: { auto: 'Auto', day: 'Day', night: 'Night', moonUp: 'The moon is up', morning: 'Morning has come', autoNote: 'Follows the time of day', start: 'Begin the story', view: 'View larger', back: 'Tap anywhere to return' }
+};
+const LQ_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const LQ_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>';
+function lqT(k) {
+  const lang = (typeof currentLang === 'string' && LQ_TXT[currentLang]) ? currentLang : 'ko';
+  return LQ_TXT[lang][k] || LQ_TXT.ko[k] || '';
+}
+function lqPref() {
+  try { const v = localStorage.getItem('lq_theme_pref'); return (v === 'day' || v === 'night') ? v : 'auto'; } catch (e) { return 'auto'; }
+}
+function lqModeNow() {
+  const p = lqPref();
+  if (p !== 'auto') return p;
+  const h = new Date().getHours();
+  return (h >= 7 && h < 19) ? 'day' : 'night';
+}
+function lqToast(text) {
+  const el = document.getElementById('lq-toast');
+  if (!el || !text) return;
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(lqToast._t);
+  lqToast._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+function lqApplyTheme(announce) {
+  const b = document.body;
+  if (!b) return;
+  const m = lqModeNow();
+  const was = b.classList.contains('lq-night') ? 'night' : (b.classList.contains('lq-day') ? 'day' : '');
+  b.classList.add('lq');
+  b.classList.toggle('lq-day', m === 'day');
+  b.classList.toggle('lq-night', m === 'night');
+  const btn = document.getElementById('lq-mode-btn');
+  if (btn) {
+    btn.innerHTML = (m === 'day') ? LQ_SUN : LQ_MOON;
+    const label = lqT('auto') + ' / ' + lqT('day') + ' / ' + lqT('night');
+    btn.title = label; btn.setAttribute('aria-label', label);
+  }
+  if (announce && was && was !== m) lqToast(m === 'night' ? lqT('moonUp') : lqT('morning'));
+}
+function lqCycleMode() {
+  const order = ['auto', 'day', 'night'];
+  const next = order[(order.indexOf(lqPref()) + 1) % order.length];
+  try { localStorage.setItem('lq_theme_pref', next); } catch (e) { }
+  lqApplyTheme(false);
+  lqToast(next === 'auto' ? (lqT('auto') + ' · ' + lqT('autoNote')) : lqT(next));
+}
+function lqSetArt(url) {
+  const sc = document.getElementById('screen-chat');
+  if (!sc) return;
+  ['lq-stage-img', 'lq-cover-img', 'lq-view-img'].forEach(id => {
+    const im = document.getElementById(id);
+    if (im) { if (url) im.src = url; else im.removeAttribute('src'); }
+  });
+  sc.classList.toggle('lq-has-art', !!url);
+  sc.dataset.lqArt = url || '';
+  try { lqApplyFocus(); } catch (e) { }
+}
+function lqFold(on) {
+  const sc = document.getElementById('screen-chat');
+  if (!sc || sc.classList.contains('lq-fold') === !!on) return;
+  sc.classList.toggle('lq-fold', !!on);
+  try { lqApplyFocus(); } catch (e) { }
+}
+function lqView(on) {
+  const sc = document.getElementById('screen-chat');
+  if (!sc) return;
+  if (on && !sc.classList.contains('lq-has-art')) return;
+  sc.classList.toggle('lq-viewing', !!on);
+}
+// 처음 여는 이야기만 표지부터. 이어서 들어올 때는 곧바로 읽기 화면.
+function lqChatEnter(story, opt) {
+  lqApplyTheme(false);
+  const sc = document.getElementById('screen-chat');
+  if (!sc) return;
+  lqFold(false); lqView(false);
+  const vt = document.getElementById('lq-view-tip');
+  if (vt) vt.textContent = lqT('back');
+  const want = !!(opt && opt.cover) && sc.classList.contains('lq-has-art') && story;
+  sc.classList.toggle('lq-covering', want);
+  if (!want) return;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || ''; };
+  set('lq-cover-eyebrow', story.relationLabel);
+  set('lq-cover-title', story.title);
+  set('lq-cover-hook', story.cardHook);
+  set('lq-cover-go', lqT('start'));
+  try { lqFillGreeting(story); } catch (e) { }
+  requestAnimationFrame(() => { try { lqApplyFocus(); } catch (e) { } });
+}
+(function lqInit() {
+  try {
+    lqApplyTheme(false);
+    const sc = document.getElementById('screen-chat');
+    const chat = document.getElementById('chat');
+    const stage = document.getElementById('lq-stage');
+    const view = document.getElementById('lq-view');
+    const go = document.getElementById('lq-cover-go');
+    const mode = document.getElementById('lq-mode-btn');
+    if (stage) stage.addEventListener('click', () => lqView(true));
+    if (view) view.addEventListener('click', () => lqView(false));
+    if (go) go.addEventListener('click', () => { if (sc) sc.classList.remove('lq-covering'); });
+    if (mode) mode.addEventListener('click', lqCycleMode);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lqView(false); });
+    const vt = document.getElementById('lq-view-tip');
+    if (vt) vt.textContent = lqT('back');
+    const st = document.getElementById('lq-stage-tip');
+    if (st) st.setAttribute('aria-label', lqT('view'));
+    // 이용자가 직접 굴렸을 때만 접는다(새 답이 붙으며 저절로 내려가는 것은 제외). 맨 위로 올리면 다시 펼친다.
+    if (chat) {
+      let touched = 0;
+      const mark = () => { touched = Date.now(); };
+      chat.addEventListener('wheel', mark, { passive: true });
+      chat.addEventListener('touchmove', mark, { passive: true });
+      chat.addEventListener('keydown', mark);
+      chat.addEventListener('scroll', () => {
+        if (chat.scrollTop < 8) { lqFold(false); return; }
+        if (Date.now() - touched < 700 && chat.scrollHeight > chat.clientHeight + 40) lqFold(true);
+      }, { passive: true });
+    }
+    setInterval(() => { if (lqPref() === 'auto') lqApplyTheme(true); }, 60000);
+    window.addEventListener('resize', () => { try { lqApplyFocus(); } catch (e) { } });
+  } catch (e) { console.error('lqInit 실패', e); }
+})();
+
+// ===== 134 묶음: 그림별 얼굴 위치 · 표지 첫마디 · 답 기다리는 연출 =====
+// 그림마다 얼굴 가운데(가로 %, 세로 %). 자동 검출 103장 + 눈으로 맞춘 46장(11/19). 없는 그림은 [50, 24].
+const LQ_FOCUS = {"cafegate":[53,31],"daeun":[50,33],"dahee":[57,28],"doyoon":[42,26],"eunbi":[50,29],"firekeeper":[55,15],"frostsupply":[52,22],"haeun":[55,30],"harin":[56,31],"herocase":[49,27],"hyejin":[46,29],"hyeonseo":[53,29],"jia":[46,27],"layoung":[49,31],"m01":[55,25],"m02":[51,30],"m04":[52,24],"m06":[52,24],"m08":[52,25],"m09":[56,31],"m10":[54,33],"m15":[44,24],"m16":[48,21],"m17":[49,23],"m18":[47,47],"m19":[53,30],"m20":[42,20],"m22":[54,24],"m23":[57,22],"m24":[58,25],"m25":[55,29],"m26":[45,28],"m27":[48,22],"m28":[40,22],"m29":[58,29],"m32":[45,22],"m37":[50,24],"m38":[52,25],"m41":[33,18],"m45":[49,29],"m46":[50,30],"m47":[62,20],"m48":[48,24],"m50":[58,18],"mapking":[48,21],"nursewar":[48,27],"oathtongue":[45,35],"poisonmaid":[51,29],"redledger":[50,25],"riwon":[52,26],"saintmedic":[46,25],"seeun":[52,34],"seoyeon":[48,31],"soi":[54,26],"somin":[46,26],"soyul":[46,33],"w01":[41,26],"w02":[51,27],"w03":[51,26],"w05":[47,26],"w06":[53,30],"w07":[43,29],"w08":[51,26],"w09":[52,29],"w10":[51,28],"w11":[42,31],"w12":[55,20],"w14":[42,25],"w15":[37,33],"w16":[50,32],"w17":[54,29],"w18":[60,32],"w19":[52,18],"w20":[65,30],"w22":[57,28],"w23":[65,29],"w24":[48,29],"w25":[52,22],"w26":[52,30],"w27":[54,27],"w28":[42,25],"w29":[57,28],"w30":[56,22],"w31":[48,34],"w32":[48,23],"w33":[52,23],"w34":[55,27],"w36":[40,25],"w37":[58,24],"w38":[57,19],"w39":[50,30],"w40":[48,34],"w41":[51,36],"w42":[55,30],"w43":[55,25],"w45":[45,26],"w46":[49,31],"w47":[48,18],"w48":[56,30],"w49":[53,38],"w50":[65,38],"yoona":[50,22],"yujin":[48,30],"m03":[47,25],"m05":[43,24],"m07":[57,22],"m11":[45,12],"m12":[50,22],"m13":[45,10],"m14":[60,28],"m21":[52,15],"m30":[47,22],"m31":[55,25],"m33":[50,20],"m34":[50,22],"m35":[55,25],"m36":[55,25],"m39":[48,22],"m40":[45,18],"m42":[50,28],"m43":[33,28],"m44":[50,25],"m49":[38,14],"w04":[45,25],"w13":[48,22],"w21":[45,30],"w35":[48,30],"w44":[50,25]};
+function lqFocusFor(url) {
+  const m = /([^/]+)\.(jpg|jpeg|png|webp)$/i.exec(String(url || ''));
+  return (m && LQ_FOCUS[m[1]]) || [50, 24];
+}
+// 표지·무대 액자 안에서 얼굴이 원하는 높이(ty)에 오도록 object-position 을 계산한다(그림은 900×1200).
+function lqObjPos(box, fx, fy, ty) {
+  const W = box.width, H = box.height;
+  if (!W || !H) return '';
+  const s = Math.max(W / 900, H / 1200), iw = 900 * s, ih = 1200 * s;
+  const cl = (v) => Math.max(0, Math.min(1, v));
+  const px = iw > W + 1 ? cl((fx / 100 * iw - W * 0.5) / (iw - W)) * 100 : 50;
+  const py = ih > H + 1 ? cl((fy / 100 * ih - H * ty) / (ih - H)) * 100 : 50;
+  return px.toFixed(1) + '% ' + py.toFixed(1) + '%';
+}
+function lqApplyFocus() {
+  const sc = document.getElementById('screen-chat');
+  if (!sc || !sc.classList.contains('lq-has-art')) return;
+  const f = lqFocusFor(sc.dataset.lqArt);
+  const stImg = document.getElementById('lq-stage-img');
+  const stBox = stImg && stImg.parentElement;
+  if (stBox) {
+    const r = stBox.getBoundingClientRect();
+    const pc = window.innerWidth >= 900;
+    const h = pc ? r.height : (sc.classList.contains('lq-fold') ? 96 : 150);   // 접힘 전환 중에도 목표 높이로 계산
+    stImg.style.objectPosition = lqObjPos({ width: r.width, height: h }, f[0], f[1], pc ? 0.32 : (sc.classList.contains('lq-fold') ? 0.5 : 0.56));
+  }
+  const cvImg = document.getElementById('lq-cover-img');
+  const cvBox = cvImg && cvImg.parentElement;
+  if (cvBox && sc.classList.contains('lq-covering')) cvImg.style.objectPosition = lqObjPos(cvBox.getBoundingClientRect(), f[0], f[1], 0.36);
+}
+// 표지의 첫마디: 이야기가 원래 여는 인물의 첫 대사를 그대로 쓴다(새로 지어내지 않는다).
+function lqOpeningLine(story) {
+  try {
+    const nm = (typeof playerProfile !== 'undefined' && playerProfile && playerProfile.name) || '';
+    const bs = (typeof story.openingBeats === 'function') ? (story.openingBeats(nm) || []) : [];
+    const d = bs.find(b => b && b.type === 'dialogue' && b.text && !(typeof isPlayerSpeakerKey === 'function' && isPlayerSpeakerKey(story, b.speaker)));
+    if (!d) return null;
+    let line = String(d.text).replace(/^["'“”‘’「」]+|["'“”‘’「」]+$/g, '').trim();
+    if (line.length > 70) line = line.slice(0, 68) + '…';
+    const key = (typeof resolveSpeakerKey === 'function') ? resolveSpeakerKey(story, d.speaker) : d.speaker;
+    const who = key ? speakerName(story, key) : '';
+    return { line, who };
+  } catch (e) { return null; }
+}
+function lqFillGreeting(story) {
+  const box = document.getElementById('lq-cover-greet');
+  if (!box) return;
+  const g = lqOpeningLine(story);
+  box.hidden = !g;
+  if (!g) return;
+  box.querySelector('.lq-g-who').textContent = g.who || '';
+  box.querySelector('.lq-g-line').textContent = '“' + g.line + '”';
+}
+// 답을 기다리는 동안: 점 세 개 대신, 붉은 실 매듭이 천천히 숨 쉬고 "○○이 말을 고르고 있어요".
+function lqWaiting() {
+  if (!document.body.classList.contains('lq') || typeof currentStory === 'undefined' || !currentStory) return null;
+  const chat = document.getElementById('chat');
+  if (!chat) return null;
+  const c = (currentStory.cast || []).find(x => x.completionRequired !== false) || (currentStory.cast || [])[0];
+  const name = c ? c.name : '';
+  const lang = (typeof currentLang === 'string') ? currentLang : 'ko';
+  const text = !name ? '…'
+    : lang === 'ja' ? name + 'が言葉を選んでいます'
+    : lang === 'en' ? name + ' is finding the words'
+    : name + josaOf(name, '이가') + ' 말을 고르고 있어요';
+  const div = document.createElement('div');
+  div.className = 'lq-wait';
+  div.setAttribute('role', 'status');
+  div.innerHTML = '<svg viewBox="0 0 46 10" aria-hidden="true"><path d="M0 5 C10 2 20 8 23 5 S38 2 46 5"/><circle cx="9" cy="4.6" r="2.6"/><circle cx="23" cy="5" r="2.6"/><circle cx="37" cy="4.4" r="2.6"/></svg>';
+  const sp = document.createElement('span');
+  sp.textContent = text;
+  div.appendChild(sp);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+// ===== 135: 마이페이지의 화면 밝기 고르기 (자동 / 낮 / 밤) =====
+LQ_TXT.ko.theme = '화면'; LQ_TXT.ja.theme = '画面'; LQ_TXT.en.theme = 'Theme';
+function lqRenderSeg() {
+  const seg = document.getElementById('lq-seg');
+  if (!seg) return;
+  const lbl = document.getElementById('lq-theme-lbl');
+  if (lbl) lbl.textContent = lqT('theme');
+  const p = lqPref();
+  seg.querySelectorAll('button').forEach(b => {
+    const v = b.getAttribute('data-v');
+    b.textContent = lqT(v);
+    b.setAttribute('aria-pressed', v === p ? 'true' : 'false');
+  });
+}
+(function lqSegInit() {
+  try {
+    const seg = document.getElementById('lq-seg');
+    if (!seg) return;
+    seg.addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-v]');
+      if (!b) return;
+      try { localStorage.setItem('lq_theme_pref', b.getAttribute('data-v')); } catch (err) { }
+      lqApplyTheme(false);
+      lqRenderSeg();
+    });
+    lqRenderSeg();
+  } catch (e) { console.error('lqSegInit 실패', e); }
+})();
+
 function applyChatArt(story) {
   const el = $('chat-art');
   setTimeout(syncArtPeek, 0);   // 71일차: 그림이 있을 때만 밀어넣기 버튼을 보여준다
@@ -11062,9 +11525,11 @@ function applyChatArt(story) {
   if (withArt) {
     el.style.backgroundImage = `url("${AVATAR_IMAGE[withArt.key]}")`;
     el.classList.add('on');
+    try { lqSetArt(AVATAR_IMAGE[withArt.key]); } catch (e) { }
   } else {
     el.classList.remove('on');
     el.style.backgroundImage = 'none';
+    try { lqSetArt(null); } catch (e) { }
   }
 }
 
@@ -11137,6 +11602,7 @@ async function enterChat(storyId) {
   $('chat-title').textContent = currentStory.title;
   markFunnel('openedChat');
   applyChatArt(currentStory);
+  try { lqChatEnter(currentStory, { cover: isBrandNew }); } catch (e) { }   // 133일차
   renderStats();
   renderBillingSnippet('chat-billing-status');
   // ④ 입력창을 인물 이름으로 개인화 ("지아에게...")
